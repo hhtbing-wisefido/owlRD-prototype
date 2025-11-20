@@ -13,7 +13,7 @@ export default function Dashboard() {
   const [realtimeAlerts, setRealtimeAlerts] = useState<any[]>([])
   
   // WebSocket connection
-  const { isConnected, lastMessage } = useWebSocket(WS_URL, {
+  const { isConnected } = useWebSocket(WS_URL, {
     onMessage: (message) => {
       if (message.type === 'alert') {
         // Add new alert to the top
@@ -203,7 +203,7 @@ export default function Dashboard() {
                 fill="#8884d8"
                 dataKey="value"
               >
-                {deviceStatusData.map((entry, index) => (
+                {deviceStatusData.map((_entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

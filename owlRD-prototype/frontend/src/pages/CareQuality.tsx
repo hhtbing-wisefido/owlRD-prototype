@@ -141,7 +141,7 @@ export default function CareQuality() {
                 fill="#8884d8"
                 dataKey="value"
               >
-                {coverageData.map((entry, index) => (
+                {coverageData.map((_entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
