@@ -1,6 +1,6 @@
 {
   "project_name": "owlRD-原型项目",
-  "last_updated": "2025-11-20T19:22:00+08:00",
+  "last_updated": "2025-11-20T19:34:49+08:00",
   "current_phase": "全部完成",
   "overall_completion": "100%",
   "status": "生产就绪",
@@ -133,17 +133,17 @@
     }
   },
   "code_statistics": {
-    "total_lines": 15943,
+    "total_lines": 16269,
     "backend_lines": 8129,
     "frontend_lines": 1178,
-    "documentation_lines": 6636,
+    "documentation_lines": 6962,
     "models": 19,
     "services": 7,
     "api_endpoints": 37,
     "frontend_pages": 5,
     "charts": 7,
     "websocket_connections": "active",
-    "git_commits": "31",
+    "git_commits": "33",
     "python_files": 39,
     "typescript_files": 12
   },
@@ -212,6 +212,6 @@
   "runtime_status": {
     "backend_server": "已停止",
     "frontend_server": "已停止",
-    "check_time": "2025-11-20 19:22:00"
+    "check_time": "2025-11-20 19:34:49"
   }
 }
