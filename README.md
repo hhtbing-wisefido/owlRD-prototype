@@ -485,7 +485,10 @@ python download_swagger_ui.py
 # 启动服务
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
-访问: http://localhost:8000/docs-local
+
+**访问地址**:
+- 本机: http://localhost:8000/docs-local
+- 局域网: http://192.168.2.6:8000/docs-local
 
 #### 前端启动
 ```bash
@@ -497,7 +500,20 @@ npm install
 # 启动开发服务器
 npm run dev
 ```
-访问: http://localhost:3000
+
+**访问地址**:
+- 本机: http://localhost:3000
+- 局域网: http://192.168.2.6:3000
+
+#### 🌐 局域网访问配置
+
+**前后端均已配置局域网访问！**
+
+- 后端: 已配置 `host=0.0.0.0` 和 CORS
+- 前端: 已配置 `vite --host`
+- 局域网IP: `192.168.2.6`
+
+详见: [局域网访问指南](owlRD-prototype/局域网访问指南.md)
 
 ### Phase 3 - 核心业务逻辑详情
 

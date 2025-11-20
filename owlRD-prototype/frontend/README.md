@@ -21,11 +21,28 @@ npm install
 
 ## 开发
 
+### 本地开发
 ```bash
 npm run dev
 ```
-
 访问: http://localhost:3000
+
+### 局域网访问
+```bash
+# 方法1: 使用npm脚本（推荐）
+npm run dev
+
+# 方法2: 使用启动脚本
+.\start_lan.bat    # Windows
+./start_lan.sh     # Linux/Mac
+
+# 方法3: 指定IP启动
+npm run dev:lan
+```
+
+访问地址:
+- 本机: http://localhost:3000 或 http://192.168.2.6:3000
+- 局域网其他设备: http://192.168.2.6:3000
 
 ## 构建
 
@@ -52,13 +69,23 @@ npm run build
 
 ## 环境配置
 
+### 本地开发配置
 复制 `.env.example` 到 `.env`:
 ```bash
 cp .env.example .env
 ```
 
-配置内容:
-```
+默认配置（本地访问）:
+```bash
 VITE_API_URL=http://localhost:8000
 VITE_WS_URL=ws://localhost:8000
 ```
+
+### 局域网访问配置
+如需在局域网其他设备访问，修改 `.env`:
+```bash
+VITE_API_URL=http://192.168.2.6:8000
+VITE_WS_URL=ws://192.168.2.6:8000
+```
+
+**注意**: 修改配置后需要重启开发服务器

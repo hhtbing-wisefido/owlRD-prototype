@@ -28,6 +28,8 @@ class Settings(BaseSettings):
             "http://127.0.0.1:3000",
             "http://localhost:8000",
             "http://127.0.0.1:8000",
+            "http://192.168.2.6:3000",  # 局域网前端
+            "http://192.168.2.6:8000",  # 局域网后端
             "*"  # 开发环境允许所有源（生产环境应配置具体IP）
         ],
         env="CORS_ORIGINS"
