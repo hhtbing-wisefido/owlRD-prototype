@@ -59,3 +59,10 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Swagger UI静态文件（可本地下载，无需提交）
+app/static/swagger-ui/*.js
+app/static/swagger-ui/*.js.map
+app/static/swagger-ui/*.css
+app/static/swagger-ui/*.css.map
+!app/static/.gitkeep

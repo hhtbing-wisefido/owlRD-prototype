@@ -6,8 +6,10 @@ owlRD智慧养老IoT监测系统
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from loguru import logger
 import sys
+from pathlib import Path
 
 from app.config import settings
 from app.api.v1 import (
@@ -21,6 +23,7 @@ from app.api.v1 import (
     realtime,
     iot_data,
 )
+from app.api import docs, docs_offline, docs_local
 
 # 配置日志
 logger.remove()
@@ -71,6 +74,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 挂载静态文件目录（本地Swagger UI）
+static_dir = Path(__file__).parent / "static"
+if static_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+    logger.info(f"Static files mounted at /static from {static_dir}")
+
 
 # 健康检查
 @app.get("/", tags=["Health"])
@@ -110,6 +119,12 @@ app.include_router(cards.router, prefix="/api/v1/cards", tags=["Cards"])
 app.include_router(care_quality.router, prefix="/api/v1/care-quality", tags=["Care Quality"])
 app.include_router(iot_data.router, prefix="/api/v1/iot-data", tags=["IoT Data"])
 app.include_router(realtime.router, prefix="/api/v1/realtime", tags=["Realtime"])
+# 自定义文档页面（使用国内CDN）
+app.include_router(docs.router)
+# 离线文档页面（完全不依赖外部CDN）
+app.include_router(docs_offline.router)
+# 本地文档页面（使用本地Swagger UI文件）
+app.include_router(docs_local.router)
 
 
 # 全局异常处理
