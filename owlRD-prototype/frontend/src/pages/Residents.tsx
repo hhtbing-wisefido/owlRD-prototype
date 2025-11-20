@@ -65,7 +65,7 @@ export default function Residents() {
                           {resident.last_name}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {resident.anonymous_display_name}
+                          匿名代称: {resident.last_name}
                         </div>
                       </div>
                     </div>
@@ -83,8 +83,12 @@ export default function Residents() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{resident.primary_contact_name}</div>
-                    <div className="text-sm text-gray-500">{resident.primary_contact_phone}</div>
+                    <div className="text-sm text-gray-900">
+                      {resident.family_tag || '-'}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {resident.HIS_resident_id || '-'}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {resident.admission_date}

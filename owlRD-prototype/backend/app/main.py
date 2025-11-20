@@ -22,6 +22,8 @@ from app.api.v1 import (
     care_quality,
     realtime,
     iot_data,
+    resident_contacts,
+    resident_caregivers
 )
 from app.api import docs, docs_offline, docs_local
 
@@ -113,6 +115,8 @@ async def health_check():
 app.include_router(tenants.router, prefix="/api/v1/tenants", tags=["Tenants"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(residents.router, prefix="/api/v1/residents", tags=["Residents"])
+app.include_router(resident_contacts.router, prefix="/api/v1", tags=["Resident Contacts"])
+app.include_router(resident_caregivers.router, prefix="/api/v1", tags=["Resident Caregivers"])
 app.include_router(devices.router, prefix="/api/v1/devices", tags=["Devices"])
 app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["Alerts"])
 app.include_router(cards.router, prefix="/api/v1/cards", tags=["Cards"])

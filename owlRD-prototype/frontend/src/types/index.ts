@@ -2,49 +2,66 @@
 export interface Tenant {
   tenant_id: string
   tenant_name: string
-  tenant_code: string
-  contact_email?: string
-  contact_phone?: string
-  address?: string
-  license_type: string
-  max_users: number
-  max_residents: number
-  features_enabled: string[]
-  is_active: boolean
+  domain?: string
+  status: string
   created_at: string
+  updated_at: string
+  metadata?: {
+    license_type?: string
+    max_users?: number
+    max_residents?: number
+    features_enabled?: string[]
+    contact_email?: string
+    contact_phone?: string
+    address?: string
+    [key: string]: any
+  }
 }
 
 // User types
 export interface User {
   user_id: string
   tenant_id: string
-  username: string
-  full_name: string
+  username?: string
   email?: string
   phone?: string
   role: string
-  department?: string
-  nurse_group_tag?: string
-  is_active: boolean
+  status: string
+  alert_levels?: string[]
+  alert_channels?: string[]
+  alert_scope?: string
+  tags?: {
+    department?: string
+    nurse_group?: string
+    shift?: string
+    certifications?: string[]
+    [key: string]: any
+  }
+  last_login_at?: string
   created_at: string
+  updated_at: string
 }
 
 // Resident types
 export interface Resident {
   resident_id: string
   tenant_id: string
+  HIS_resident_id?: string
+  HIS_resident_bed_id?: string
+  HIS_resident_status?: string
   resident_account: string
+  first_name?: string
   last_name: string
+  anonymous_name: string
   is_institutional: boolean
   location_id?: string
   bed_id?: string
   admission_date?: string
   status: string
+  metadata?: any
+  family_tag?: string
+  family_member_account_1?: string
   can_view_status: boolean
-  primary_contact_name?: string
-  primary_contact_phone?: string
-  primary_contact_relation?: string
-  anonymous_display_name?: string
   created_at: string
 }
 
@@ -57,14 +74,19 @@ export interface Device {
   device_type: string
   serial_number?: string
   uid?: string
+  imei?: string
   comm_mode: string
   firmware_version?: string
+  mcu_model?: string
   location_id?: string
+  bound_room_id?: string
+  bound_bed_id?: string
   status: string
   installed: boolean
   business_access: boolean
   monitoring_enabled: boolean
   installation_date_utc?: string
+  metadata?: any
   created_at: string
 }
 
@@ -131,4 +153,37 @@ export interface CareQualityMetrics {
   avg_response_time: number
   avg_care_duration: number
   total_interactions: number
+}
+
+// Resident Contact types (09_resident_contacts.sql)
+export interface ResidentContact {
+  contact_id: string
+  tenant_id: string
+  resident_id: string
+  slot: string // A/B/C/D/E
+  contact_resident_id?: string
+  can_view_status: boolean
+  can_receive_alert: boolean
+  relationship?: string
+  contact_first_name?: string
+  contact_last_name?: string
+  contact_phone?: string
+  contact_email?: string
+  contact_sms: boolean
+  is_active: boolean
+  created_at: string
+}
+
+// Resident Caregiver types (10_resident_caregivers.sql)
+export interface ResidentCaregiver {
+  id: string
+  tenant_id: string
+  resident_id: string
+  caregiver_id1: string
+  caregiver_id2?: string
+  caregiver_id3?: string
+  caregiver_id4?: string
+  caregiver_id5?: string
+  nurse_group_tags?: string[]
+  created_at: string
 }
