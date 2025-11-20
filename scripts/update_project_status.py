@@ -105,8 +105,8 @@ def count_files(directory: Path, pattern: str) -> int:
 def update_project_status():
     """更新项目状态文件"""
     
-    # 项目根目录
-    project_root = Path(__file__).parent
+    # 项目根目录 (脚本在scripts目录下)
+    project_root = Path(__file__).parent.parent
     backend_dir = project_root / "owlRD-prototype" / "backend"
     frontend_dir = project_root / "owlRD-prototype" / "frontend"
     docs_dir = project_root / "项目记录"
