@@ -40,7 +40,7 @@ async def list_residents(
                 return False
             return True
         
-        residents = await resident_storage.find_all(filter_func)
+        residents = resident_storage.find_all(filter_func)
         return residents[:limit]
     except Exception as e:
         logger.error(f"Error listing residents: {e}")
@@ -51,7 +51,7 @@ async def list_residents(
 async def get_resident(resident_id: UUID):
     """获取单个住户详情"""
     try:
-        resident = await resident_storage.get(resident_id)
+        resident = resident_storage.get(resident_id)
         if not resident:
             raise HTTPException(status_code=404, detail="Resident not found")
         return resident
@@ -73,7 +73,7 @@ async def create_resident(resident: ResidentCreate):
     - 验证必填字段
     """
     try:
-        result = await resident_storage.create(resident)
+        result = resident_storage.create(resident)
         logger.info(f"Created resident: {result.get('resident_id')}")
         return result
     except Exception as e:
@@ -93,7 +93,7 @@ async def update_resident(resident_id: UUID, resident: ResidentUpdate):
     - 护理人员
     """
     try:
-        result = await resident_storage.update(
+        result = resident_storage.update(
             resident_id, 
             resident.model_dump(exclude_unset=True)
         )
@@ -118,7 +118,7 @@ async def delete_resident(resident_id: UUID):
     - 相关数据不会被删除
     """
     try:
-        success = await resident_storage.delete(resident_id)
+        success = resident_storage.delete(resident_id)
         if not success:
             raise HTTPException(status_code=404, detail="Resident not found")
         logger.info(f"Deleted resident: {resident_id}")

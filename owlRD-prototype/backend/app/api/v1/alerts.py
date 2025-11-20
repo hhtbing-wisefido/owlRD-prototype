@@ -64,7 +64,7 @@ async def list_alerts(
             
             return True
         
-        alerts = await alert_storage.find_all(filter_func)
+        alerts = alert_storage.find_all(filter_func)
         
         # 按时间倒序排序
         alerts.sort(
@@ -82,7 +82,7 @@ async def list_alerts(
 async def get_alert(alert_id: UUID):
     """获取单个告警详情"""
     try:
-        alert = await alert_storage.get(alert_id)
+        alert = alert_storage.get(alert_id)
         if not alert:
             raise HTTPException(status_code=404, detail="Alert not found")
         return alert
@@ -108,7 +108,7 @@ async def acknowledge_alert(
     - 可添加备注
     """
     try:
-        alert = await alert_storage.get(alert_id)
+        alert = alert_storage.get(alert_id)
         if not alert:
             raise HTTPException(status_code=404, detail="Alert not found")
         
@@ -119,7 +119,7 @@ async def acknowledge_alert(
             "note": note
         }
         
-        result = await alert_storage.update(alert_id, update_data)
+        result = alert_storage.update(alert_id, update_data)
         logger.info(f"Alert acknowledged: {alert_id} by {user_id}")
         return result
     except HTTPException:
@@ -144,7 +144,7 @@ async def resolve_alert(
     - 可添加解决说明
     """
     try:
-        alert = await alert_storage.get(alert_id)
+        alert = alert_storage.get(alert_id)
         if not alert:
             raise HTTPException(status_code=404, detail="Alert not found")
         
@@ -155,7 +155,7 @@ async def resolve_alert(
             "resolution": resolution
         }
         
-        result = await alert_storage.update(alert_id, update_data)
+        result = alert_storage.update(alert_id, update_data)
         logger.info(f"Alert resolved: {alert_id} by {user_id}")
         return result
     except HTTPException:
@@ -184,7 +184,7 @@ async def get_alert_statistics(
         end_time = datetime.now()
         start_time = end_time - timedelta(hours=hours)
         
-        alerts = await alert_storage.find_all(
+        alerts = alert_storage.find_all(
             lambda a: (
                 str(a.get("tenant_id")) == str(tenant_id) and
                 datetime.fromisoformat(a.get("timestamp", "1970-01-01").replace('Z', '+00:00')) >= start_time

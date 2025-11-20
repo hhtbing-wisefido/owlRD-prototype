@@ -44,7 +44,7 @@ async def list_devices(
                 return False
             return True
         
-        devices = await device_storage.find_all(filter_func)
+        devices = device_storage.find_all(filter_func)
         return devices[:limit]
     except Exception as e:
         logger.error(f"Error listing devices: {e}")
@@ -55,7 +55,7 @@ async def list_devices(
 async def get_device(device_id: UUID):
     """获取单个设备详情"""
     try:
-        device = await device_storage.get(device_id)
+        device = device_storage.get(device_id)
         if not device:
             raise HTTPException(status_code=404, detail="Device not found")
         return device
@@ -79,7 +79,7 @@ async def create_device(device: DeviceCreate):
     - serial_number或uid: 至少一个
     """
     try:
-        result = await device_storage.create(device)
+        result = device_storage.create(device)
         logger.info(f"Created device: {result.get('device_id')}")
         return result
     except Exception as e:
@@ -99,7 +99,7 @@ async def update_device(device_id: UUID, device: DeviceUpdate):
     - 配置信息
     """
     try:
-        result = await device_storage.update(
+        result = device_storage.update(
             device_id,
             device.model_dump(exclude_unset=True)
         )
@@ -124,7 +124,7 @@ async def delete_device(device_id: UUID):
     - 相关数据不会被删除
     """
     try:
-        success = await device_storage.delete(device_id)
+        success = device_storage.delete(device_id)
         if not success:
             raise HTTPException(status_code=404, detail="Device not found")
         logger.info(f"Deleted device: {device_id}")
