@@ -173,7 +173,7 @@ async def init_residents():
             "primary_contact_name": "王小明",
             "primary_contact_phone": "+86-138-1111-1111",
             "primary_contact_relation": "儿子",
-            "anonymous_display_name": "活力老人",
+            "anonymous_name": "活力老人",
             "created_at": datetime.now().isoformat()
         },
         {
@@ -189,7 +189,7 @@ async def init_residents():
             "primary_contact_name": "李小红",
             "primary_contact_phone": "+86-138-2222-2222",
             "primary_contact_relation": "女儿",
-            "anonymous_display_name": "温和老人",
+            "anonymous_name": "温和老人",
             "created_at": datetime.now().isoformat()
         }
     ]
