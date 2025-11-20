@@ -1,37 +1,55 @@
-# owlRD Backend
+# owlRD Backend API
 
-Python FastAPI后端服务
+智慧养老IoT监测系统 - Python FastAPI后端服务
 
-## 快速开始
+## 🚀 快速开始
 
-### 安装依赖
+### 1. 安装依赖
 
 ```bash
+cd backend
 pip install -r requirements.txt
 ```
 
-### 配置环境变量
+### 2. 下载Swagger UI（首次运行）
 
 ```bash
-cp .env.example .env
-# 编辑 .env 文件，设置必要的配置
+python download_swagger_ui.py
 ```
 
-### 启动服务
+### 3. 初始化示例数据（可选）
 
 ```bash
-# 开发模式（自动重载）
-python -m uvicorn app.main:app --reload --port 8000
-
-# 或直接运行
-python app/main.py
+python init_sample_data.py
 ```
 
-### 访问API文档
+### 4. 启动服务器
 
-- Swagger UI: http://localhost:8000/docs
+```bash
+# 方法1: uvicorn启动（推荐）
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+# 方法2: Python直接运行
+python -m app.main
+
+# 方法3: 使用启动脚本
+.\start_server.bat    # Windows
+./start_server.sh     # Linux/Mac
+```
+
+### 5. 访问API文档
+
+**推荐使用本地版（完全离线）：**
+```
+http://localhost:8000/docs-local
+```
+
+**所有文档地址：**
+- 本地Swagger: http://localhost:8000/docs-local （⭐ 推荐 - 完全离线）
+- 国内CDN: http://localhost:8000/docs-cn （需联网）
+- 默认版本: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
-- OpenAPI JSON: http://localhost:8000/api/openapi.json
+- OpenAPI规范: http://localhost:8000/api/openapi.json
 
 ## 项目结构
 
@@ -131,15 +149,240 @@ pytest --cov=app --cov-report=html
 - `GET /api/v1/care-quality/report` - 护理质量报告（存根）
 - `WS /api/v1/realtime/ws` - WebSocket实时数据（存根）
 
-## 下一步计划
+## 🌐 局域网访问
 
-1. 完成19个数据模型的完整实现
-2. 实现存储服务的CRUD操作
-3. 实现SNOMED CT编码系统
-4. 实现TDPv2协议处理
-5. 实现Person/Object Matrix
-6. 实现多级报警系统
-7. 实现护理质量评估算法
-8. 实现健康基线建模
-9. 实现卡片自动生成逻辑
-10. 完善WebSocket实时推送
+### 获取本机IP
+
+**Windows:**
+```bash
+ipconfig
+# 查找 "IPv4 地址"
+```
+
+**Linux/Mac:**
+```bash
+ifconfig  # 或 ip addr show
+```
+
+### 局域网访问地址
+
+假设你的IP是 `192.168.2.6`：
+
+**API文档（推荐使用本地版）：**
+```
+http://192.168.2.6:8000/docs-local
+```
+
+**其他端点：**
+- API文档（国内CDN）: http://192.168.2.6:8000/docs-cn
+- 健康检查: http://192.168.2.6:8000/health
+- WebSocket: ws://192.168.2.6:8000/api/v1/realtime/ws/{tenant_id}
+
+### 防火墙配置
+
+**Windows（管理员权限）：**
+```powershell
+netsh advfirewall firewall add rule name="owlRD API" dir=in action=allow protocol=TCP localport=8000
+```
+
+**Linux：**
+```bash
+sudo ufw allow 8000/tcp
+sudo ufw reload
+```
+
+### 测试局域网访问
+
+```bash
+# 从其他设备测试
+curl http://192.168.2.6:8000/health
+
+# 或运行测试脚本
+python test_docs.py
+```
+
+## 📚 文档访问说明
+
+本项目提供4种API文档访问方式：
+
+| 端点 | CDN来源 | 推荐场景 | 特点 |
+|------|---------|---------|------|
+| `/docs-local` | 本地文件 | ⭐⭐⭐⭐⭐ 生产/离线 | 完全离线、最稳定、速度快 |
+| `/docs-cn` | 国内CDN | ⭐⭐⭐⭐ 开发/局域网 | 需联网、国内访问快 |
+| `/docs-offline` | FastAPI内置 | ⭐⭐⭐ 备用 | 使用Python包自带资源 |
+| `/docs` | 国外CDN | ⭐⭐ 仅本机 | 局域网可能白屏 |
+
+### 为什么需要本地部署？
+
+**问题：** 局域网设备访问 `/docs` 出现白屏  
+**原因：** Swagger UI默认从国外CDN加载资源，局域网无法访问  
+**解决：** 下载Swagger UI到本地，完全离线可用
+
+### 首次使用
+
+团队成员克隆项目后，需运行一次：
+```bash
+python download_swagger_ui.py
+```
+
+这会自动下载约10MB的Swagger UI静态文件到 `app/static/swagger-ui/`。
+
+## 📁 重要文件说明
+
+```
+backend/
+├── app/
+│   ├── main.py                  # FastAPI应用入口（已挂载静态文件）
+│   ├── config.py                # 配置管理（host=0.0.0.0支持局域网）
+│   ├── api/
+│   │   ├── docs.py              # 国内CDN文档路由
+│   │   ├── docs_local.py        # 本地文件文档路由
+│   │   ├── docs_offline.py      # 离线文档路由
+│   │   └── v1/                  # API路由
+│   ├── static/
+│   │   └── swagger-ui/          # Swagger UI本地文件（不提交到Git）
+│   ├── models/                  # 数据模型
+│   ├── services/                # 业务逻辑
+│   └── data/                    # JSON数据存储
+├── download_swagger_ui.py       # Swagger UI下载脚本
+├── test_docs.py                 # 文档端点测试脚本
+├── init_sample_data.py          # 示例数据初始化
+├── start_server.bat/sh          # 启动脚本
+└── requirements.txt             # Python依赖
+```
+
+## 🧪 测试
+
+### 测试所有文档端点
+
+```bash
+python test_docs.py
+```
+
+预期输出：
+```
+🦉 owlRD API文档端点测试
+==============================================================================
+✅ /                        根路径健康检查                [200]
+✅ /health                  详细健康检查                  [200]
+✅ /docs-local              本地Swagger UI（推荐）        [200]
+...
+测试结果: 8/8 通过
+🎉 所有端点测试通过！
+```
+
+### 运行单元测试
+
+```bash
+pytest
+pytest --cov=app --cov-report=html
+```
+
+## ⚙️ 配置说明
+
+### 环境变量
+
+创建 `.env` 文件（可选）：
+```bash
+cp .env.example .env
+```
+
+主要配置项：
+```bash
+APP_NAME=owlRD Prototype
+DEBUG=True
+HOST=0.0.0.0              # 监听所有网络接口
+PORT=8000
+CORS_ORIGINS=["*"]         # 开发环境允许所有源
+LOG_LEVEL=INFO
+```
+
+### CORS配置
+
+生产环境建议修改 `app/config.py`：
+```python
+cors_origins = [
+    "http://your-frontend-ip:3000",
+    "http://another-allowed-ip:8080"
+]
+```
+
+## 🐛 故障排查
+
+### 问题1: 局域网白屏
+
+**症状：** 局域网设备访问 `/docs` 白屏  
+**原因：** 无法访问国外CDN  
+**解决：** 使用本地版 `/docs-local`
+
+### 问题2: /docs-local 显示404
+
+**原因：** 静态文件未下载  
+**解决：**
+```bash
+python download_swagger_ui.py
+```
+
+### 问题3: 端口被占用
+
+**解决：** 修改端口
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+```
+
+### 问题4: 防火墙阻止
+
+**检查：**
+```bash
+# Windows
+netstat -ano | findstr :8000
+
+# Linux
+ss -tuln | grep :8000
+```
+
+应该看到 `0.0.0.0:8000` 表示监听所有网络接口。
+
+## 📊 项目进度
+
+- ✅ Phase 1: 基础设施搭建（100%）
+- ✅ Phase 2: 数据模型实现（19/19模型，100%）
+- ✅ Phase 3: 本地Swagger UI部署（100%）
+- ⏳ Phase 4-10: 业务逻辑实现（进行中）
+
+**已完成：**
+- 19个完整数据模型
+- 完全匿名化系统
+- SNOMED CT编码
+- TDPv2协议模型
+- 本地API文档部署
+- 局域网访问支持
+
+**代码量：** ~4500行（含注释和文档）
+
+## 🔒 安全建议
+
+### 开发环境
+- ✅ CORS允许所有源
+- ✅ DEBUG模式开启
+- ✅ 详细日志记录
+
+### 生产环境
+- ⚠️ 配置具体CORS源
+- ⚠️ 关闭DEBUG模式
+- ⚠️ 启用HTTPS
+- ⚠️ 添加认证中间件
+- ⚠️ 配置防火墙规则
+- ⚠️ 使用环境变量管理敏感信息
+
+## 📞 支持
+
+- 项目地址: https://github.com/hhtbing-wisefido/owlRD-prototype
+- 源项目: https://github.com/sady37/owlRD
+- 文档问题: 查看 `/docs-local` 获取完整API文档
+
+---
+
+**配置完成！现在可以在局域网内任何设备访问API了！** 🎉
+
+推荐访问: `http://your-ip:8000/docs-local`
