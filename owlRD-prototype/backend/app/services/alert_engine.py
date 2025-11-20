@@ -121,25 +121,119 @@ class AlertEngine:
         channels = alert_record.get("channels", [])
         recipients = alert_record.get("recipients", [])
         alert_level = alert_record.get("alert_level", "INFO")
+        alert_type = alert_record.get("alert_type", "GENERAL")
         message = alert_record.get("message", "")
+        tenant_id = alert_record.get("tenant_id")
         
         # 记录发送日志
         print(f"[AlertEngine] Sending alert via {channels} to {recipients}")
-        print(f"[AlertEngine] Level: {alert_level}, Message: {message}")
+        print(f"[AlertEngine] Level: {alert_level}, Type: {alert_type}, Message: {message}")
         
-        # TODO: 实际发送实现
-        # for channel in channels:
-        #     if channel == "WEB":
-        #         self._send_websocket(recipients, message)
-        #     elif channel == "APP":
-        #         self._send_push_notification(recipients, message)
-        #     elif channel == "PHONE":
-        #         self._make_phone_call(recipients, message)
-        #     elif channel == "EMAIL":
-        #         self._send_email(recipients, message)
+        # 实际发送实现
+        for channel in channels:
+            try:
+                if channel == "WEB":
+                    self._send_websocket(tenant_id, alert_type, alert_level, alert_record)
+                elif channel == "APP":
+                    self._send_push_notification(recipients, alert_level, message)
+                elif channel == "PHONE":
+                    self._make_phone_call(recipients, alert_level, message)
+                elif channel == "EMAIL":
+                    self._send_email(recipients, alert_level, message)
+                else:
+                    print(f"[AlertEngine] Unknown channel: {channel}")
+            except Exception as e:
+                print(f"[AlertEngine] Error sending via {channel}: {e}")
+    
+    def _send_websocket(self, tenant_id: str, alert_type: str, alert_level: str, alert_data: Dict[str, Any]) -> None:
+        """
+        通过WebSocket发送告警
         
-        # 暂时只记录日志
-        pass
+        Args:
+            tenant_id: 租户ID
+            alert_type: 告警类型
+            alert_level: 告警级别
+            alert_data: 告警数据
+        """
+        try:
+            # 导入realtime模块并调用push_alert
+            import asyncio
+            from app.api.v1 import realtime
+            
+            # 创建异步任务推送告警
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(
+                realtime.push_alert(tenant_id, alert_type, alert_level, alert_data)
+            )
+            loop.close()
+            
+            print(f"[AlertEngine] WebSocket alert sent to tenant {tenant_id}")
+        except Exception as e:
+            print(f"[AlertEngine] WebSocket send error: {e}")
+    
+    def _send_push_notification(self, recipients: List[str], alert_level: str, message: str) -> None:
+        """
+        发送移动应用推送通知
+        
+        Args:
+            recipients: 接收者列表
+            alert_level: 告警级别
+            message: 告警消息
+            
+        Note:
+            实际实现需要集成FCM（Firebase Cloud Messaging）或APNs（Apple Push Notification service）
+        """
+        print(f"[AlertEngine] APP Push: {alert_level} to {recipients}")
+        print(f"[AlertEngine] Message: {message}")
+        # 实际实现示例：
+        # from firebase_admin import messaging
+        # notification = messaging.Notification(title=f"Alert - {alert_level}", body=message)
+        # messaging.send(notification, tokens=recipients)
+    
+    def _make_phone_call(self, recipients: List[str], alert_level: str, message: str) -> None:
+        """
+        拨打电话告警
+        
+        Args:
+            recipients: 接收者电话号码列表
+            alert_level: 告警级别
+            message: 告警消息
+            
+        Note:
+            实际实现需要集成Twilio或类似的电话服务
+        """
+        print(f"[AlertEngine] Phone Call: {alert_level} to {recipients}")
+        print(f"[AlertEngine] Message: {message}")
+        # 实际实现示例：
+        # from twilio.rest import Client
+        # client = Client(account_sid, auth_token)
+        # for phone in recipients:
+        #     call = client.calls.create(to=phone, from_=from_phone, twiml=f"<Response><Say>{message}</Say></Response>")
+    
+    def _send_email(self, recipients: List[str], alert_level: str, message: str) -> None:
+        """
+        发送邮件告警
+        
+        Args:
+            recipients: 接收者邮箱列表
+            alert_level: 告警级别
+            message: 告警消息
+            
+        Note:
+            实际实现需要配置SMTP服务器
+        """
+        print(f"[AlertEngine] Email: {alert_level} to {recipients}")
+        print(f"[AlertEngine] Message: {message}")
+        # 实际实现示例：
+        # import smtplib
+        # from email.mime.text import MIMEText
+        # msg = MIMEText(message)
+        # msg['Subject'] = f'Alert - {alert_level}'
+        # msg['From'] = from_email
+        # msg['To'] = ', '.join(recipients)
+        # with smtplib.SMTP(smtp_server, smtp_port) as server:
+        #     server.send_message(msg)
 
 
 def get_alert_engine() -> AlertEngine:

@@ -315,14 +315,98 @@ class TDPProcessor:
             TDP事件对象，解析失败返回None
             
         Note:
-            这是存根实现，实际需要导入生成的Protobuf类
+            需要先生成Protobuf类文件：
+            protoc --python_out=. tdp.proto
         """
-        # TODO: 实现真实的Protobuf解析
-        # from app.proto import tdp_pb2
-        # message = tdp_pb2.EventDatagram()
-        # message.ParseFromString(raw_data)
-        # return self._convert_protobuf_to_tdp_event(message)
-        return None
+        try:
+            # 尝试导入生成的Protobuf类
+            # 如果未生成，将使用备用的JSON解析
+            try:
+                from app.proto import tdp_pb2
+                
+                # 解析Protobuf消息
+                message = tdp_pb2.EventDatagram()
+                message.ParseFromString(raw_data)
+                
+                # 转换为TDPEvent对象
+                return self._convert_protobuf_to_tdp_event(message)
+                
+            except ImportError:
+                # Protobuf类未生成，尝试将bytes当作JSON处理
+                print("[TDPProcessor] Protobuf classes not found, attempting JSON fallback")
+                try:
+                    import json
+                    json_data = json.loads(raw_data.decode('utf-8'))
+                    return self.parse_json(json_data)
+                except Exception as json_error:
+                    print(f"[TDPProcessor] JSON fallback failed: {json_error}")
+                    return None
+                    
+        except Exception as e:
+            print(f"[TDPProcessor] Protobuf parsing error: {e}")
+            return None
+    
+    def _convert_protobuf_to_tdp_event(self, proto_message) -> TDPEvent:
+        """
+        将Protobuf消息转换为TDPEvent对象
+        
+        Args:
+            proto_message: Protobuf EventDatagram消息
+            
+        Returns:
+            TDP事件对象
+        """
+        # 解析时间戳
+        timestamp = TDPTimestamp(
+            iso_timestamp=proto_message.timestamp.iso_timestamp,
+            unix_timestamp=proto_message.timestamp.unix_timestamp
+        )
+        
+        # 解析Person Matrix
+        person_matrix = []
+        for person in proto_message.person_matrix:
+            person_entry = TDPPersonEntry(
+                person_id=person.person_id,
+                matrix_id=person.matrix_id,
+                location_x=person.location_x,
+                location_y=person.location_y,
+                zone_index=person.zone_index,
+                heart_rate=person.heart_rate if person.HasField('heart_rate') else None,
+                respiration_rate=person.respiration_rate if person.HasField('respiration_rate') else None,
+                motion_intensity=person.motion_intensity if person.HasField('motion_intensity') else None,
+                presence_confidence=person.presence_confidence,
+                posture=person.posture if person.HasField('posture') else None,
+                fall_detected=person.fall_detected,
+                metadata=dict(person.metadata) if person.metadata else {}
+            )
+            person_matrix.append(person_entry)
+        
+        # 解析Object Matrix
+        object_matrix = []
+        for obj in proto_message.object_matrix:
+            object_entry = TDPObjectEntry(
+                object_id=obj.object_id,
+                matrix_id=obj.matrix_id,
+                location_x=obj.location_x,
+                location_y=obj.location_y,
+                zone_index=obj.zone_index,
+                object_type=obj.object_type,
+                motion_detected=obj.motion_detected,
+                metadata=dict(obj.metadata) if obj.metadata else {}
+            )
+            object_matrix.append(object_entry)
+        
+        # 创建TDPEvent对象
+        tdp_event = TDPEvent(
+            device_id=UUID(proto_message.device_id),
+            tenant_id=UUID(proto_message.tenant_id),
+            timestamp=timestamp,
+            person_matrix=person_matrix,
+            object_matrix=object_matrix,
+            metadata=dict(proto_message.metadata) if proto_message.metadata else {}
+        )
+        
+        return tdp_event
 
 
 # 全局单例

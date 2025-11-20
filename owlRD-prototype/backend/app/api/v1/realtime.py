@@ -67,6 +67,22 @@ class ConnectionManager:
         self.resident_subscriptions[resident_id].add(websocket)
         logger.info(f"Subscribed to resident: {resident_id}")
     
+    def unsubscribe_device(self, websocket: WebSocket, device_id: str):
+        """取消订阅设备数据"""
+        if device_id in self.device_subscriptions:
+            self.device_subscriptions[device_id].discard(websocket)
+            if not self.device_subscriptions[device_id]:
+                del self.device_subscriptions[device_id]
+            logger.info(f"Unsubscribed from device: {device_id}")
+    
+    def unsubscribe_resident(self, websocket: WebSocket, resident_id: str):
+        """取消订阅住户数据"""
+        if resident_id in self.resident_subscriptions:
+            self.resident_subscriptions[resident_id].discard(websocket)
+            if not self.resident_subscriptions[resident_id]:
+                del self.resident_subscriptions[resident_id]
+            logger.info(f"Unsubscribed from resident: {resident_id}")
+    
     async def broadcast_to_tenant(self, tenant_id: str, message: dict):
         """向租户的所有连接广播消息"""
         if tenant_id not in self.active_connections:
@@ -218,8 +234,24 @@ async def websocket_endpoint(
             
             # 处理取消订阅
             elif data.get("action") == "unsubscribe":
-                # TODO: 实现取消订阅逻辑
-                pass
+                unsub_type = data.get("type")
+                unsub_id = data.get("id")
+                
+                if unsub_type == "device" and unsub_id:
+                    manager.unsubscribe_device(websocket, unsub_id)
+                    await websocket.send_json({
+                        "type": "unsubscribed",
+                        "subscription_type": "device",
+                        "id": unsub_id
+                    })
+                
+                elif unsub_type == "resident" and unsub_id:
+                    manager.unsubscribe_resident(websocket, unsub_id)
+                    await websocket.send_json({
+                        "type": "unsubscribed",
+                        "subscription_type": "resident",
+                        "id": unsub_id
+                    })
             
             # 处理ping
             elif data.get("action") == "ping":
