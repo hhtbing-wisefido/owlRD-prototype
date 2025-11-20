@@ -36,5 +36,43 @@
     ],
     "is_active": true,
     "created_at": "2025-11-20T16:27:42.277455"
+  },
+  {
+    "tenant_id": "10000000-0000-0000-0000-000000000001",
+    "tenant_name": "示例养老院",
+    "tenant_code": "DEMO001",
+    "contact_email": "admin@demo-facility.com",
+    "contact_phone": "+86-138-0000-0001",
+    "address": "北京市朝阳区示例路123号",
+    "license_type": "ENTERPRISE",
+    "max_users": 100,
+    "max_residents": 200,
+    "features_enabled": [
+      "IOT",
+      "ALERTS",
+      "CARE_QUALITY",
+      "CARDS"
+    ],
+    "is_active": true,
+    "created_at": "2025-11-20T18:56:43.732965"
+  },
+  {
+    "tenant_id": "10000000-0000-0000-0000-000000000001",
+    "tenant_name": "示例养老院",
+    "tenant_code": "DEMO001",
+    "contact_email": "admin@demo-facility.com",
+    "contact_phone": "+86-138-0000-0001",
+    "address": "北京市朝阳区示例路123号",
+    "license_type": "ENTERPRISE",
+    "max_users": 100,
+    "max_residents": 200,
+    "features_enabled": [
+      "IOT",
+      "ALERTS",
+      "CARE_QUALITY",
+      "CARDS"
+    ],
+    "is_active": true,
+    "created_at": "2025-11-20T19:00:30.754100"
   }
 ]

@@ -17,13 +17,13 @@ T = TypeVar('T', bound=BaseModel)
 class StorageService(Generic[T]):
     """JSON文件存储服务（泛型）"""
     
-    def __init__(self, data_dir: str = "app/data", collection: str = "default"):
+    def __init__(self, collection: str = "default", data_dir: str = "app/data"):
         """
         初始化存储服务
         
         Args:
-            data_dir: 数据目录路径
             collection: 集合名称
+            data_dir: 数据目录路径
         """
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
