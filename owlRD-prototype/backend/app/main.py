@@ -125,12 +125,13 @@ async def global_exception_handler(request, exc):
 # 启动事件
 @app.on_event("startup")
 async def startup_event():
+    """应用启动事件"""
     logger.info(f"Starting {settings.app_name} v{settings.app_version}")
     logger.info(f"Debug mode: {settings.debug}")
     logger.info(f"Data directory: {settings.data_dir}")
-    # 初始化数据存储
+    # 初始化存储目录
     from app.services.storage import init_storage
-    await init_storage()
+    init_storage()
     logger.success("Application started successfully")
 
 
