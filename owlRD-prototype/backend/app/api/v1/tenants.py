@@ -1,46 +1,86 @@
 """
-租户管理API
+租户管理API - 完整CRUD实现
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query
 from typing import List
 from uuid import UUID
+from loguru import logger
 
 from app.models.tenant import Tenant, TenantCreate, TenantUpdate
+from app.services.storage import StorageService
 
 router = APIRouter()
+tenant_storage = StorageService[Tenant]("tenants")
 
 
-@router.get("/", response_model=List[Tenant])
-async def list_tenants():
-    """获取租户列表"""
-    # TODO: 从存储服务获取
-    return []
+@router.get("/", response_model=List[Tenant], summary="获取租户列表")
+async def list_tenants(
+    limit: int = Query(100, ge=1, le=1000, description="返回数量限制")
+):
+    """获取所有租户列表"""
+    try:
+        tenants = await tenant_storage.find_all(lambda _: True)
+        return tenants[:limit]
+    except Exception as e:
+        logger.error(f"Error listing tenants: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/", response_model=Tenant, status_code=status.HTTP_201_CREATED)
-async def create_tenant(tenant: TenantCreate):
-    """创建租户"""
-    # TODO: 实现创建逻辑
-    raise HTTPException(status_code=501, detail="Not implemented yet")
-
-
-@router.get("/{tenant_id}", response_model=Tenant)
+@router.get("/{tenant_id}", response_model=Tenant, summary="获取租户详情")
 async def get_tenant(tenant_id: UUID):
-    """获取租户详情"""
-    # TODO: 实现获取逻辑
-    raise HTTPException(status_code=404, detail="Tenant not found")
+    """获取单个租户详情"""
+    try:
+        tenant = await tenant_storage.get(tenant_id)
+        if not tenant:
+            raise HTTPException(status_code=404, detail="Tenant not found")
+        return tenant
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting tenant: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/{tenant_id}", response_model=Tenant)
+@router.post("/", response_model=Tenant, status_code=201, summary="创建租户")
+async def create_tenant(tenant: TenantCreate):
+    """创建新租户"""
+    try:
+        result = await tenant_storage.create(tenant)
+        logger.info(f"Created tenant: {result.get('tenant_id')}")
+        return result
+    except Exception as e:
+        logger.error(f"Error creating tenant: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/{tenant_id}", response_model=Tenant, summary="更新租户")
 async def update_tenant(tenant_id: UUID, tenant: TenantUpdate):
-    """更新租户"""
-    # TODO: 实现更新逻辑
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+    """更新租户信息"""
+    try:
+        result = await tenant_storage.update(tenant_id, tenant.model_dump(exclude_unset=True))
+        if not result:
+            raise HTTPException(status_code=404, detail="Tenant not found")
+        logger.info(f"Updated tenant: {tenant_id}")
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating tenant: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{tenant_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{tenant_id}", summary="删除租户")
 async def delete_tenant(tenant_id: UUID):
     """删除租户"""
-    # TODO: 实现删除逻辑
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+    try:
+        success = await tenant_storage.delete(tenant_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Tenant not found")
+        logger.info(f"Deleted tenant: {tenant_id}")
+        return {"status": "success", "tenant_id": str(tenant_id)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting tenant: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
