@@ -1,0 +1,40 @@
+[
+  {
+    "user_id": "20000000-0000-0000-0000-000000000001",
+    "tenant_id": "10000000-0000-0000-0000-000000000001",
+    "username": "admin",
+    "full_name": "管理员",
+    "email": "admin@demo.com",
+    "phone": "+86-138-0000-0001",
+    "role": "ADMIN",
+    "department": "管理部",
+    "is_active": true,
+    "created_at": "2025-11-20T16:27:42.280104"
+  },
+  {
+    "user_id": "a8caa43d-e9b3-40da-8380-d02589196d63",
+    "tenant_id": "10000000-0000-0000-0000-000000000001",
+    "username": "nurse01",
+    "full_name": "护士张三",
+    "email": "nurse01@demo.com",
+    "phone": "+86-138-0000-0002",
+    "role": "NURSE",
+    "department": "护理部",
+    "nurse_group_tag": "A组",
+    "is_active": true,
+    "created_at": "2025-11-20T16:27:42.280200"
+  },
+  {
+    "user_id": "0a618601-146a-45d3-b80c-48c102c2cf22",
+    "tenant_id": "10000000-0000-0000-0000-000000000001",
+    "username": "nurse02",
+    "full_name": "护士李四",
+    "email": "nurse02@demo.com",
+    "phone": "+86-138-0000-0003",
+    "role": "NURSE",
+    "department": "护理部",
+    "nurse_group_tag": "A组",
+    "is_active": true,
+    "created_at": "2025-11-20T16:27:42.280232"
+  }
+]

@@ -46,7 +46,7 @@ async def init_tenants():
         "created_at": datetime.now().isoformat()
     }
     
-    await storage.create(tenant)
+    storage.create(tenant)
     print(f"✅ Created tenant: {tenant['tenant_name']}")
 
 
@@ -97,7 +97,7 @@ async def init_users():
     ]
     
     for user in users:
-        await storage.create(user)
+        storage.create(user)
         print(f"✅ Created user: {user['full_name']}")
 
 
@@ -120,7 +120,7 @@ async def init_locations():
         "alert_user_ids": [SAMPLE_USER_ID],
         "created_at": datetime.now().isoformat()
     }
-    await location_storage.create(location)
+    location_storage.create(location)
     print(f"✅ Created location: {location['location_name']}")
     
     # 创建房间
@@ -134,7 +134,7 @@ async def init_locations():
         "max_beds": 2,
         "created_at": datetime.now().isoformat()
     }
-    await room_storage.create(room)
+    room_storage.create(room)
     print(f"✅ Created room: {room['room_name']}")
     
     # 创建床位
@@ -149,7 +149,7 @@ async def init_locations():
         "resident_id": SAMPLE_RESIDENT_ID,
         "created_at": datetime.now().isoformat()
     }
-    await bed_storage.create(bed)
+    bed_storage.create(bed)
     print(f"✅ Created bed: {bed['bed_name']}")
 
 
@@ -195,7 +195,7 @@ async def init_residents():
     ]
     
     for resident in residents:
-        await storage.create(resident)
+        storage.create(resident)
         print(f"✅ Created resident: {resident['last_name']}")
 
 
@@ -244,7 +244,7 @@ async def init_devices():
     ]
     
     for device in devices:
-        await storage.create(device)
+        storage.create(device)
         print(f"✅ Created device: {device['device_name']}")
 
 
@@ -278,7 +278,7 @@ async def init_iot_data():
             "data_source": "TDP",
             "created_at": timestamp.isoformat()
         }
-        await storage.create(iot_data)
+        storage.create(iot_data)
         count += 1
     
     # 生成一条告警数据
@@ -301,7 +301,7 @@ async def init_iot_data():
         "data_source": "TDP",
         "created_at": (now - timedelta(hours=2)).isoformat()
     }
-    await storage.create(alert_data)
+    storage.create(alert_data)
     count += 1
     
     print(f"✅ Created {count} IoT data records")
@@ -341,7 +341,7 @@ async def init_cards():
     ]
     
     for card in cards:
-        await storage.create(card)
+        storage.create(card)
         print(f"✅ Created card: {card['card_name']}")
 
 

@@ -1,0 +1,15 @@
+[
+  {
+    "location_id": "30000000-0000-0000-0000-000000000001",
+    "tenant_id": "10000000-0000-0000-0000-000000000001",
+    "location_name": "A楼",
+    "location_type": "BUILDING",
+    "door_number": "A",
+    "floor": 1,
+    "is_public_space": false,
+    "alert_user_ids": [
+      "20000000-0000-0000-0000-000000000001"
+    ],
+    "created_at": "2025-11-20T16:27:42.285054"
+  }
+]
