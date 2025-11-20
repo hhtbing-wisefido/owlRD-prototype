@@ -175,10 +175,10 @@ owlRD是一个**专业级智慧养老IoT监测系统**，为老年护理机构�
 ## 📂 项目结构
 
 ```
-owlRD-原型项目/
+owlRD-原型项目/                        ← 主项目目录 = Git仓库根目录
 ├── owdRD_github_clone_源参考文件/     # GitHub源代码（参考）
 ├── 项目聊天记录/                      # 开发过程记录
-├── owlRD-prototype/                  # 主项目目录
+├── owlRD-prototype/                  # 代码子目录
 │   ├── backend/                      # Python后端
 │   │   ├── app/
 │   │   │   ├── main.py              # FastAPI入口
