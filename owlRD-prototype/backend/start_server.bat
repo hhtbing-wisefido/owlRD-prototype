@@ -14,11 +14,11 @@ echo Starting server...
 echo Server will be accessible at:
 echo   - http://localhost:8000
 echo   - http://127.0.0.1:8000
-echo   - http://YOUR_IP:8000 (局域网)
+echo   - http://192.168.2.6:8000 (局域网)
 echo.
 echo API Documentation:
-echo   - Swagger UI: http://localhost:8000/docs
-echo   - ReDoc: http://localhost:8000/redoc
+echo   - Swagger UI: http://192.168.2.6:8000/docs
+echo   - ReDoc: http://192.168.2.6:8000/redoc
 echo.
 echo Press Ctrl+C to stop the server
 echo.
