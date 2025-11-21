@@ -18,7 +18,7 @@ from app.api.v1 import (
     residents, resident_contacts, resident_caregivers, resident_phi,
     devices,
     iot_data, alerts, alert_policies,
-    cards,
+    cards, card_functions,
     care_quality,
     config_versions, mappings
 )
@@ -122,6 +122,7 @@ app.include_router(alert_policies.router, prefix="/api/v1/alert_policies", tags=
 app.include_router(config_versions.router, prefix="/api/v1/config_versions", tags=["Config Versions"])
 app.include_router(mappings.router, prefix="/api/v1/mappings", tags=["Mappings"])
 app.include_router(cards.router, prefix="/api/v1/cards", tags=["Cards"])
+app.include_router(card_functions.router, prefix="/api/v1/card_functions", tags=["Card Functions"])
 app.include_router(care_quality.router, prefix="/api/v1/care-quality", tags=["Care Quality"])
 app.include_router(iot_data.router, prefix="/api/v1/iot-data", tags=["IoT Data"])
 app.include_router(realtime.router, prefix="/api/v1/realtime", tags=["Realtime"])
