@@ -145,6 +145,46 @@ export interface Card {
   created_at: string
 }
 
+// Location types
+export interface Location {
+  location_id: string
+  tenant_id: string
+  location_name: string
+  address?: string
+  is_public_space: boolean
+  is_multi_person_room: boolean
+  alert_user_ids?: string[]
+  alert_tags?: string[]
+  metadata?: any
+  created_at: string
+}
+
+// Room types
+export interface Room {
+  room_id: string
+  tenant_id: string
+  location_id: string
+  room_number: string
+  room_type?: string
+  capacity?: number
+  floor?: number
+  is_occupied: boolean
+  metadata?: any
+  created_at: string
+}
+
+// Bed types
+export interface Bed {
+  bed_id: string
+  tenant_id: string
+  room_id: string
+  bed_number: string
+  resident_id?: string
+  is_occupied: boolean
+  metadata?: any
+  created_at: string
+}
+
 // Care Quality types
 export interface CareQualityMetrics {
   tenant_id: string
