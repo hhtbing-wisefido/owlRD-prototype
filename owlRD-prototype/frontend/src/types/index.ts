@@ -200,14 +200,28 @@ export interface Card {
 export interface Location {
   location_id: string
   tenant_id: string
-  location_name: string
-  address?: string
-  is_public_space: boolean
-  is_multi_person_room: boolean
-  alert_user_ids?: string[]
-  alert_tags?: string[]
-  metadata?: any
+  // 位置标签和名称
+  location_tag?: string  // 位置标签（如 'A院区主楼'、'Spring区域组SP'）
+  location_name: string  // 位置名称（如 'E203'、'201'、'Home-001'）
+  // Institutional场景地址字段
+  building?: string  // 楼栋（如 'Building A'、'主楼'）
+  floor?: string  // 楼层（如 '1F'、'2F'）
+  area_id?: string  // 区域ID（如 'Area A'、'Memory Care Unit'）
+  door_number: string  // 门牌号/房间号（如 '201'、'E203'）
+  // 布局和场景
+  layout_config?: Record<string, any>  // 房间布局配置（vue_radar canvasData格式）
+  location_type: string  // 场景类型：Institutional / HomeCare
+  primary_resident_id?: string  // 主要关联住户ID
+  // 空间属性
+  is_public_space: boolean  // 是否为公共空间（大厅、走廊等）
+  is_multi_person_room: boolean  // 是否多人房间
+  // 路由和状态
+  timezone: string  // IANA时区格式（如 'America/Los_Angeles'）
+  alert_user_ids?: string[]  // 警报接收者用户ID列表
+  alert_tags?: string[]  // 警报接收者标签组
+  is_active: boolean  // 是否启用监控
   created_at: string
+  updated_at: string
 }
 
 // Room types
@@ -215,25 +229,27 @@ export interface Room {
   room_id: string
   tenant_id: string
   location_id: string
-  room_number: string
-  room_type?: string
-  capacity?: number
-  floor?: number
-  is_occupied: boolean
-  metadata?: any
+  is_default: boolean  // 是否默认房间（创建Location时自动生成）
+  room_name: string  // 房间名称（如 'Bedroom'、'Bathroom'）
+  is_active: boolean  // 是否启用
+  layout_config?: Record<string, any>  // 房间级独立布局配置
   created_at: string
+  updated_at: string
 }
 
 // Bed types
 export interface Bed {
   bed_id: string
   tenant_id: string
+  location_id: string
   room_id: string
-  bed_number: string
-  resident_id?: string
-  is_occupied: boolean
-  metadata?: any
+  bed_name: string  // 床位名称（如 'A'、'B'、'Bed1'）
+  bed_type: string  // 床位类型：ActiveBed / NonActiveBed
+  mattress_material?: string  // 床垫材质/类型
+  mattress_thickness?: string  // 床垫厚度（如 '< 7in'、'7-10in'）
+  resident_id?: string  // 绑定的住户ID
   created_at: string
+  updated_at: string
 }
 
 // Care Quality types
