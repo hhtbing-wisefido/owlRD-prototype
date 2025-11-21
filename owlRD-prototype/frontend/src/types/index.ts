@@ -93,6 +93,72 @@ export interface User {
   updated_at: string
 }
 
+// Resident PHI types
+export interface ResidentPHI {
+  phi_id: string
+  resident_id: string
+  tenant_id: string
+  encrypted_medical_history?: string
+  encrypted_medications?: string
+  encrypted_allergies?: string
+  encrypted_conditions?: string
+  encrypted_notes?: string
+  encryption_method?: string
+  last_updated_by?: string
+  created_at: string
+  updated_at: string
+}
+
+// Config Version types
+export interface ConfigVersion {
+  version_id: string
+  tenant_id: string
+  config_type: string
+  entity_id?: string
+  current_entity_id?: string
+  config_data: Record<string, any>
+  valid_from: string
+  valid_to?: string | null
+  is_active: boolean
+  created_by?: string
+  metadata?: Record<string, any>
+  created_at: string
+  updated_at: string
+}
+
+// Posture Mapping types
+export interface PostureMapping {
+  mapping_id: string
+  tenant_id: string
+  raw_posture: string
+  snomed_code?: string
+  snomed_display?: string
+  loinc_code?: string
+  loinc_display?: string
+  risk_level?: string
+  description?: string
+  metadata?: Record<string, any>
+  created_at: string
+  updated_at: string
+}
+
+// Event Mapping types
+export interface EventMapping {
+  mapping_id: string
+  tenant_id: string
+  event_type: string
+  event_subtype?: string
+  snomed_code?: string
+  snomed_display?: string
+  loinc_code?: string
+  loinc_display?: string
+  severity?: string
+  description?: string
+  metadata?: Record<string, any>
+  created_at: string
+  updated_at: string
+}
+
 // Resident types
 export interface Resident {
   resident_id: string
