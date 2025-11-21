@@ -257,26 +257,63 @@ owlRD-原型项目/                        ← 主项目目录 = Git仓库根目
 - Python 3.11+
 - Node.js 18+
 - npm/yarn
+- 端口8000和3000未被占用
 
 ### 安装与运行
 
 #### 1. 后端启动
 ```bash
 cd owlRD-prototype/backend
+
+# 安装依赖
 pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+
+# 首次运行：下载Swagger UI（用于局域网访问）
+python download_swagger_ui.py
+
+# 启动服务（支持局域网访问）
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-访问 http://localhost:8000/docs 查看API文档
+**访问地址**:
+- 本机: http://localhost:8000/docs-local
+- 局域网: http://192.168.2.6:8000/docs-local
 
-#### 2. 前端启动
+#### 2. 初始化示例数据
+```bash
+cd owlRD-prototype/backend
+python init_sample_data.py
+```
+
+#### 3. 前端启动
 ```bash
 cd owlRD-prototype/frontend
+
+# 安装依赖（首次）
 npm install
+
+# 启动开发服务器（支持局域网访问）
 npm run dev
 ```
 
-访问 http://localhost:3000
+**访问地址**:
+- 本机: http://localhost:3000
+- 局域网: http://192.168.2.6:3000
+
+### 常见问题
+
+**端口被占用**:
+```bash
+# Windows - 查找并结束进程
+netstat -ano | findstr :8000
+taskkill /PID <进程ID> /F
+```
+
+**没有数据显示**: 运行 `python init_sample_data.py` 初始化数据
+
+**局域网白屏**: 使用本地Swagger `/docs-local` 而不是 `/docs`
+
+**详细配置**: 查看 [局域网访问指南](项目记录/4-部署运维/局域网访问指南.md)
 
 ---
 
