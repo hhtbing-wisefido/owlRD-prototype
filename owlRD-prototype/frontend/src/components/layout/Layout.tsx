@@ -2,6 +2,9 @@ import { Outlet, Link, useLocation } from 'react-router-dom'
 import { 
   LayoutDashboard, 
   Users, 
+  UserCircle,
+  Shield,
+  MapPin,
   Radio, 
   AlertTriangle, 
   Activity 
@@ -9,6 +12,9 @@ import {
 
 const navigation = [
   { name: '仪表板', href: '/dashboard', icon: LayoutDashboard },
+  { name: '用户管理', href: '/users', icon: UserCircle },
+  { name: '角色管理', href: '/roles', icon: Shield },
+  { name: '位置管理', href: '/locations', icon: MapPin },
   { name: '住户管理', href: '/residents', icon: Users },
   { name: '设备管理', href: '/devices', icon: Radio },
   { name: '告警中心', href: '/alerts', icon: AlertTriangle },

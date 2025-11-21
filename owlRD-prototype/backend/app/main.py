@@ -19,7 +19,8 @@ from app.api.v1 import (
     devices,
     iot_data, alerts, alert_policies,
     cards,
-    care_quality
+    care_quality,
+    config_versions, mappings
 )
 from app.api import docs, docs_offline, docs_local
 
@@ -118,6 +119,8 @@ app.include_router(resident_caregivers.router, prefix="/api/v1", tags=["Resident
 app.include_router(devices.router, prefix="/api/v1/devices", tags=["Devices"])
 app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["Alerts"])
 app.include_router(alert_policies.router, prefix="/api/v1/alert_policies", tags=["Alert Policies"])
+app.include_router(config_versions.router, prefix="/api/v1/config_versions", tags=["Config Versions"])
+app.include_router(mappings.router, prefix="/api/v1/mappings", tags=["Mappings"])
 app.include_router(cards.router, prefix="/api/v1/cards", tags=["Cards"])
 app.include_router(care_quality.router, prefix="/api/v1/care-quality", tags=["Care Quality"])
 app.include_router(iot_data.router, prefix="/api/v1/iot-data", tags=["IoT Data"])
