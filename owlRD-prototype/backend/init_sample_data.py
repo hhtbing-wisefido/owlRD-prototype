@@ -18,11 +18,11 @@
 """
 
 import asyncio
-from uuid import UUID, uuid4
-from datetime import datetime, timedelta, date
-import random
+import uuid
+from uuid import uuid4
+from datetime import datetime, timedelta
 import hashlib
-
+import random
 from app.services.storage import StorageService
 
 
