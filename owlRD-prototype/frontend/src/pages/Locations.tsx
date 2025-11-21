@@ -1,5 +1,8 @@
-import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { MapPin, Building2, Home, Plus, Edit2, Trash2, Users } from 'lucide-react'
+import { API_CONFIG, API_ENDPOINTS } from '../config/api'
+import LocationModal from '../components/modals/LocationModal'
 
 interface Location {
   location_id: string
@@ -20,17 +23,89 @@ interface Location {
   updated_at: string
 }
 
-const TENANT_ID = '10000000-0000-0000-0000-000000000001'
-
 export default function Locations() {
+  const queryClient = useQueryClient()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedLocation, setSelectedLocation] = useState<Location | undefined>()
+
   const { data: locations, isLoading } = useQuery({
-    queryKey: ['locations', TENANT_ID],
+    queryKey: ['locations', API_CONFIG.DEFAULT_TENANT_ID],
     queryFn: async () => {
-      const response = await fetch(`http://localhost:8000/api/v1/locations?tenant_id=${TENANT_ID}`)
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.LOCATIONS}?tenant_id=${API_CONFIG.DEFAULT_TENANT_ID}`)
       if (!response.ok) throw new Error('Failed to fetch locations')
       return response.json() as Promise<Location[]>
     }
   })
+
+  const createMutation = useMutation({
+    mutationFn: async (locationData: Partial<Location>) => {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.LOCATIONS}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(locationData)
+      })
+      if (!response.ok) throw new Error('Failed to create location')
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['locations'] })
+      setIsModalOpen(false)
+      setSelectedLocation(undefined)
+    }
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Location> }) => {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.LOCATIONS}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      if (!response.ok) throw new Error('Failed to update location')
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['locations'] })
+      setIsModalOpen(false)
+      setSelectedLocation(undefined)
+    }
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async (locationId: string) => {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.LOCATIONS}/${locationId}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) throw new Error('Failed to delete location')
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['locations'] })
+    }
+  })
+
+  const handleCreate = () => {
+    setSelectedLocation(undefined)
+    setIsModalOpen(true)
+  }
+
+  const handleEdit = (location: Location) => {
+    setSelectedLocation(location)
+    setIsModalOpen(true)
+  }
+
+  const handleDelete = async (locationId: string) => {
+    if (window.confirm('确定要删除这个位置吗？')) {
+      deleteMutation.mutate(locationId)
+    }
+  }
+
+  const handleSave = (locationData: Partial<Location>) => {
+    if (selectedLocation) {
+      updateMutation.mutate({ id: selectedLocation.location_id, data: locationData })
+    } else {
+      createMutation.mutate(locationData)
+    }
+  }
 
   const getLocationTypeIcon = (type: string) => {
     return type === 'HomeCare' ? Home : Building2
@@ -68,7 +143,7 @@ export default function Locations() {
           </h1>
           <p className="text-gray-600 mt-2">管理机构房间和居家护理位置</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+        <button onClick={handleCreate} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
           <Plus className="w-5 h-5" />
           添加位置
         </button>
@@ -112,10 +187,10 @@ export default function Locations() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="p-2 text-gray-400 hover:text-blue-600 transition">
+                  <button onClick={() => handleEdit(location)} className="p-2 text-gray-400 hover:text-blue-600 transition" title="编辑">
                     <Edit2 className="w-4 h-4" />
                   </button>
-                  <button className="p-2 text-gray-400 hover:text-red-600 transition">
+                  <button onClick={() => handleDelete(location.location_id)} className="p-2 text-gray-400 hover:text-red-600 transition" title="删除">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -190,11 +265,23 @@ export default function Locations() {
         <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
           <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 mb-4">暂无位置数据</p>
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+          <button onClick={handleCreate} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
             创建第一个位置
           </button>
         </div>
       )}
+
+      {/* Location Modal */}
+      <LocationModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setSelectedLocation(undefined)
+        }}
+        onSave={handleSave}
+        location={selectedLocation}
+        tenantId={API_CONFIG.DEFAULT_TENANT_ID}
+      />
     </div>
   )
 }

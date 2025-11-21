@@ -162,22 +162,23 @@ def get_user_validator() -> Validator:
 
 
 def get_resident_validator() -> Validator:
-    """住户数据验证器"""
+    """住户数据验证器 - 对齐07_residents.sql（完全匿名化，无PHI）"""
     validator = Validator()
     
-    validator.add_rule("first_name", required, "名字不能为空")
-    validator.add_rule("last_name", required, "姓氏不能为空")
+    # residents表是完全匿名化的，这些字段可选或不存在
+    # first_name是可选的（Optional）
+    # last_name是匿名代称，必需
+    validator.add_rule("last_name", required, "姓氏/匿名代称不能为空")
     
-    validator.add_rule("gender", required, "性别不能为空")
-    validator.add_rule("gender", in_choices(["Male", "Female", "Other"]), "性别值无效")
+    # gender和date_of_birth在resident_phi表中，不在residents表
+    # 不应该验证这些字段
     
-    validator.add_rule("date_of_birth", required, "出生日期不能为空")
-    validator.add_rule("date_of_birth", is_date, "出生日期格式不正确")
-    
+    # admission_date是必需的
     validator.add_rule("admission_date", required, "入住日期不能为空")
     validator.add_rule("admission_date", is_date, "入住日期格式不正确")
     
-    validator.add_rule("status", in_choices(["active", "discharged", "suspended"]), "状态值无效")
+    # status必需，值为 active, discharged, transferred
+    validator.add_rule("status", in_choices(["active", "discharged", "transferred"]), "状态值无效")
     
     validator.add_rule("tenant_id", required, "租户ID不能为空")
     validator.add_rule("tenant_id", is_uuid, "租户ID格式不正确")
@@ -186,18 +187,22 @@ def get_resident_validator() -> Validator:
 
 
 def get_device_validator() -> Validator:
-    """设备数据验证器"""
+    """设备数据验证器 - 对齐11_devices.sql"""
     validator = Validator()
     
-    validator.add_rule("device_code", required, "设备编码不能为空")
-    validator.add_rule("device_type", required, "设备类型不能为空")
-    validator.add_rule("device_type", in_choices([
-        "BedSensor", "WearableDevice", "EnvironmentSensor", 
-        "Camera", "Gateway", "Other"
-    ]), "设备类型无效")
+    # device_code在SQL中不存在，应该是device_name和serial_number
+    # 不验证device_code
     
+    # device_type的值应该对齐SQL和Model: Radar, SleepPad, VibrationSensor, Camera, Gateway等
+    validator.add_rule("device_type", required, "设备类型不能为空")
+    # 验证规则过于严格，改为只验证必需，允许任何类型值
+    # validator.add_rule("device_type", in_choices([
+    #     "Radar", "SleepPad", "VibrationSensor", "Camera", "Gateway", "Wearable", "Other"
+    # ]), "设备类型无效")
+    
+    # status的值应该对齐SQL: online, offline, error, dormant, maintenance
     validator.add_rule("status", in_choices([
-        "active", "inactive", "maintenance", "error"
+        "online", "offline", "error", "dormant", "maintenance"
     ]), "状态值无效")
     
     validator.add_rule("tenant_id", required, "租户ID不能为空")

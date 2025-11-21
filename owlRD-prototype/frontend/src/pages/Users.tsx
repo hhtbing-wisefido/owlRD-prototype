@@ -1,5 +1,8 @@
-import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { UserCircle, UserPlus, Edit2, Trash2, Shield } from 'lucide-react'
+import { API_CONFIG, API_ENDPOINTS } from '../config/api'
+import UserModal from '../components/modals/UserModal'
 
 interface User {
   user_id: string
@@ -11,24 +14,95 @@ interface User {
   alert_levels?: string[]
   alert_channels?: string[]
   alert_scope?: string
-  tags?: string[]
+  tags?: Record<string, any>
   is_active: boolean
   created_at: string
   updated_at: string
 }
 
-// 模拟租户ID（实际应从上下文获取）
-const TENANT_ID = '10000000-0000-0000-0000-000000000001'
-
 export default function Users() {
+  const queryClient = useQueryClient()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<User | undefined>()
+
   const { data: users, isLoading } = useQuery({
-    queryKey: ['users', TENANT_ID],
+    queryKey: ['users', API_CONFIG.DEFAULT_TENANT_ID],
     queryFn: async () => {
-      const response = await fetch(`http://localhost:8000/api/v1/users?tenant_id=${TENANT_ID}`)
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.USERS}?tenant_id=${API_CONFIG.DEFAULT_TENANT_ID}`)
       if (!response.ok) throw new Error('Failed to fetch users')
       return response.json() as Promise<User[]>
     }
   })
+
+  const createMutation = useMutation({
+    mutationFn: async (userData: Partial<User>) => {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.USERS}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      })
+      if (!response.ok) throw new Error('Failed to create user')
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+      setIsModalOpen(false)
+      setSelectedUser(undefined)
+    }
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<User> }) => {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.USERS}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      if (!response.ok) throw new Error('Failed to update user')
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+      setIsModalOpen(false)
+      setSelectedUser(undefined)
+    }
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.USERS}/${userId}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) throw new Error('Failed to delete user')
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+    }
+  })
+
+  const handleCreate = () => {
+    setSelectedUser(undefined)
+    setIsModalOpen(true)
+  }
+
+  const handleEdit = (user: User) => {
+    setSelectedUser(user)
+    setIsModalOpen(true)
+  }
+
+  const handleDelete = async (userId: string) => {
+    if (window.confirm('确定要删除这个用户吗？')) {
+      deleteMutation.mutate(userId)
+    }
+  }
+
+  const handleSave = (userData: Partial<User>) => {
+    if (selectedUser) {
+      updateMutation.mutate({ id: selectedUser.user_id, data: userData })
+    } else {
+      createMutation.mutate(userData)
+    }
+  }
 
   const getRoleBadgeColor = (role: string) => {
     const colors: Record<string, string> = {
@@ -64,7 +138,10 @@ export default function Users() {
           </h1>
           <p className="text-gray-600 mt-2">管理系统用户和权限配置</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+        <button 
+          onClick={handleCreate}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+        >
           <UserPlus className="w-5 h-5" />
           添加用户
         </button>
@@ -155,14 +232,14 @@ export default function Users() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1">
-                      {user.tags?.slice(0, 2).map((tag, idx) => (
-                        <span key={idx} className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
-                          {tag}
+                      {user.tags && Object.keys(user.tags).slice(0, 2).map((key, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
+                          {key}: {String(user.tags[key])}
                         </span>
                       ))}
-                      {(user.tags?.length || 0) > 2 && (
-                        <span className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
-                          +{(user.tags?.length || 0) - 2}
+                      {user.tags && Object.keys(user.tags).length > 2 && (
+                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
+                          +{Object.keys(user.tags).length - 2}
                         </span>
                       )}
                     </div>
@@ -180,13 +257,21 @@ export default function Users() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
-                      <button className="text-blue-600 hover:text-blue-900 transition">
+                      <button 
+                        onClick={() => handleEdit(user)}
+                        className="text-blue-600 hover:text-blue-900 transition"
+                        title="编辑"
+                      >
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      <button className="text-purple-600 hover:text-purple-900 transition">
+                      <button className="text-purple-600 hover:text-purple-900 transition" title="权限">
                         <Shield className="w-4 h-4" />
                       </button>
-                      <button className="text-red-600 hover:text-red-900 transition">
+                      <button 
+                        onClick={() => handleDelete(user.user_id)}
+                        className="text-red-600 hover:text-red-900 transition"
+                        title="删除"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -205,6 +290,18 @@ export default function Users() {
           <p className="text-gray-600">暂无用户数据</p>
         </div>
       )}
+
+      {/* User Modal */}
+      <UserModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setSelectedUser(undefined)
+        }}
+        onSave={handleSave}
+        user={selectedUser}
+        tenantId={API_CONFIG.DEFAULT_TENANT_ID}
+      />
     </div>
   )
 }

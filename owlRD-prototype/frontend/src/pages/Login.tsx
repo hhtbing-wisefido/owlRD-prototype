@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogIn, AlertCircle } from 'lucide-react'
 import FormInput from '../components/forms/FormInput'
+import { API_CONFIG, API_ENDPOINTS } from '../config/api'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -26,32 +27,26 @@ export default function Login() {
     setLoading(true)
 
     try {
-      // TODO: 实现实际的登录API调用
-      // const response = await fetch('http://localhost:8000/api/v1/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // })
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.LOGIN}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
       
-      // 模拟登录
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // 简单验证（实际应该调用API）
-      if (formData.username && formData.password) {
-        // 存储token（模拟）
-        localStorage.setItem('token', 'demo-token-' + Date.now())
-        localStorage.setItem('user', JSON.stringify({
-          username: formData.username,
-          role: 'Admin'
-        }))
-        
-        // 跳转到仪表板
-        navigate('/dashboard')
-      } else {
-        setError('请输入用户名和密码')
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Login failed')
       }
-    } catch (err) {
-      setError('登录失败，请稍后重试')
+      
+      const data = await response.json()
+      
+      localStorage.setItem('token', data.access_token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      
+      navigate('/dashboard')
+    } catch (err: any) {
+      console.error('Login error:', err)
+      setError(err.message || 'Login failed')
     } finally {
       setLoading(false)
     }

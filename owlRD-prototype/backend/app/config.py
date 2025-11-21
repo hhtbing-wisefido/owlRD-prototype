@@ -21,17 +21,9 @@ class Settings(BaseSettings):
     host: str = Field(default="0.0.0.0", env="HOST")
     port: int = Field(default=8000, env="PORT")
     
-    # CORS - 允许局域网访问
+    # CORS - 允许所有来源（开发环境）
     cors_origins: List[str] = Field(
-        default=[
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-            "http://localhost:8000",
-            "http://127.0.0.1:8000",
-            "http://192.168.2.6:3000",  # 局域网前端
-            "http://192.168.2.6:8000",  # 局域网后端
-            "*"  # 开发环境允许所有源（生产环境应配置具体IP）
-        ],
+        default=["*"],
         env="CORS_ORIGINS"
     )
     

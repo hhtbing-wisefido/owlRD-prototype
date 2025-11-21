@@ -43,7 +43,7 @@ async def list_residents(
         residents = resident_storage.find_all(filter_func)
         return residents[:limit]
     except Exception as e:
-        logger.error(f"Error listing residents: {e}")
+        logger.error(f"Error fetching residents: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -73,7 +73,12 @@ async def create_resident(resident: ResidentCreate):
     - 验证必填字段
     """
     try:
-        result = resident_storage.create(resident)
+        # 将Pydantic模型转换为字典，排除None值避免循环引用
+        resident_dict = resident.model_dump(exclude_none=True, mode='json')
+        # 确保anonymous_name字段存在
+        if 'anonymous_name' not in resident_dict or not resident_dict['anonymous_name']:
+            resident_dict['anonymous_name'] = resident_dict['last_name']
+        result = resident_storage.create(resident_dict)
         logger.info(f"Created resident: {result.get('resident_id')}")
         return result
     except Exception as e:
@@ -86,19 +91,34 @@ async def update_resident(resident_id: UUID, resident: ResidentUpdate):
     """
     更新住户信息
     
-    ## 可更新字段
-    - 基础信息（姓名、状态等）
-    - 位置和床位
-    - 联系人信息
-    - 护理人员
+    ## 参数
+    - resident_id: 住户UUID
+    - resident: 更新的字段
+    
+    ## 注意事项
+    - 只更新提供的字段
+    - 不能更新tenant_id
     """
     try:
-        result = resident_storage.update(
-            resident_id, 
-            resident.model_dump(exclude_unset=True)
-        )
-        if not result:
+        # 检查住户是否存在
+        all_residents = resident_storage.load_all()
+        existing = next((r for r in all_residents if r.get("resident_id") == str(resident_id)), None)
+        if not existing:
             raise HTTPException(status_code=404, detail="Resident not found")
+        
+        # 更新字段
+        from datetime import datetime
+        update_dict = resident.model_dump(exclude_unset=True)
+        for key, value in update_dict.items():
+            existing[key] = value
+        existing["updated_at"] = datetime.now().isoformat()
+        
+        # 保存
+        all_residents = [existing if r.get("resident_id") == str(resident_id) else r for r in all_residents]
+        import json
+        with open(resident_storage._get_file_path(), 'w', encoding='utf-8') as f:
+            json.dump(all_residents, f, indent=2, ensure_ascii=False)
+        result = existing
         logger.info(f"Updated resident: {resident_id}")
         return result
     except HTTPException:
@@ -118,11 +138,17 @@ async def delete_resident(resident_id: UUID):
     - 相关数据不会被删除
     """
     try:
-        success = resident_storage.delete(resident_id)
-        if not success:
+        all_residents = resident_storage.load_all()
+        filtered = [r for r in all_residents if r.get("resident_id") != str(resident_id)]
+        if len(filtered) == len(all_residents):
             raise HTTPException(status_code=404, detail="Resident not found")
+        
+        import json
+        with open(resident_storage._get_file_path(), 'w', encoding='utf-8') as f:
+            json.dump(filtered, f, indent=2, ensure_ascii=False)
+        
         logger.info(f"Deleted resident: {resident_id}")
-        return {"status": "success", "resident_id": str(resident_id)}
+        return {"message": "Resident deleted successfully", "resident_id": str(resident_id)}
     except HTTPException:
         raise
     except Exception as e:

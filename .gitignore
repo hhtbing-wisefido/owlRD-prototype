@@ -60,6 +60,20 @@ logs/
 *.temp
 temp/
 
+# 项目特定忽略
+# 临时脚本和提交文件
+COMMIT*.bat
+commit_*.bat
+COMMIT_MESSAGE.txt
+fix_*.py
+
+# 项目记录文档（开发过程记录，不是核心代码）
+项目记录/
+演示启动指南.md
+
+# Swagger UI 本地文件（通过脚本下载，不提交）
+owlRD-prototype/backend/app/static/swagger-ui/
+
 # OS
 Thumbs.db
 .DS_Store

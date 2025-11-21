@@ -1,5 +1,8 @@
-import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Shield, UserCheck, AlertCircle, Edit2, Trash2, Plus } from 'lucide-react'
+import { API_CONFIG, API_ENDPOINTS } from '../config/api'
+import RoleModal from '../components/modals/RoleModal'
 
 interface Role {
   role_id: string
@@ -13,17 +16,89 @@ interface Role {
   updated_at: string
 }
 
-const TENANT_ID = '10000000-0000-0000-0000-000000000001'
-
 export default function Roles() {
+  const queryClient = useQueryClient()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedRole, setSelectedRole] = useState<Role | undefined>()
+
   const { data: roles, isLoading } = useQuery({
-    queryKey: ['roles', TENANT_ID],
+    queryKey: ['roles', API_CONFIG.DEFAULT_TENANT_ID],
     queryFn: async () => {
-      const response = await fetch(`http://localhost:8000/api/v1/roles?tenant_id=${TENANT_ID}`)
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.ROLES}?tenant_id=${API_CONFIG.DEFAULT_TENANT_ID}`)
       if (!response.ok) throw new Error('Failed to fetch roles')
       return response.json() as Promise<Role[]>
     }
   })
+
+  const createMutation = useMutation({
+    mutationFn: async (roleData: Partial<Role>) => {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.ROLES}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(roleData)
+      })
+      if (!response.ok) throw new Error('Failed to create role')
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roles'] })
+      setIsModalOpen(false)
+      setSelectedRole(undefined)
+    }
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Role> }) => {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.ROLES}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      if (!response.ok) throw new Error('Failed to update role')
+      return response.json()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roles'] })
+      setIsModalOpen(false)
+      setSelectedRole(undefined)
+    }
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async (roleId: string) => {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.ROLES}/${roleId}`, {
+        method: 'DELETE'
+      })
+      if (!response.ok) throw new Error('Failed to delete role')
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roles'] })
+    }
+  })
+
+  const handleCreate = () => {
+    setSelectedRole(undefined)
+    setIsModalOpen(true)
+  }
+
+  const handleEdit = (role: Role) => {
+    setSelectedRole(role)
+    setIsModalOpen(true)
+  }
+
+  const handleDelete = async (roleId: string) => {
+    if (window.confirm('确定要删除这个角色吗？')) {
+      deleteMutation.mutate(roleId)
+    }
+  }
+
+  const handleSave = (roleData: Partial<Role>) => {
+    if (selectedRole) {
+      updateMutation.mutate({ id: selectedRole.role_id, data: roleData })
+    } else {
+      createMutation.mutate(roleData)
+    }
+  }
 
   const getRoleIcon = (roleCode: string) => {
     const icons: Record<string, string> = {
@@ -78,7 +153,7 @@ export default function Roles() {
           </h1>
           <p className="text-gray-600 mt-2">管理系统角色和权限配置</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+        <button onClick={handleCreate} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
           <Plus className="w-5 h-5" />
           创建角色
         </button>
@@ -129,7 +204,7 @@ export default function Roles() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="p-2 text-gray-400 hover:text-blue-600 transition">
+                    <button onClick={() => handleEdit(role)} className="p-2 text-gray-400 hover:text-blue-600 transition" title="编辑">
                       <Edit2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -186,10 +261,10 @@ export default function Roles() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button className="p-2 text-gray-400 hover:text-blue-600 transition">
+                      <button onClick={() => handleEdit(role)} className="p-2 text-gray-400 hover:text-blue-600 transition" title="编辑">
                         <Edit2 className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600 transition">
+                      <button onClick={() => handleDelete(role.role_id)} className="p-2 text-gray-400 hover:text-red-600 transition" title="删除">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -232,6 +307,18 @@ export default function Roles() {
           </button>
         </div>
       )}
+
+      {/* Role Modal */}
+      <RoleModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          setSelectedRole(undefined)
+        }}
+        onSave={handleSave}
+        role={selectedRole}
+        tenantId={API_CONFIG.DEFAULT_TENANT_ID}
+      />
     </div>
   )
 }

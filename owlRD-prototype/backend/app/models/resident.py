@@ -88,13 +88,13 @@ class ResidentUpdate(BaseModel):
 
 
 class Resident(ResidentBase):
-    """住户完整模型（不含敏感字段）"""
+    """完整住户模型（包含系统生成字段）"""
     
-    resident_id: UUID = Field(default_factory=generate_uuid, description="住户唯一标识")
+    resident_id: UUID = Field(default_factory=generate_uuid, description="住户唯一ID")
     tenant_id: UUID = Field(..., description="所属租户ID")
     
-    # 匿名代称（与last_name相同，自动生成）
-    anonymous_name: str = Field(..., max_length=100, description="匿名代称（与last_name相同）")
+    # 匿名代称（可选，向后兼容）
+    anonymous_name: Optional[str] = Field(None, max_length=100, description="匿名代称（与last_name相同）")
     
     # 哈希字段（仅内部验证，不对外暴露）
     phone_hash: Optional[bytes] = Field(None, description="手机号哈希", exclude=True)
