@@ -13,7 +13,7 @@ from pathlib import Path
 
 from app.config import settings
 from app.api.v1 import (
-    tenants, users, roles,
+    tenants, users, roles, auth,
     locations, rooms, beds,
     residents, resident_contacts, resident_caregivers, resident_phi,
     devices,
@@ -109,6 +109,10 @@ async def health_check():
 
 
 # 注册API路由
+# 认证相关（无需前缀）
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
+
+# 用户和权限
 app.include_router(tenants.router, prefix="/api/v1/tenants", tags=["Tenants"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(roles.router, prefix="/api/v1/roles", tags=["Roles"])

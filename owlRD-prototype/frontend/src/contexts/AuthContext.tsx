@@ -39,27 +39,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      // TODO: 实现实际的API调用
-      // const response = await fetch('http://localhost:8000/api/v1/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ username, password })
-      // })
-      // const data = await response.json()
+      // 调用实际的认证API
+      const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
       
-      // 模拟登录
-      const mockToken = 'demo-token-' + Date.now()
-      const mockUser: User = {
-        username,
-        role: 'Admin',
-        email: `${username}@example.com`
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || '登录失败')
       }
       
-      localStorage.setItem('token', mockToken)
-      localStorage.setItem('user', JSON.stringify(mockUser))
+      const data = await response.json()
       
-      setToken(mockToken)
-      setUser(mockUser)
+      // 存储token和用户信息
+      localStorage.setItem('token', data.access_token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      
+      setToken(data.access_token)
+      setUser({
+        username: data.user.username,
+        role: data.user.role,
+        email: data.user.email
+      })
       
       navigate('/dashboard')
     } catch (error) {

@@ -137,10 +137,13 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Demo Credentials */}
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-600 text-center">
-            演示版本 - 输入任意用户名和密码即可登录
+        {/* Register Link */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            还没有账号？
+            <a href="/register" className="text-blue-600 hover:text-blue-800 ml-1">
+              立即注册
+            </a>
           </p>
         </div>
       </div>
