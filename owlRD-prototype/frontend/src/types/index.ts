@@ -20,15 +20,53 @@ export interface Tenant {
 
 // Role types
 export interface Role {
-  role_id: string
-  tenant_id: string
-  role_code: string
-  display_name: string
-  description?: string
-  is_system: boolean
-  is_active: boolean
-  created_at: string
-  updated_at: string
+  role_id: string;
+  tenant_id: string;
+  role_code: string;
+  display_name: string;
+  description?: string;
+  is_system: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// CloudAlertPolicy types
+export interface CloudAlertPolicy {
+  tenant_id: string;
+  // Common alerts
+  OfflineAlarm?: string;
+  LowBattery?: string;
+  DeviceFailure?: string;
+  // SleepMonitor alerts
+  SleepPad_LeftBed?: string;
+  SleepPad_SitUp?: string;
+  SleepPad_ApneaHypopnea?: string;
+  SleepPad_AbnormalHeartRate?: string;
+  SleepPad_AbnormalRespiratoryRate?: string;
+  SleepPad_AbnormalBodyMovement?: string;
+  SleepPad_InBed?: string;
+  // Radar alerts
+  Radar_AbnormalHeartRate?: string;
+  Radar_AbnormalRespiratoryRate?: string;
+  SuspectedFall?: string;
+  Fall?: string;
+  VitalsWeak?: string;
+  Radar_LeftBed?: string;
+  Stay?: string;
+  NoActivity24h?: string;
+  AngleException?: string;
+  // Custom alerts
+  CustomAlert1?: string;
+  CustomAlert2?: string;
+  CustomAlert3?: string;
+  // Configurations
+  conditions?: Record<string, any>;
+  notification_rules?: Record<string, any>;
+  is_active: boolean;
+  metadata?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
 }
 
 // User types

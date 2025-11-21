@@ -13,19 +13,13 @@ from pathlib import Path
 
 from app.config import settings
 from app.api.v1 import (
-    tenants,
-    users,
-    roles,
-    residents,
-    resident_phi,
-    resident_contacts,
-    resident_caregivers,
+    tenants, users, roles,
+    locations, rooms, beds,
+    residents, resident_contacts, resident_caregivers, resident_phi,
     devices,
-    alerts,
+    iot_data, alerts, alert_policies,
     cards,
-    care_quality,
-    realtime,
-    iot_data
+    care_quality
 )
 from app.api import docs, docs_offline, docs_local
 
@@ -123,6 +117,7 @@ app.include_router(resident_contacts.router, prefix="/api/v1", tags=["Resident C
 app.include_router(resident_caregivers.router, prefix="/api/v1", tags=["Resident Caregivers"])
 app.include_router(devices.router, prefix="/api/v1/devices", tags=["Devices"])
 app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["Alerts"])
+app.include_router(alert_policies.router, prefix="/api/v1/alert_policies", tags=["Alert Policies"])
 app.include_router(cards.router, prefix="/api/v1/cards", tags=["Cards"])
 app.include_router(care_quality.router, prefix="/api/v1/care-quality", tags=["Care Quality"])
 app.include_router(iot_data.router, prefix="/api/v1/iot-data", tags=["IoT Data"])
