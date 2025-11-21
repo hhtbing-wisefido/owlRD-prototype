@@ -133,14 +133,21 @@ app.include_router(docs_offline.router)
 app.include_router(docs_local.router)
 
 
-# 全局异常处理
-@app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
-    logger.error(f"Global exception: {exc}")
-    return JSONResponse(
-        status_code=500,
-        content={"error": "Internal server error", "detail": str(exc)},
-    )
+# 注册错误处理器
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from app.middleware.error_handler import (
+    http_exception_handler,
+    validation_exception_handler,
+    general_exception_handler,
+    api_error_handler,
+    APIError
+)
+
+app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+app.add_exception_handler(APIError, api_error_handler)
+app.add_exception_handler(Exception, general_exception_handler)
 
 
 # 启动事件
