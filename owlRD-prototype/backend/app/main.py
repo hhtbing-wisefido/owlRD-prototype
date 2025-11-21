@@ -15,15 +15,17 @@ from app.config import settings
 from app.api.v1 import (
     tenants,
     users,
+    roles,
     residents,
+    resident_phi,
+    resident_contacts,
+    resident_caregivers,
     devices,
     alerts,
     cards,
     care_quality,
     realtime,
-    iot_data,
-    resident_contacts,
-    resident_caregivers
+    iot_data
 )
 from app.api import docs, docs_offline, docs_local
 
@@ -114,7 +116,9 @@ async def health_check():
 # 注册API路由
 app.include_router(tenants.router, prefix="/api/v1/tenants", tags=["Tenants"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
+app.include_router(roles.router, prefix="/api/v1/roles", tags=["Roles"])
 app.include_router(residents.router, prefix="/api/v1/residents", tags=["Residents"])
+app.include_router(resident_phi.router, prefix="/api/v1", tags=["Resident PHI"])
 app.include_router(resident_contacts.router, prefix="/api/v1", tags=["Resident Contacts"])
 app.include_router(resident_caregivers.router, prefix="/api/v1", tags=["Resident Caregivers"])
 app.include_router(devices.router, prefix="/api/v1/devices", tags=["Devices"])

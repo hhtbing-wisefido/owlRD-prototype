@@ -18,6 +18,19 @@ export interface Tenant {
   }
 }
 
+// Role types
+export interface Role {
+  role_id: string
+  tenant_id: string
+  role_code: string
+  display_name: string
+  description?: string
+  is_system: boolean
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
 // User types
 export interface User {
   user_id: string

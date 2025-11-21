@@ -78,6 +78,89 @@ async def init_tenants():
     print(f"✅ Created tenant: {tenant['tenant_name']}")
 
 
+async def init_roles():
+    """
+    初始化角色
+    对齐: 02_roles.sql - 系统预置角色
+    """
+    print("\n👔 Creating sample roles...")
+    storage = StorageService("roles")
+    
+    # 严格按照源参考 02_roles.sql 的字段
+    roles = [
+        {
+            "role_id": str(uuid.uuid4()),
+            "tenant_id": SAMPLE_TENANT_ID,
+            "role_code": "Director",
+            "display_name": "主任/院长",
+            "description": "养老机构管理者，拥有全部权限",
+            "is_system": True,  # 系统预置角色，不可删除
+            "is_active": True,
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        },
+        {
+            "role_id": str(uuid.uuid4()),
+            "tenant_id": SAMPLE_TENANT_ID,
+            "role_code": "NurseManager",
+            "display_name": "护士长",
+            "description": "护理团队管理者，管理护士和护工",
+            "is_system": True,
+            "is_active": True,
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        },
+        {
+            "role_id": str(uuid.uuid4()),
+            "tenant_id": SAMPLE_TENANT_ID,
+            "role_code": "Nurse",
+            "display_name": "护士",
+            "description": "专业护理人员，负责住户护理和健康监测",
+            "is_system": True,
+            "is_active": True,
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        },
+        {
+            "role_id": str(uuid.uuid4()),
+            "tenant_id": SAMPLE_TENANT_ID,
+            "role_code": "Caregiver",
+            "display_name": "护工",
+            "description": "日常照护人员，协助住户生活起居",
+            "is_system": True,
+            "is_active": True,
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        },
+        {
+            "role_id": str(uuid.uuid4()),
+            "tenant_id": SAMPLE_TENANT_ID,
+            "role_code": "Doctor",
+            "display_name": "医生",
+            "description": "医疗专业人员，提供医疗咨询和诊断",
+            "is_system": True,
+            "is_active": True,
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        },
+        {
+            "role_id": str(uuid.uuid4()),
+            "tenant_id": SAMPLE_TENANT_ID,
+            "role_code": "FamilyMember",
+            "display_name": "家属",
+            "description": "住户家属，可查看关联住户的状态",
+            "is_system": True,
+            "is_active": True,
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        }
+    ]
+    
+    for role in roles:
+        storage.create(role)
+        print(f"✅ Created role: {role['display_name']} ({role['role_code']})")
+
+
 async def init_users():
     """
     初始化用户
@@ -577,7 +660,9 @@ async def main():
     print("=" * 70)
     
     try:
+        # 初始化所有数据
         await init_tenants()
+        await init_roles()
         await init_users()
         await init_locations()
         await init_residents()
