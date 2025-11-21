@@ -12,6 +12,8 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    strictPort: true, // 强制使用3000端口，如果被占用则报错
+    host: '0.0.0.0', // 允许外部访问
     proxy: {
       '/api': {
         target: 'http://localhost:8000',

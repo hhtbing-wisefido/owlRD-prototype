@@ -1,0 +1,19 @@
+{
+  "scripts": {
+    "dev": "python start_with_check.py",
+    "dev:direct": "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload",
+    "dev:check": "python -m app.main",
+    "start": "uvicorn app.main:app --host 0.0.0.0 --port 8000",
+    "test": "python -m pytest tests/",
+    "lint": "python -m flake8 app/"
+  },
+  "description": "后端启动脚本说明",
+  "commands": {
+    "dev": "带端口检查的开发模式启动",
+    "dev:direct": "直接启动uvicorn（跳过端口检查）",
+    "dev:check": "使用内置端口检查启动",
+    "start": "生产模式启动",
+    "test": "运行测试",
+    "lint": "代码检查"
+  }
+}
