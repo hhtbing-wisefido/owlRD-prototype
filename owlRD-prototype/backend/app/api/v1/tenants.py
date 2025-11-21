@@ -20,7 +20,7 @@ async def list_tenants(
 ):
     """获取所有租户列表"""
     try:
-        tenants = await tenant_storage.find_all(lambda _: True)
+        tenants = tenant_storage.find_all(lambda _: True)
         return tenants[:limit]
     except Exception as e:
         logger.error(f"Error listing tenants: {e}")
@@ -31,7 +31,7 @@ async def list_tenants(
 async def get_tenant(tenant_id: UUID):
     """获取单个租户详情"""
     try:
-        tenant = await tenant_storage.get(tenant_id)
+        tenant = tenant_storage.get(tenant_id)
         if not tenant:
             raise HTTPException(status_code=404, detail="Tenant not found")
         return tenant
@@ -46,7 +46,7 @@ async def get_tenant(tenant_id: UUID):
 async def create_tenant(tenant: TenantCreate):
     """创建新租户"""
     try:
-        result = await tenant_storage.create(tenant)
+        result = tenant_storage.create(tenant)
         logger.info(f"Created tenant: {result.get('tenant_id')}")
         return result
     except Exception as e:
@@ -58,7 +58,7 @@ async def create_tenant(tenant: TenantCreate):
 async def update_tenant(tenant_id: UUID, tenant: TenantUpdate):
     """更新租户信息"""
     try:
-        result = await tenant_storage.update(tenant_id, tenant.model_dump(exclude_unset=True))
+        result = tenant_storage.update(tenant_id, tenant.model_dump(exclude_unset=True))
         if not result:
             raise HTTPException(status_code=404, detail="Tenant not found")
         logger.info(f"Updated tenant: {tenant_id}")
@@ -74,7 +74,7 @@ async def update_tenant(tenant_id: UUID, tenant: TenantUpdate):
 async def delete_tenant(tenant_id: UUID):
     """删除租户"""
     try:
-        success = await tenant_storage.delete(tenant_id)
+        success = tenant_storage.delete(tenant_id)
         if not success:
             raise HTTPException(status_code=404, detail="Tenant not found")
         logger.info(f"Deleted tenant: {tenant_id}")

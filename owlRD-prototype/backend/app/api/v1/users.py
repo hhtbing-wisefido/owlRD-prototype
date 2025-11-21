@@ -21,7 +21,7 @@ async def list_users(
 ):
     """获取用户列表"""
     try:
-        users = await user_storage.find_all(
+        users = user_storage.find_all(
             lambda u: str(u.get("tenant_id")) == str(tenant_id)
         )
         return users[:limit]
@@ -34,7 +34,7 @@ async def list_users(
 async def get_user(user_id: UUID):
     """获取用户详情"""
     try:
-        user = await user_storage.get(user_id)
+        user = user_storage.get(user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         return user
@@ -49,7 +49,7 @@ async def get_user(user_id: UUID):
 async def create_user(user: UserCreate):
     """创建用户"""
     try:
-        result = await user_storage.create(user)
+        result = user_storage.create(user)
         return result
     except Exception as e:
         logger.error(f"Error creating user: {e}")
@@ -60,7 +60,7 @@ async def create_user(user: UserCreate):
 async def update_user(user_id: UUID, user: UserUpdate):
     """更新用户"""
     try:
-        result = await user_storage.update(user_id, user.model_dump(exclude_unset=True))
+        result = user_storage.update(user_id, user.model_dump(exclude_unset=True))
         if not result:
             raise HTTPException(status_code=404, detail="User not found")
         return result
@@ -75,7 +75,7 @@ async def update_user(user_id: UUID, user: UserUpdate):
 async def delete_user(user_id: UUID):
     """删除用户"""
     try:
-        success = await user_storage.delete(user_id)
+        success = user_storage.delete(user_id)
         if not success:
             raise HTTPException(status_code=404, detail="User not found")
         return {"status": "success", "user_id": str(user_id)}

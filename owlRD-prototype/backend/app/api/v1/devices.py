@@ -152,7 +152,7 @@ async def update_device_status(
     - maintenance: 维护中
     """
     try:
-        device = await device_storage.get(device_id)
+        device = device_storage.get(device_id)
         if not device:
             raise HTTPException(status_code=404, detail="Device not found")
         
@@ -164,7 +164,7 @@ async def update_device_status(
                 detail=f"Invalid status. Must be one of: {valid_statuses}"
             )
         
-        result = await device_storage.update(device_id, {"status": status})
+        result = device_storage.update(device_id, {"status": status})
         logger.info(f"Updated device status: {device_id} -> {status}")
         return result
     except HTTPException:

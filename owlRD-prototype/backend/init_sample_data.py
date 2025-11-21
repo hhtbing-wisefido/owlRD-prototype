@@ -18,6 +18,7 @@
 """
 
 import asyncio
+import json
 import uuid
 from uuid import uuid4
 from datetime import datetime, timedelta
@@ -69,7 +70,7 @@ async def init_tenants():
             "max_residents": 200,
             "features_enabled": ["IOT", "ALERTS", "CARE_QUALITY", "CARDS"],
             "contact_email": "admin@demo-facility.com",
-            "contact_phone": "+86-138-0000-0001",
+            "contact_phone": "13800000001",
             "address": "北京市朝阳区示例路123号"
         }
     }
@@ -176,9 +177,9 @@ async def init_users():
             "tenant_id": SAMPLE_TENANT_ID,
             "username": "admin_user",
             "email": "admin@demo.com",
-            "phone": "+86-138-0000-0001",
+            "phone": "13800000001",
             "email_hash": hash_contact("admin@demo.com"),  # SHA-256哈希
-            "phone_hash": hash_contact("+86-138-0000-0001"),
+            "phone_hash": hash_contact("13800000001"),
             "password_hash": None,  # 应该是bcrypt/argon2哈希
             "pin_hash": None,
             "role": "Director",  # Director / NurseManager / Nurse / ITSupport
@@ -195,9 +196,9 @@ async def init_users():
             "tenant_id": SAMPLE_TENANT_ID,
             "username": "nurse_zhang",
             "email": "nurse01@demo.com",
-            "phone": "+86-138-0000-0002",
+            "phone": "13800000002",
             "email_hash": hash_contact("nurse01@demo.com"),
-            "phone_hash": hash_contact("+86-138-0000-0002"),
+            "phone_hash": hash_contact("13800000002"),
             "password_hash": None,
             "pin_hash": None,
             "role": "Nurse",
@@ -219,9 +220,9 @@ async def init_users():
             "tenant_id": SAMPLE_TENANT_ID,
             "username": "nurse_li",
             "email": "nurse02@demo.com",
-            "phone": "+86-138-0000-0003",
+            "phone": "13800000003",
             "email_hash": hash_contact("nurse02@demo.com"),
-            "phone_hash": hash_contact("+86-138-0000-0003"),
+            "phone_hash": hash_contact("13800000003"),
             "password_hash": None,
             "pin_hash": None,
             "role": "Nurse",
@@ -343,7 +344,7 @@ async def init_residents():
             "status": "active",  # active, discharged, transferred
             "metadata": {"notes": "演示住户1"},  # 仅包含非PII信息
             # 登录/重置用的联系方式哈希（不存明文）
-            "phone_hash": hash_contact("+86-138-1111-1111"),
+            "phone_hash": hash_contact("13811111111"),
             "email_hash": hash_contact("resident001@example.com"),
             # 家庭标签
             "family_tag": "FAMILY-WANG",  # 家庭标识符
@@ -368,7 +369,7 @@ async def init_residents():
             "admission_date": (datetime.now() - timedelta(days=90)).date().isoformat(),
             "status": "active",
             "metadata": {"notes": "演示住户2"},
-            "phone_hash": hash_contact("+86-138-2222-2222"),
+            "phone_hash": hash_contact("13822222222"),
             "email_hash": hash_contact("resident002@example.com"),
             "family_tag": "FAMILY-LI",
             "family_member_account_1": None,
@@ -404,11 +405,11 @@ async def init_resident_contacts():
             # 可选的PHI（仅在特定场景下填写）
             "contact_first_name": "小明",
             "contact_last_name": "王",
-            "contact_phone": "+86-138-1111-1111",
+            "contact_phone": "13811111111",
             "contact_email": "wangxiaoming@example.com",
             "contact_sms": True,
             # 登录用的哈希（不存明文）
-            "phone_hash": hash_contact("+86-138-1111-1111"),
+            "phone_hash": hash_contact("13811111111"),
             "email_hash": hash_contact("wangxiaoming@example.com"),
             "is_active": True,
             "created_at": datetime.now().isoformat()
@@ -424,10 +425,10 @@ async def init_resident_contacts():
             "relationship": "Child",
             "contact_first_name": "小红",
             "contact_last_name": "李",
-            "contact_phone": "+86-138-2222-2222",
+            "contact_phone": "13822222222",
             "contact_email": "lixiaohong@example.com",
             "contact_sms": True,
-            "phone_hash": hash_contact("+86-138-2222-2222"),
+            "phone_hash": hash_contact("13822222222"),
             "email_hash": hash_contact("lixiaohong@example.com"),
             "is_active": True,
             "created_at": datetime.now().isoformat()
@@ -549,8 +550,11 @@ async def init_devices():
 
 
 async def init_iot_data():
-    """初始化IoT数据"""
-    print("\n📊 Creating sample IoT data...")
+    """
+    初始化IoT时序数据
+    严格对齐: 12_iot_timeseries.sql
+    """
+    print("\n📊 Creating sample IoT timeseries data...")
     storage = StorageService("iot_timeseries")
     
     # 生成最近24小时的数据
@@ -559,52 +563,112 @@ async def init_iot_data():
     
     for i in range(24):  # 每小时生成数据
         timestamp = now - timedelta(hours=i)
+        hr = random.randint(60, 80)
+        rr = random.randint(12, 18)
         
-        # 生成正常数据
+        # 模拟原始数据（必须是bytes）
+        raw_data = {
+            "device_type": "Radar",
+            "timestamp": timestamp.isoformat(),
+            "tracking": {"id": 0, "x": 150, "y": 200, "z": 100},
+            "vitals": {"hr": hr, "rr": rr},
+            "sleep_state": "Deep sleep"
+        }
+        
+        # 严格按照 IOTTimeseries Model 生成数据
         iot_data = {
-            "id": str(uuid4()),
+            # 设备索引（必需）
             "tenant_id": SAMPLE_TENANT_ID,
             "device_id": SAMPLE_DEVICE_ID,
-            "resident_id": SAMPLE_RESIDENT_ID,
-            "bed_id": SAMPLE_BED_ID,
-            "location_id": SAMPLE_LOCATION_ID,
+            
+            # 时间戳（必需）
             "timestamp": timestamp.isoformat(),
-            "heart_rate": random.randint(60, 80),
-            "respiration_rate": random.randint(12, 18),
-            "motion_intensity": round(random.uniform(0.1, 0.5), 2),
-            "presence": True,
-            "in_bed": True,
-            "alert_triggered": False,
-            "data_source": "TDP",
+            
+            # TDP Tag Category（可选）
+            "tdp_tag_category": "Physiological",
+            
+            # 轨迹数据（必需）
+            "tracking_id": 0,  # 0-7，NULL表示无人
+            "radar_pos_x": 150,  # 厘米
+            "radar_pos_y": 200,
+            "radar_pos_z": 100,
+            
+            # 姿态/运动状态（可选）
+            "posture_snomed_code": "102538003",  # Lying position
+            "posture_display": "Lying position",
+            
+            # 事件（可选）
+            "event_type": None,
+            "event_display": None,
+            "area_id": None,
+            
+            # 生命体征（可选但推荐）
+            "heart_rate": hr,
+            "respiratory_rate": rr,  # ✅ 正确字段名
+            
+            # 睡眠状态（可选）
+            "sleep_state_snomed_code": "248233000",  # Deep sleep
+            "sleep_state_display": "Deep sleep",
+            
+            # 位置信息（可选，加速查询）
+            "location_id": SAMPLE_LOCATION_ID,
+            "room_id": SAMPLE_ROOM_ID,
+            
+            # 其他字段（可选）
+            "confidence": 95,
+            "remaining_time": None,
+            
+            # 原始记录存储（必需）
+            "raw_original": json.dumps(raw_data).encode('utf-8'),  # ✅ bytes类型
+            "raw_format": "json",  # ✅ 必需
+            "raw_compression": None,
+            
+            # 元数据（可选）
+            "metadata": {"source": "sample_data_generator"},
+            
             "created_at": timestamp.isoformat()
         }
         storage.create(iot_data)
         count += 1
     
-    # 生成一条告警数据
+    # 生成一条异常数据（高心率）
+    timestamp_alert = now - timedelta(hours=2)
+    raw_data_alert = {
+        "device_type": "Radar",
+        "timestamp": timestamp_alert.isoformat(),
+        "tracking": {"id": 0, "x": 150, "y": 200, "z": 100},
+        "vitals": {"hr": 120, "rr": 25},
+        "alert": "HEART_RATE_HIGH"
+    }
+    
     alert_data = {
-        "id": str(uuid4()),
         "tenant_id": SAMPLE_TENANT_ID,
         "device_id": SAMPLE_DEVICE_ID,
-        "resident_id": SAMPLE_RESIDENT_ID,
-        "bed_id": SAMPLE_BED_ID,
+        "timestamp": timestamp_alert.isoformat(),
+        "tdp_tag_category": "Physiological",
+        "tracking_id": 0,
+        "radar_pos_x": 150,
+        "radar_pos_y": 200,
+        "radar_pos_z": 100,
+        "posture_snomed_code": "102538003",
+        "posture_display": "Lying position",
+        "heart_rate": 120,  # 异常高心率
+        "respiratory_rate": 25,  # 异常高呼吸率
+        "sleep_state_snomed_code": "248220002",  # Awake
+        "sleep_state_display": "Awake",
         "location_id": SAMPLE_LOCATION_ID,
-        "timestamp": (now - timedelta(hours=2)).isoformat(),
-        "heart_rate": 120,
-        "respiration_rate": 25,
-        "motion_intensity": 0.8,
-        "presence": True,
-        "in_bed": True,
-        "alert_triggered": True,
-        "alert_type": "HEART_RATE_HIGH",
-        "alert_level": "L3",
-        "data_source": "TDP",
-        "created_at": (now - timedelta(hours=2)).isoformat()
+        "room_id": SAMPLE_ROOM_ID,
+        "confidence": 90,
+        "raw_original": json.dumps(raw_data_alert).encode('utf-8'),
+        "raw_format": "json",
+        "raw_compression": None,
+        "metadata": {"alert_triggered": True, "alert_type": "HEART_RATE_HIGH"},
+        "created_at": timestamp_alert.isoformat()
     }
     storage.create(alert_data)
     count += 1
     
-    print(f"✅ Created {count} IoT data records")
+    print(f"✅ Created {count} IoT timeseries records (对齐 12_iot_timeseries.sql)")
 
 
 async def init_cards():

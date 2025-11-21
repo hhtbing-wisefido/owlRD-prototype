@@ -73,7 +73,7 @@ async def get_card(
     - 卡片详细信息
     """
     try:
-        cards = await card_storage.find_all(
+        cards = card_storage.find_all(
             lambda c: str(c.get("card_id")) == str(card_id) and str(c.get("tenant_id")) == str(tenant_id)
         )
         
@@ -262,7 +262,7 @@ async def delete_card(
     """
     try:
         # 查找卡片
-        cards = await card_storage.find_all(
+        cards = card_storage.find_all(
             lambda c: str(c.get("card_id")) == str(card_id) and str(c.get("tenant_id")) == str(tenant_id)
         )
         
@@ -271,7 +271,7 @@ async def delete_card(
         
         # 删除卡片
         card = cards[0]
-        await card_storage.delete(UUID(card["id"]))
+        card_storage.delete(UUID(card["id"]))
         
         logger.info(f"Deleted card: {card_id}")
         return {"status": "success", "card_id": str(card_id)}

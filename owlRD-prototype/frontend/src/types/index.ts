@@ -93,20 +93,55 @@ export interface User {
   updated_at: string
 }
 
-// Resident PHI types
+// Resident PHI types (对齐 08_resident_phi.sql)
 export interface ResidentPHI {
   phi_id: string
-  resident_id: string
   tenant_id: string
-  encrypted_medical_history?: string
-  encrypted_medications?: string
-  encrypted_allergies?: string
-  encrypted_conditions?: string
-  encrypted_notes?: string
-  encryption_method?: string
-  last_updated_by?: string
-  created_at: string
-  updated_at: string
+  resident_id: string
+  
+  // 基本PHI
+  first_name?: string  // 真实名字
+  last_name?: string  // 真实姓氏
+  gender?: string  // Male/Female/Other/Unknown
+  date_of_birth?: string  // YYYY-MM-DD
+  resident_phone?: string  // 住户个人电话
+  resident_email?: string  // 住户个人邮箱
+  
+  // 生物特征PHI
+  weight_lb?: number  // 体重（磅）
+  height_ft?: number  // 身高（英尺）
+  height_in?: number  // 身高（英寸）
+  
+  // 功能性活动能力
+  mobility_level?: number  // 0无行动能力 ~ 5完全独立
+  
+  // 功能性健康状态
+  tremor_status?: string  // None/Mild/Severe
+  mobility_aid?: string  // Cane/Wheelchair/None
+  adl_assistance?: string  // Independent/NeedsHelp
+  comm_status?: string  // Normal/SpeechDifficulty
+  
+  // 慢性病史
+  has_hypertension?: boolean  // 高血压
+  has_hyperlipaemia?: boolean  // 高血脂
+  has_hyperglycaemia?: boolean  // 高血糖/糖尿病
+  has_stroke_history?: boolean  // 既往脑卒中史
+  has_paralysis?: boolean  // 肢体瘾痪/偏瘾
+  has_alzheimer?: boolean  // 阿尔茨海默病/痴呆
+  medical_history?: string  // 其他病史说明
+  
+  // HIS系统同步字段（包含PII）
+  HIS_resident_name?: string  // HIS系统真实姓名
+  HIS_resident_admission_date?: string  // HIS入院日期
+  HIS_resident_discharge_date?: string  // HIS出院日期
+  HIS_resident_metadata?: Record<string, any>  // HIS其他元数据
+  
+  // HomeCare场景家庭地址（PHI）
+  home_address_street?: string  // 街道地址
+  home_address_city?: string  // 城市
+  home_address_state?: string  // 州/省
+  home_address_postal_code?: string  // 邮编
+  plus_code?: string  // Google Plus Code
 }
 
 // Config Version types
@@ -126,35 +161,60 @@ export interface ConfigVersion {
   updated_at: string
 }
 
-// Posture Mapping types
+// Posture Mapping types (对齐 16_mapping_tables.sql - posture_mapping)
 export interface PostureMapping {
   mapping_id: string
   tenant_id: string
-  raw_posture: string
-  snomed_code?: string
-  snomed_display?: string
-  loinc_code?: string
-  loinc_display?: string
-  risk_level?: string
-  description?: string
-  metadata?: Record<string, any>
+  
+  // 分类
+  category: string  // Posture/MotionState/SleepState
+  
+  // 厂家代码
+  vendor_code: string  // 厂家原始代码
+  firmware_version: string  // 固件版本（如 '1.4.0'）
+  
+  // SNOMED CT编码
+  snomed_code?: string  // SNOMED CT编码
+  snomed_display?: string  // SNOMED CT显示名称
+  
+  // LOINC编码
+  loinc_code?: string  // LOINC编码（可选）
+  
+  // 描述
+  description?: string  // 映射说明
+  
+  // 是否启用
+  is_active: boolean  // 是否启用该映射
+  
   created_at: string
   updated_at: string
 }
 
-// Event Mapping types
+// Event Mapping types (对齐 16_mapping_tables.sql - event_mapping)
 export interface EventMapping {
   mapping_id: string
   tenant_id: string
-  event_type: string
-  event_subtype?: string
-  snomed_code?: string
-  snomed_display?: string
-  loinc_code?: string
-  loinc_display?: string
-  severity?: string
-  description?: string
-  metadata?: Record<string, any>
+  
+  // 分类
+  category: string  // RoomEvent/BedEvent/SafetyEvent
+  
+  // 厂家代码
+  vendor_code: string  // 厂家原始代码
+  firmware_version: string  // 固件版本（如 '1.4.0'）
+  
+  // SNOMED CT编码
+  snomed_code?: string  // SNOMED CT编码
+  snomed_display?: string  // SNOMED CT显示名称
+  
+  // LOINC编码
+  loinc_code?: string  // LOINC编码（可选）
+  
+  // 描述
+  description?: string  // 映射说明
+  
+  // 是否启用
+  is_active: boolean  // 是否启用该映射
+  
   created_at: string
   updated_at: string
 }
@@ -225,24 +285,58 @@ export interface Alert {
   resolved_at?: string
 }
 
-// IoT Data types
+// IoT Data types (对齐 12_iot_timeseries.sql)
 export interface IoTData {
-  id: string
+  // 主键和索引
+  id: number  // BIGSERIAL in SQL
   tenant_id: string
   device_id: string
-  resident_id?: string
-  bed_id?: string
-  location_id?: string
+  
+  // 时间戳
   timestamp: string
-  heart_rate?: number
-  respiration_rate?: number
-  motion_intensity?: number
-  presence: boolean
-  in_bed?: boolean
-  alert_triggered: boolean
-  alert_type?: string
-  alert_level?: string
-  data_source: string
+  
+  // TDP Tag Category
+  tdp_tag_category?: string  // Physiological/Behavioral/Posture/MotionState/SleepState/Safety/HealthCondition/DeviceError
+  
+  // 轨迹数据（必需）
+  tracking_id?: number  // 0-7, null表示无人
+  radar_pos_x: number  // 厘米
+  radar_pos_y: number  // 厘米
+  radar_pos_z: number  // 厘米
+  
+  // 姿态/运动状态
+  posture_snomed_code?: string  // SNOMED CT编码
+  posture_display?: string
+  
+  // 事件
+  event_type?: string  // ENTER_ROOM, LEFT_BED等
+  event_display?: string
+  area_id?: number
+  
+  // 生命体征
+  heart_rate?: number  // bpm
+  respiratory_rate?: number  // 次/分钟（修正拼写）
+  
+  // 睡眠状态
+  sleep_state_snomed_code?: string
+  sleep_state_display?: string
+  
+  // 位置信息
+  location_id?: string
+  room_id?: string
+  
+  // 其他字段
+  confidence?: number  // 0-100
+  remaining_time?: number  // 0-60秒
+  
+  // 原始记录（base64编码的字符串）
+  raw_original: string  // bytes转为base64
+  raw_format: string  // json/binary/xml/string
+  raw_compression?: string  // gzip/deflate/null
+  
+  // 元数据
+  metadata?: Record<string, any>
+  
   created_at: string
 }
 

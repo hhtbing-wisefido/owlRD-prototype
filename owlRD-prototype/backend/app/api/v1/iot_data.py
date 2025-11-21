@@ -228,7 +228,7 @@ async def query_iot_data(
             return True
         
         # 查询数据
-        records = await iot_storage.find_all(filter_func)
+        records = iot_storage.find_all(filter_func)
         
         # 按时间倒序排序
         records.sort(
@@ -270,7 +270,7 @@ async def get_latest_data(
         logger.info(f"Getting latest data for device: {device_id}")
         
         # 查询该设备的所有数据
-        records = await iot_storage.find_all(
+        records = iot_storage.find_all(
             lambda r: (
                 str(r.get("device_id")) == str(device_id) and
                 str(r.get("tenant_id")) == str(tenant_id)
@@ -315,7 +315,7 @@ async def get_statistics(
         start_time = datetime.now() - timedelta(hours=hours)
         
         # 查询时间范围内的数据
-        records = await iot_storage.find_all(
+        records = iot_storage.find_all(
             lambda r: (
                 str(r.get("tenant_id")) == str(tenant_id) and
                 datetime.fromisoformat(r.get("timestamp", "1970-01-01")) >= start_time
@@ -399,7 +399,7 @@ async def _save_iot_records_batch(records: List[IOTTimeseries]):
     """批量保存IoT记录（后台任务）"""
     try:
         for record in records:
-            await iot_storage.create(record)
+            iot_storage.create(record)
         logger.success(f"Saved {len(records)} IoT records")
     except Exception as e:
         logger.error(f"Error saving IoT records batch: {e}")
@@ -431,7 +431,7 @@ async def _process_alert(record: IOTTimeseries):
 async def _cleanup_old_records(tenant_id: UUID, cutoff_time: datetime):
     """清理旧记录（后台任务）"""
     try:
-        all_records = await iot_storage.find_all(
+        all_records = iot_storage.find_all(
             lambda r: str(r.get("tenant_id")) == str(tenant_id)
         )
         
@@ -442,7 +442,7 @@ async def _cleanup_old_records(tenant_id: UUID, cutoff_time: datetime):
                 if timestamp < cutoff_time:
                     record_id = record.get("id")
                     if record_id:
-                        await iot_storage.delete(UUID(record_id))
+                        iot_storage.delete(UUID(record_id))
                         deleted_count += 1
             except (ValueError, TypeError):
                 continue

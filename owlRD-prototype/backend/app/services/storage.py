@@ -3,14 +3,18 @@ JSON存储服务
 用于管理数据文件的读写操作，提供通用CRUD操作
 """
 
+from __future__ import annotations
+
 import json
 import os
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Callable
+from typing import List, Dict, Any, Optional, Callable, TypeVar, Generic
 from uuid import UUID, uuid4
 from datetime import datetime
 from pydantic import BaseModel
 from loguru import logger
+
+T = TypeVar('T', bound=BaseModel)
 
 try:
     from app.utils.validation import get_validator, ValidationError
@@ -22,8 +26,8 @@ except ImportError:
         return None
 
 
-class StorageService:
-    """JSON文件存储服务"""
+class StorageService(Generic[T]):
+    """JSON文件存储服务（泛型）"""
     
     def __init__(self, collection: str = "default", data_dir: str = "app/data"):
         """
