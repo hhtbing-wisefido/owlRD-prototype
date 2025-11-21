@@ -28,7 +28,7 @@ async def get_roles(
     - **is_active**: 可选，筛选启用/禁用的角色
     - **role_code**: 可选，按角色编码筛选（如 Director, Nurse）
     """
-    roles_data = await role_storage.find_all(
+    roles_data = role_storage.find_all(
         lambda r: str(r.get("tenant_id")) == str(tenant_id)
     )
     
@@ -49,7 +49,7 @@ async def get_role(role_id: UUID):
     
     - **role_id**: 角色ID
     """
-    role = await role_storage.find_by_id("role_id", role_id)
+    role = role_storage.find_by_id("role_id", role_id)
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
     return role
@@ -67,7 +67,7 @@ async def create_role(role_data: RoleCreate):
     - **is_active**: 是否启用
     """
     # 检查角色编码是否已存在
-    existing_roles = await role_storage.find_all(lambda _: True)
+    existing_roles = role_storage.find_all(lambda _: True)
     for existing in existing_roles:
         if str(existing.get("tenant_id")) == str(role_data.tenant_id) and existing.get("role_code") == role_data.role_code:
             raise HTTPException(
@@ -82,7 +82,7 @@ async def create_role(role_data: RoleCreate):
     role_dict["created_at"] = role_dict.get("created_at") or datetime.now().isoformat()
     role_dict["updated_at"] = datetime.now().isoformat()
     
-    await role_storage.create(role_dict)
+    role_storage.create(role_dict)
     return role_dict
 
 
@@ -96,7 +96,7 @@ async def update_role(role_id: UUID, role_data: RoleUpdate):
     - 只能更新 display_name, description, is_active
     """
     # 读取现有角色
-    existing_role = await role_storage.find_by_id("role_id", role_id)
+    existing_role = role_storage.find_by_id("role_id", role_id)
     if not existing_role:
         raise HTTPException(status_code=404, detail="Role not found")
     
@@ -113,7 +113,7 @@ async def update_role(role_id: UUID, role_data: RoleUpdate):
     update_data["updated_at"] = datetime.now().isoformat()
     
     # 保存更新
-    updated = await role_storage.update("role_id", role_id, update_data)
+    updated = role_storage.update("role_id", role_id, update_data)
     return updated
 
 
@@ -124,10 +124,10 @@ async def delete_role(role_id: UUID):
     
     注意：
     - 系统预置角色（is_system=True）不可删除
-    - 删除前应确保没有用户正在使用该角色
+    **权限要求**: 仅系统管理员可删除
     """
     # 读取角色
-    role = await role_storage.find_by_id("role_id", role_id)
+    role = role_storage.find_by_id("role_id", role_id)
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
     
@@ -140,7 +140,7 @@ async def delete_role(role_id: UUID):
     
     # 检查是否有用户使用该角色
     user_storage = StorageService("users")
-    all_users = await user_storage.find_all(lambda _: True)
+    all_users = user_storage.find_all(lambda _: True)
     users_with_role = [u for u in all_users if u.get("role") == role.get("role_code")]
     
     if users_with_role:
@@ -150,5 +150,5 @@ async def delete_role(role_id: UUID):
         )
     
     # 删除角色
-    await role_storage.delete("role_id", role_id)
+    role_storage.delete("role_id", role_id)
     return None

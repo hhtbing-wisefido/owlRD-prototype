@@ -39,7 +39,7 @@ async def get_resident_phi_list(
             return False
         return True
     
-    phi_records = await phi_storage.find_all(filter_fn)
+    phi_records = phi_storage.find_all(filter_fn)
     return phi_records
 
 
@@ -54,7 +54,7 @@ async def get_resident_phi(phi_id: UUID):
     
     **权限要求**: 仅医疗专业人员或授权管理员可访问
     """
-    phi = await phi_storage.find_by_id("phi_id", phi_id)
+    phi = phi_storage.find_by_id("phi_id", phi_id)
     if not phi:
         raise HTTPException(status_code=404, detail="Resident PHI record not found")
     return phi
@@ -84,12 +84,12 @@ async def create_resident_phi(phi_data: ResidentPHICreate):
     """
     # 检查住户是否存在
     resident_storage = StorageService("residents")
-    resident = await resident_storage.find_by_id("resident_id", phi_data.resident_id)
+    resident = resident_storage.find_by_id("resident_id", phi_data.resident_id)
     if not resident:
         raise HTTPException(status_code=404, detail="Resident not found")
     
     # 检查是否已有PHI记录
-    existing_phi = await phi_storage.find_all(lambda _: True)
+    existing_phi = phi_storage.find_all(lambda _: True)
     for phi in existing_phi:
         if str(phi.get("resident_id")) == str(phi_data.resident_id):
             raise HTTPException(
@@ -104,7 +104,7 @@ async def create_resident_phi(phi_data: ResidentPHICreate):
     phi_dict["created_at"] = datetime.now().isoformat()
     phi_dict["updated_at"] = datetime.now().isoformat()
     
-    await phi_storage.create(phi_dict)
+    phi_storage.create(phi_dict)
     
     # TODO: 记录访问审计日志
     # audit_log(action="CREATE_PHI", user=current_user, resident_id=phi_dict["resident_id"])
@@ -122,7 +122,7 @@ async def update_resident_phi(phi_id: UUID, phi_data: ResidentPHIUpdate):
     **权限要求**: 仅授权医疗管理员可更新
     """
     # 读取现有PHI
-    existing_phi = await phi_storage.find_by_id("phi_id", phi_id)
+    existing_phi = phi_storage.find_by_id("phi_id", phi_id)
     if not existing_phi:
         raise HTTPException(status_code=404, detail="Resident PHI record not found")
     
@@ -131,7 +131,7 @@ async def update_resident_phi(phi_id: UUID, phi_data: ResidentPHIUpdate):
     update_data["updated_at"] = datetime.now().isoformat()
     
     # 保存更新
-    updated = await phi_storage.update("phi_id", phi_id, update_data)
+    updated = phi_storage.update("phi_id", phi_id, update_data)
     
     # TODO: 记录访问审计日志
     # audit_log(action="UPDATE_PHI", user=current_user, phi_id=phi_id, changes=update_data)
@@ -152,7 +152,7 @@ async def delete_resident_phi(phi_id: UUID):
     **权限要求**: 仅系统管理员可删除
     """
     # 读取PHI
-    phi = await phi_storage.find_by_id("phi_id", phi_id)
+    phi = phi_storage.find_by_id("phi_id", phi_id)
     if not phi:
         raise HTTPException(status_code=404, detail="Resident PHI record not found")
     
@@ -160,7 +160,7 @@ async def delete_resident_phi(phi_id: UUID):
     # audit_log(action="DELETE_PHI", user=current_user, phi_id=phi_id)
     
     # 删除PHI（实际生产环境应该是软删除）
-    await phi_storage.delete("phi_id", phi_id)
+    phi_storage.delete("phi_id", phi_id)
     
     return None
 
@@ -174,7 +174,7 @@ async def get_phi_by_resident(resident_id: UUID):
     
     **权限要求**: 仅授权人员可访问
     """
-    phi_records = await phi_storage.find_all(
+    phi_records = phi_storage.find_all(
         lambda p: str(p.get("resident_id")) == str(resident_id)
     )
     
