@@ -29,30 +29,37 @@ async def create_sample_phi():
             "phi_id": str(uuid.uuid4()),
             "tenant_id": SAMPLE_TENANT_ID,
             "resident_id": SAMPLE_RESIDENT_ID,
-            # 真实身份信息（生产环境必须加密）
-            "real_first_name": "明华",  # 演示数据，非真实
-            "real_last_name": "王",
+            # 基本PHI（符合模型字段名）
+            "first_name": "明华",  # 演示数据，非真实
+            "last_name": "王",
+            "gender": "Male",
             "date_of_birth": "1945-03-15",
-            "ssn_last_4": "1234",  # 社保号后4位
-            # 联系方式
-            "phone_number": "+86-138-1111-1111",
-            "email": "resident001@example.com",
-            # 紧急联系人
-            "emergency_contact_name": "小明王",
-            "emergency_contact_phone": "+86-139-2222-2222",
-            "emergency_contact_relationship": "儿子",
-            # 医疗信息
-            "medical_history": "高血压、糖尿病（2型）、既往心脏病史",
-            "medications": "降压药（每日1次）、二甲双胍（每日2次）",
-            "allergies": "青霉素过敏",
-            "blood_type": "A+",
-            # 医保信息
-            "insurance_provider": "中国人寿医疗保险",
-            "insurance_policy_number": "CL2023001234",
-            # 其他
-            "metadata": {
-                "created_by": "admin",
-                "notes": "定期检查血压和血糖"
+            "resident_phone": "+86-138-1111-1111",
+            "resident_email": "wang.minghua@example.com",
+            # 生物特征
+            "weight_lb": "154.0",  # 70kg ≈ 154磅
+            "height_ft": "5.0",
+            "height_in": "7.0",  # 5英尺7英寸 ≈ 170cm
+            # 功能性活动能力
+            "mobility_level": 3,  # 需要部分协助
+            "tremor_status": "Mild",
+            "mobility_aid": "Cane",
+            "adl_assistance": "NeedsHelp",
+            "comm_status": "Normal",
+            # 慢性病史
+            "has_hypertension": True,
+            "has_hyperglycaemia": True,
+            "has_stroke_history": False,
+            "has_paralysis": False,
+            "has_alzheimer": False,
+            "has_hyperlipaemia": False,
+            "medical_history": "高血压病史10年，糖尿病5年，控制良好",
+            # HIS系统同步字段
+            "HIS_resident_name": "王明华",
+            "HIS_resident_admission_date": "2023-01-15",
+            "HIS_resident_metadata": {
+                "medical_record_number": "MR-2023-001",
+                "primary_physician": "张医生"
             },
             "created_at": datetime.now().isoformat(),
             "updated_at": datetime.now().isoformat()
@@ -61,24 +68,37 @@ async def create_sample_phi():
             "phi_id": str(uuid.uuid4()),
             "tenant_id": SAMPLE_TENANT_ID,
             "resident_id": SAMPLE_RESIDENT_ID_2,
-            "real_first_name": "秀英",
-            "real_last_name": "李",
+            # 基本PHI
+            "first_name": "秀英",
+            "last_name": "李",
+            "gender": "Female",
             "date_of_birth": "1950-08-20",
-            "ssn_last_4": "5678",
-            "phone_number": "+86-138-2222-2222",
-            "email": "resident002@example.com",
-            "emergency_contact_name": "小红李",
-            "emergency_contact_phone": "+86-139-3333-3333",
-            "emergency_contact_relationship": "女儿",
-            "medical_history": "骨质疏松、轻度认知障碍",
-            "medications": "钙片（每日1次）、维生素D（每日1次）",
-            "allergies": "无已知过敏",
-            "blood_type": "O+",
-            "insurance_provider": "城镇职工医疗保险",
-            "insurance_policy_number": "BJ2023005678",
-            "metadata": {
-                "created_by": "admin",
-                "notes": "需要协助行动，防跌倒"
+            "resident_phone": "+86-138-2222-2222",
+            "resident_email": "li.xiuying@example.com",
+            # 生物特征
+            "weight_lb": "121.0",  # 55kg ≈ 121磅
+            "height_ft": "5.0",
+            "height_in": "3.0",  # 5英尺3英寸 ≈ 160cm
+            # 功能性活动能力
+            "mobility_level": 2,  # 需要较多协助
+            "tremor_status": "None",
+            "mobility_aid": "Wheelchair",
+            "adl_assistance": "NeedsHelp",
+            "comm_status": "Normal",
+            # 慢性病史
+            "has_hypertension": False,
+            "has_hyperglycaemia": False,
+            "has_stroke_history": False,
+            "has_paralysis": False,
+            "has_alzheimer": True,
+            "has_hyperlipaemia": False,
+            "medical_history": "轻度认知障碍，骨质疏松",
+            # HIS系统同步字段
+            "HIS_resident_name": "李秀英",
+            "HIS_resident_admission_date": "2023-02-20",
+            "HIS_resident_metadata": {
+                "medical_record_number": "MR-2023-002",
+                "primary_physician": "李医生"
             },
             "created_at": datetime.now().isoformat(),
             "updated_at": datetime.now().isoformat()
@@ -87,7 +107,7 @@ async def create_sample_phi():
     
     for phi in phi_records:
         storage.create(phi)
-        print(f"✅ Created PHI for resident: {phi['real_last_name']}{phi['real_first_name']}")
+        print(f"✅ Created PHI for resident: {phi['last_name']}{phi['first_name']}")
     
     print()
     print("=" * 70)
