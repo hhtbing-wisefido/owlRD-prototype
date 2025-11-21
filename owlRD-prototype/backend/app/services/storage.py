@@ -6,16 +6,24 @@ JSON存储服务
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TypeVar, Generic, Callable
-from uuid import UUID
+from typing import List, Dict, Any, Optional, Callable
+from uuid import UUID, uuid4
 from datetime import datetime
 from pydantic import BaseModel
+from loguru import logger
 
-T = TypeVar('T', bound=BaseModel)
+try:
+    from app.utils.validation import get_validator, ValidationError
+except ImportError:
+    # 如果validation模块不存在，创建空类
+    class ValidationError(Exception):
+        pass
+    def get_validator(collection):
+        return None
 
 
-class StorageService(Generic[T]):
-    """JSON文件存储服务（泛型）"""
+class StorageService:
+    """JSON文件存储服务"""
     
     def __init__(self, collection: str = "default", data_dir: str = "app/data"):
         """
@@ -28,6 +36,7 @@ class StorageService(Generic[T]):
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.collection = collection
+        self.validator = get_validator(collection)
     
     def _get_file_path(self) -> Path:
         """获取集合文件路径"""
@@ -109,20 +118,45 @@ class StorageService(Generic[T]):
             return data
         return [item for item in data if filter_func(item)]
     
-    def create(self, item: Dict[str, Any]) -> Dict[str, Any]:
+    def create(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         创建新记录
         
         Args:
-            item: 要创建的记录
+            data: 要创建的数据
             
         Returns:
-            创建的记录
+            创建的记录（包含生成的ID和时间戳）
         """
-        data = self.load_all()
-        data.append(item)
-        self.save_all(data)
-        return item
+        # 数据验证
+        if self.validator:
+            try:
+                self.validator.validate_or_raise(data)
+            except ValidationError as e:
+                logger.error(f"Validation error in {self.collection}: {e}")
+                raise
+        
+        # 生成ID和时间戳
+        record = data.copy()
+        id_field = f"{self.collection[:-1]}_id"  # users -> user_id
+        record[id_field] = str(uuid4())
+        record["created_at"] = datetime.now().isoformat()
+        record["updated_at"] = datetime.now().isoformat()
+        
+        # 读取现有数据
+        all_data = self.load_all()
+        
+        # 检查唯一性约束
+        self._check_unique_constraints(record, all_data)
+        
+        # 添加新记录
+        all_data.append(record)
+        
+        # 保存
+        self.save_all(all_data)
+        
+        logger.info(f"Created {self.collection} record: {record.get(id_field)}")
+        return record
     
     def update(self, id_field: str, id_value: str | UUID, updates: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
@@ -141,13 +175,25 @@ class StorageService(Generic[T]):
         
         for i, item in enumerate(data):
             if str(item.get(id_field)) == id_str:
+                # 合并数据用于验证
+                updated_item = item.copy()
+                updated_item.update(updates)
+                
+                # 数据验证
+                if self.validator:
+                    try:
+                        self.validator.validate_or_raise(updated_item)
+                    except ValidationError as e:
+                        logger.error(f"Validation error in {self.collection}: {e}")
+                        raise
+                
                 # 更新字段
                 item.update(updates)
                 # 自动更新updated_at
-                if 'updated_at' in item:
-                    item['updated_at'] = datetime.utcnow().isoformat()
+                item['updated_at'] = datetime.now().isoformat()
                 data[i] = item
                 self.save_all(data)
+                logger.info(f"Updated {self.collection} record: {id_str}")
                 return item
         return None
     
@@ -197,6 +243,29 @@ class StorageService(Generic[T]):
             是否存在
         """
         return self.find_by_id(id_field, id_value) is not None
+    
+    def _check_unique_constraints(self, record: Dict[str, Any], all_data: List[Dict[str, Any]]):
+        """检查唯一性约束"""
+        id_field = f"{self.collection[:-1]}_id"
+        record_id = record.get(id_field)
+        
+        # 用户名唯一性
+        if self.collection == "users" and "username" in record:
+            for existing in all_data:
+                if existing.get(id_field) != record_id and existing.get("username") == record["username"]:
+                    raise ValidationError(f"用户名 '{record['username']}' 已存在")
+        
+        # 邮箱唯一性
+        if self.collection == "users" and "email" in record:
+            for existing in all_data:
+                if existing.get(id_field) != record_id and existing.get("email") == record["email"]:
+                    raise ValidationError(f"邮箱 '{record['email']}' 已存在")
+        
+        # 设备编码唯一性
+        if self.collection == "devices" and "device_code" in record:
+            for existing in all_data:
+                if existing.get(id_field) != record_id and existing.get("device_code") == record["device_code"]:
+                    raise ValidationError(f"设备编码 '{record['device_code']}' 已存在")
 
 
 def init_storage(data_dir: str = "app/data") -> None:

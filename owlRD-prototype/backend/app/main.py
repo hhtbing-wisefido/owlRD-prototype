@@ -20,7 +20,8 @@ from app.api.v1 import (
     iot_data, alerts, alert_policies,
     cards, card_functions,
     care_quality,
-    config_versions, mappings
+    config_versions, mappings,
+    export_api, websocket
 )
 from app.api import docs, docs_offline, docs_local
 
@@ -128,8 +129,9 @@ app.include_router(mappings.router, prefix="/api/v1/mappings", tags=["Mappings"]
 app.include_router(cards.router, prefix="/api/v1/cards", tags=["Cards"])
 app.include_router(card_functions.router, prefix="/api/v1/card_functions", tags=["Card Functions"])
 app.include_router(care_quality.router, prefix="/api/v1/care-quality", tags=["Care Quality"])
+app.include_router(export_api.router, prefix="/api/v1/export", tags=["Export"])
+app.include_router(websocket.router, prefix="/api/v1/realtime", tags=["Realtime WebSocket"])
 app.include_router(iot_data.router, prefix="/api/v1/iot-data", tags=["IoT Data"])
-app.include_router(realtime.router, prefix="/api/v1/realtime", tags=["Realtime"])
 # 自定义文档页面（使用国内CDN）
 app.include_router(docs.router)
 # 离线文档页面（完全不依赖外部CDN）
