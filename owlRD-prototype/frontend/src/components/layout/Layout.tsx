@@ -7,8 +7,10 @@ import {
   MapPin,
   Radio, 
   AlertTriangle, 
-  Activity 
+  Activity,
+  LogOut
 } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
 
 const navigation = [
   { name: '仪表板', href: '/dashboard', icon: LayoutDashboard },
@@ -23,6 +25,7 @@ const navigation = [
 
 export default function Layout() {
   const location = useLocation()
+  const { logout, user } = useAuth()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -61,7 +64,20 @@ export default function Layout() {
 
           {/* Footer */}
           <div className="p-4 border-t border-gray-200">
-            <p className="text-xs text-gray-500">© 2025 owlRD v0.1.0</p>
+            <div className="mb-2 p-2 bg-gray-50 rounded">
+              <p className="text-xs font-medium text-gray-700">{user?.username}</p>
+              <p className="text-xs text-gray-500">{user?.role}</p>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-500">© 2025 owlRD v0.1.0</p>
+              <button
+                onClick={logout}
+                className="flex items-center gap-1 text-xs text-red-600 hover:text-red-800 transition"
+              >
+                <LogOut className="w-3 h-3" />
+                <span>退出</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
