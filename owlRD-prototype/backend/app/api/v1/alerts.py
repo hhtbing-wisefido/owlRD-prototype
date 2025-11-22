@@ -9,12 +9,13 @@ from datetime import datetime, timedelta
 from loguru import logger
 
 from app.services.storage import StorageService
+from app.models.alert import Alert, AlertCreate, AlertUpdate
 
 router = APIRouter()
 alert_storage = StorageService("alerts")
 
 
-@router.get("/", summary="获取告警列表")
+@router.get("/", summary="获取告警列表", response_model=List[Alert])
 async def list_alerts(
     tenant_id: UUID = Query(..., description="租户ID"),
     alert_level: Optional[str] = Query(None, description="告警级别筛选"),
@@ -23,7 +24,7 @@ async def list_alerts(
     start_time: Optional[datetime] = Query(None, description="开始时间"),
     end_time: Optional[datetime] = Query(None, description="结束时间"),
     limit: int = Query(100, ge=1, le=1000)
-):
+) -> List[Alert]:
     """
     获取告警列表
     
@@ -78,8 +79,8 @@ async def list_alerts(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{alert_id}", summary="获取告警详情")
-async def get_alert(alert_id: UUID):
+@router.get("/{alert_id}", summary="获取告警详情", response_model=Alert)
+async def get_alert(alert_id: UUID) -> Alert:
     """获取单个告警详情"""
     try:
         alert = alert_storage.get(alert_id)
@@ -93,12 +94,12 @@ async def get_alert(alert_id: UUID):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{alert_id}/acknowledge", summary="确认告警")
+@router.post("/{alert_id}/acknowledge", summary="确认告警", response_model=Alert)
 async def acknowledge_alert(
     alert_id: UUID,
     user_id: UUID = Query(..., description="确认人ID"),
     note: Optional[str] = Query(None, description="备注")
-):
+) -> Alert:
     """
     确认告警
     
@@ -129,12 +130,12 @@ async def acknowledge_alert(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/{alert_id}/resolve", summary="解决告警")
+@router.post("/{alert_id}/resolve", summary="解决告警", response_model=Alert)
 async def resolve_alert(
     alert_id: UUID,
     user_id: UUID = Query(..., description="解决人ID"),
     resolution: Optional[str] = Query(None, description="解决说明")
-):
+) -> Alert:
     """
     解决告警
     

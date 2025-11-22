@@ -24,6 +24,7 @@ from app.models.iot_data import (
     IOTMonitorAlert, IOTMonitorAlertCreate, IOTMonitorAlertUpdate
 )
 from app.models.alert import (
+    Alert, AlertCreate, AlertUpdate, AlertStatus,
     CloudAlertPolicy, CloudAlertPolicyCreate, CloudAlertPolicyUpdate,
     AlertLevel, AlertScope, DangerLevel
 )
@@ -104,6 +105,10 @@ __all__ = [
     "IOTMonitorAlertCreate",
     "IOTMonitorAlertUpdate",
     # Alert
+    "Alert",
+    "AlertCreate",
+    "AlertUpdate",
+    "AlertStatus",
     "CloudAlertPolicy",
     "CloudAlertPolicyCreate",
     "CloudAlertPolicyUpdate",

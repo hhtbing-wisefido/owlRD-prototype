@@ -1,6 +1,8 @@
 """
 告警数据模型
-对应 cloud_alert_policies (14_cloud_alert_policies.sql) 表
+包含：
+1. Alert - 告警实例记录
+2. CloudAlertPolicy - 云端告警策略配置
 """
 
 from datetime import datetime
@@ -27,6 +29,14 @@ class AlertLevel(str, Enum):
     DISABLE = "DISABLE"   # 关闭
 
 
+class AlertStatus(str, Enum):
+    """告警状态"""
+    PENDING = "pending"           # 待处理
+    ACKNOWLEDGED = "acknowledged"  # 已确认
+    RESOLVED = "resolved"          # 已解决
+    DISMISSED = "dismissed"        # 已忽略
+
+
 class AlertScope(str, Enum):
     """告警接收范围"""
     ALL = "ALL"                       # 全机构
@@ -39,6 +49,64 @@ class DangerLevel(str, Enum):
     L1 = "L1"             # EMERGENCY
     L2 = "L2"             # ALERT
     DISABLE = "DISABLE"   # 关闭
+
+
+# ============================================================================
+# Alert Models (告警实例记录)
+# ============================================================================
+
+class AlertBase(BaseModel):
+    """告警实例基础模型"""
+    alert_level: str = Field(..., description="告警级别: L1/L2/L3/L5")
+    alert_type: str = Field(..., description="告警类型: FALL/LEAVE/HEART_RATE等")
+    message: str = Field(..., description="告警消息")
+    resident_id: Optional[UUID] = Field(None, description="关联住户ID")
+    device_id: Optional[UUID] = Field(None, description="关联设备ID")
+    location_id: Optional[UUID] = Field(None, description="关联位置ID")
+    status: str = Field(default="pending", description="告警状态: pending/acknowledged/resolved")
+    acknowledged_by: Optional[UUID] = Field(None, description="确认人ID")
+    acknowledged_at: Optional[datetime] = Field(None, description="确认时间")
+    resolved_by: Optional[UUID] = Field(None, description="解决人ID")
+    resolved_at: Optional[datetime] = Field(None, description="解决时间")
+
+
+class AlertCreate(AlertBase):
+    """创建告警请求模型"""
+    tenant_id: UUID = Field(..., description="所属租户ID")
+
+
+class AlertUpdate(BaseModel):
+    """更新告警请求模型"""
+    status: Optional[str] = Field(None, description="告警状态")
+    acknowledged_by: Optional[UUID] = Field(None, description="确认人ID")
+    acknowledged_at: Optional[datetime] = Field(None, description="确认时间")
+    resolved_by: Optional[UUID] = Field(None, description="解决人ID")
+    resolved_at: Optional[datetime] = Field(None, description="解决时间")
+    note: Optional[str] = Field(None, description="备注")
+    resolution: Optional[str] = Field(None, description="解决说明")
+
+
+class Alert(AlertBase):
+    """告警完整模型（对齐前端Alert接口）"""
+    alert_id: UUID = Field(..., description="告警ID")
+    tenant_id: UUID = Field(..., description="所属租户ID")
+    timestamp: datetime = Field(default_factory=datetime.utcnow, description="告警发生时间")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "alert_id": "550e8400-e29b-41d4-a716-446655440000",
+                "tenant_id": "10000000-0000-0000-0000-000000000001",
+                "alert_level": "L1",
+                "alert_type": "FALL",
+                "message": "检测到住户张三疑似跌倒",
+                "timestamp": "2025-11-22T10:30:00Z",
+                "status": "pending",
+                "resident_id": "660e8400-e29b-41d4-a716-446655440001",
+                "device_id": "770e8400-e29b-41d4-a716-446655440002",
+                "location_id": "880e8400-e29b-41d4-a716-446655440003"
+            }
+        }
 
 
 # ============================================================================
