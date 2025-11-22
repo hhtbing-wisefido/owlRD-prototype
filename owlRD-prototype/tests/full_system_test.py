@@ -52,6 +52,7 @@ class Colors:
     RED = '\033[91m'
     YELLOW = '\033[93m'
     BLUE = '\033[94m'
+    CYAN = '\033[96m'
     END = '\033[0m'
     BOLD = '\033[1m'
 
@@ -802,6 +803,144 @@ def test_api_integration():
 
 
 # ============================================================================
+# Vitest单元测试（可选）
+# ============================================================================
+
+def test_vitest():
+    """运行Vitest单元测试"""
+    print_section("Vitest单元测试（可选）")
+    
+    tests_dir = Path(__file__).parent
+    vitest_config = tests_dir / "vitest.config.ts"
+    
+    # 检查是否已配置Vitest（在tests/目录）
+    if not vitest_config.exists():
+        test_result("Vitest配置检查", False, "未找到vitest.config.ts")
+        print(f"{Colors.YELLOW}  💡 配置方法: 查看 tests/README.md 的 'Vitest单元测试' 章节{Colors.END}")
+        print(f"{Colors.YELLOW}  💡 快速配置:{Colors.END}")
+        print(f"{Colors.YELLOW}     cd tests{Colors.END}")
+        print(f"{Colors.YELLOW}     mv vitest_examples/vitest.config.example.ts vitest.config.ts{Colors.END}")
+        print(f"{Colors.YELLOW}     npm install -D vitest @testing-library/react @testing-library/jest-dom jsdom{Colors.END}")
+        return
+    
+    test_result("Vitest配置检查", True, "已配置（tests/目录）")
+    
+    # 检查Node.js环境
+    node_installed, node_info = check_nodejs_installed()
+    if not node_installed:
+        test_result("Node.js环境检查", False, node_info)
+        return
+    test_result("Node.js环境检查", True, node_info)
+    
+    # 检查Vitest依赖
+    package_json = tests_dir / "package.json"
+    if package_json.exists():
+        import json
+        with open(package_json, 'r', encoding='utf-8') as f:
+            pkg = json.load(f)
+            dev_deps = pkg.get('devDependencies', {})
+            if 'vitest' not in dev_deps:
+                test_result("Vitest依赖检查", False, "未安装vitest")
+                print(f"{Colors.YELLOW}  💡 安装: cd tests && npm install -D vitest @testing-library/react @testing-library/jest-dom jsdom{Colors.END}")
+                return
+    
+    test_result("Vitest依赖检查", True, "已安装")
+    
+    try:
+        print(f"{Colors.BLUE}▶ 运行 Vitest 测试...{Colors.END}")
+        result = subprocess.run(
+            ["npm", "test", "--", "--run"],
+            cwd=tests_dir,
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='ignore',
+            timeout=120,
+            shell=True
+        )
+        
+        # 解析测试结果
+        output = result.stdout
+        if 'Test Files' in output:
+            test_result("Vitest单元测试", result.returncode == 0, "测试完成")
+            print(f"{Colors.CYAN}  {output}{Colors.END}")
+        else:
+            test_result("Vitest单元测试", False, "无测试文件")
+            
+    except subprocess.TimeoutExpired:
+        test_result("Vitest测试", False, "测试超时")
+    except Exception as e:
+        test_result("Vitest测试", False, f"异常: {str(e)}")
+
+
+# ============================================================================
+# Playwright E2E测试（可选）
+# ============================================================================
+
+def test_playwright():
+    """运行Playwright E2E测试"""
+    print_section("Playwright E2E测试（可选）")
+    
+    tests_dir = Path(__file__).parent
+    playwright_config = tests_dir / "playwright.config.ts"
+    
+    # 检查是否已配置Playwright（在tests/目录）
+    if not playwright_config.exists():
+        test_result("Playwright配置检查", False, "未找到playwright.config.ts")
+        print(f"{Colors.YELLOW}  💡 配置方法: 查看 tests/README.md 的 'Playwright E2E测试' 章节{Colors.END}")
+        print(f"{Colors.YELLOW}  💡 快速配置:{Colors.END}")
+        print(f"{Colors.YELLOW}     cd tests{Colors.END}")
+        print(f"{Colors.YELLOW}     mv playwright_examples/playwright.config.example.ts playwright.config.ts{Colors.END}")
+        print(f"{Colors.YELLOW}     npm install -D @playwright/test && npx playwright install{Colors.END}")
+        return
+    
+    test_result("Playwright配置检查", True, "已配置（tests/目录）")
+    
+    # 检查Node.js环境
+    node_installed, node_info = check_nodejs_installed()
+    if not node_installed:
+        test_result("Node.js环境检查", False, node_info)
+        return
+    test_result("Node.js环境检查", True, node_info)
+    
+    # 检查E2E测试文件
+    playwright_examples_dir = tests_dir / "playwright_examples"
+    test_files = list(playwright_examples_dir.glob("*.spec.ts"))
+    if not test_files:
+        test_result("E2E测试文件检查", False, "未找到测试文件")
+        print(f"{Colors.YELLOW}  💡 创建测试: 在 playwright_examples/ 目录创建 *.spec.ts 文件{Colors.END}")
+        return
+    
+    test_result("E2E测试文件检查", True, f"找到{len(test_files)}个测试文件")
+    
+    try:
+        print(f"{Colors.BLUE}▶ 运行 Playwright E2E测试...{Colors.END}")
+        result = subprocess.run(
+            ["npx", "playwright", "test"],
+            cwd=tests_dir,
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='ignore',
+            timeout=180,
+            shell=True
+        )
+        
+        # 解析测试结果
+        output = result.stdout
+        if 'passed' in output or 'failed' in output:
+            test_result("Playwright E2E测试", result.returncode == 0, "测试完成")
+            print(f"{Colors.CYAN}  {output}{Colors.END}")
+        else:
+            test_result("Playwright E2E测试", False, "测试执行异常")
+            
+    except subprocess.TimeoutExpired:
+        test_result("Playwright测试", False, "测试超时")
+    except Exception as e:
+        test_result("Playwright测试", False, f"异常: {str(e)}")
+
+
+# ============================================================================
 # 性能测试
 # ============================================================================
 
@@ -1469,6 +1608,10 @@ def main():
   python tests/full_system_test.py --security         # 安全测试
   python tests/full_system_test.py --compatibility    # 兼容性测试
   
+  # 可选测试（需先配置）
+  python tests/full_system_test.py --vitest           # Vitest单元测试
+  python tests/full_system_test.py --playwright       # Playwright E2E测试
+  
   # 工具
   python tests/full_system_test.py --list             # 列出所有测试
   python tests/full_system_test.py --report           # 查看最新报告
@@ -1493,6 +1636,10 @@ def main():
     parser.add_argument('--compatibility', action='store_true', help='运行兼容性测试')
     parser.add_argument('--database', action='store_true', help='运行数据库测试')
     parser.add_argument('--stress', action='store_true', help='运行压力测试')
+    
+    # 可选测试参数
+    parser.add_argument('--vitest', action='store_true', help='运行Vitest单元测试（需先配置）')
+    parser.add_argument('--playwright', action='store_true', help='运行Playwright E2E测试（需先配置）')
     
     # 工具参数
     parser.add_argument('--list', action='store_true', help='列出所有可用测试')
@@ -1531,6 +1678,16 @@ def main():
         return run_test_group('database')
     elif args.stress:
         return run_test_group('stress')
+    elif args.vitest:
+        # 运行Vitest单元测试
+        print_header("Vitest单元测试")
+        test_vitest()
+        return 0
+    elif args.playwright:
+        # 运行Playwright E2E测试
+        print_header("Playwright E2E测试")
+        test_playwright()
+        return 0
     elif args.api:
         return run_test_group(args.api)
     else:

@@ -9,7 +9,20 @@
 ```
 tests/
 ├── README.md                    ← 本文件（测试使用说明）
-├── full_system_test.py          ← 完整系统测试脚本
+├── full_system_test.py          ← 完整系统测试脚本（Python）
+├── test_frontend_unit.py        ← 前端单元测试（Python）
+├── test_e2e.py                  ← E2E测试（Python）
+├── test_api_integration.py      ← API集成测试（Python）
+├── test_security.py             ← 安全测试
+├── locustfile.py                ← 性能测试配置
+├── vitest_examples/             ← Vitest单元测试示例（可选） ⭐
+│   ├── README.md                  - 使用说明
+│   ├── vitest.config.example.ts   - Vitest配置
+│   └── UserForm.test.example.tsx  - 组件测试示例
+├── playwright_examples/         ← Playwright E2E测试示例（可选） ⭐
+│   ├── README.md                  - 使用说明
+│   ├── playwright.config.example.ts - Playwright配置
+│   └── users.spec.example.ts      - E2E测试示例
 └── test_reports/                ← 测试报告输出目录（自动创建）
     └── test_report_*.json       ← JSON格式测试报告
 ```
@@ -894,7 +907,377 @@ python tests/full_system_test.py --backend
 
 ---
 
+## 🧪 Vitest单元测试（可选）
+
+### 什么是Vitest？
+**Vitest** 是现代化的JavaScript/TypeScript单元测试框架，专为Vite项目设计，用于测试React组件的功能和行为。
+
+### 🚀 快速开始
+
+#### 1. 安装依赖
+```bash
+cd tests
+npm install -D vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom
+```
+
+#### 2. 配置Vitest
+```bash
+# 重命名配置文件
+mv vitest_examples/vitest.config.example.ts vitest.config.ts
+
+# 配置文件会自动：
+# - 指向 frontend/src 目录（通过路径别名）
+# - 使用 vitest_examples/setup.ts 作为测试环境
+# - 在 vitest_examples/ 下查找测试文件
+# - 生成覆盖率报告到 test_reports/coverage/
+```
+
+#### 3. 创建测试文件
+```bash
+# 重命名示例测试（或创建新的）
+cp vitest_examples/UserForm.test.example.tsx vitest_examples/UserForm.test.tsx
+```
+
+#### 4. 运行测试
+```bash
+# 在tests/目录运行
+npm test
+
+# 或通过Python脚本
+python full_system_test.py --vitest
+
+# 监听模式
+npm test -- --watch
+
+# 生成覆盖率
+npm test -- --coverage
+```
+
+### 📝 测试编写指南
+
+#### 基本结构
+```typescript
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
+import UserForm from '@components/forms/UserForm' // 使用路径别名
+
+describe('UserForm组件', () => {
+  it('应该渲染表单字段', () => {
+    render(<UserForm />)
+    expect(screen.getByLabelText('用户名')).toBeInTheDocument()
+  })
+
+  it('提交时应该调用回调', async () => {
+    const onSubmit = vi.fn()
+    render(<UserForm onSubmit={onSubmit} />)
+    
+    fireEvent.click(screen.getByText('提交'))
+    
+    expect(onSubmit).toHaveBeenCalled()
+  })
+})
+```
+
+#### 常用断言
+```typescript
+// DOM断言
+expect(element).toBeInTheDocument()
+expect(element).toBeVisible()
+expect(element).toHaveValue('text')
+expect(element).toHaveTextContent('text')
+
+// 函数调用
+expect(mockFn).toHaveBeenCalled()
+expect(mockFn).toHaveBeenCalledWith(arg1, arg2)
+
+// 值断言
+expect(value).toBe(10)
+expect(value).toEqual({ a: 1 })
+```
+
+#### Mock依赖
+```typescript
+import { vi } from 'vitest'
+
+// Mock模块
+vi.mock('axios')
+
+// Mock函数
+const mockFn = vi.fn()
+mockFn.mockReturnValue('result')
+```
+
+### 📊 测试覆盖率
+
+运行 `npm test -- --coverage` 后：
+```
+File                  | % Stmts | % Branch | % Funcs | % Lines
+----------------------|---------|----------|---------|--------
+components/forms/     |   95.23 |    87.50 |   100.0 |   94.73
+services/             |   88.88 |    75.00 |   85.71 |   88.88
+```
+
+**目标**: 语句/分支/函数/行覆盖率 > 80%
+
+### 💡 最佳实践
+
+1. **AAA模式**: Arrange（准备）→ Act（执行）→ Assert（断言）
+2. **一个测试一个功能**: 保持测试简单专注
+3. **有意义的命名**: 描述测试的行为而不是实现
+4. **隔离测试**: Mock外部依赖
+5. **清理副作用**: 使用 `afterEach(() => cleanup())`
+
+### 🔗 相关资源
+- [Vitest官方文档](https://vitest.dev/)
+- [Testing Library文档](https://testing-library.com/docs/react-testing-library/intro/)
+
+---
+
+## 🎭 Playwright E2E测试（可选）
+
+### 什么是Playwright？
+**Playwright** 是微软开发的端到端测试工具，可以控制真实浏览器（Chrome/Firefox/Safari）进行测试，模拟真实用户操作。
+
+### 🚀 快速开始
+
+#### 1. 安装Playwright
+```bash
+cd tests
+npm install -D @playwright/test
+npx playwright install  # 下载浏览器
+```
+
+#### 2. 配置Playwright
+```bash
+# 重命名配置文件
+mv playwright_examples/playwright.config.example.ts playwright.config.ts
+
+# 配置文件会自动：
+# - 测试目录: playwright_examples/
+# - 支持多浏览器: Chrome/Firefox/Safari
+# - 失败时截图和录像
+# - 测试报告: HTML格式
+```
+
+#### 3. 创建测试文件
+```bash
+# 重命名示例测试
+mv playwright_examples/users.spec.example.ts playwright_examples/users.spec.ts
+```
+
+#### 4. 运行测试
+```bash
+# ⚠️ 重要：运行测试前需要先启动前端服务器
+cd frontend
+npm run dev
+
+# 然后在另一个终端运行测试：
+cd tests
+npx playwright test
+
+# 或通过Python脚本
+python full_system_test.py --playwright
+
+# UI模式（推荐，可视化调试）
+npx playwright test --ui
+
+# 显示浏览器
+npx playwright test --headed
+
+# 查看报告
+npx playwright show-report
+
+# 只运行基础测试（不需要后端数据）
+npx playwright test basic.spec.ts
+```
+
+### 📝 测试编写指南
+
+#### 基本结构
+```typescript
+import { test, expect } from '@playwright/test'
+
+test.describe('用户管理', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/users')
+  })
+
+  test('完整CRUD流程', async ({ page }) => {
+    // 1. 创建
+    await page.click('text=新建用户')
+    await page.fill('input[name="username"]', 'testuser')
+    await page.click('button[type="submit"]')
+    
+    // 2. 验证
+    await expect(page.locator('table')).toContainText('testuser')
+    
+    // 3. 删除
+    await page.click('button[aria-label="删除"]')
+    await page.click('text=确认')
+    
+    // 4. 验证删除成功
+    await expect(page.locator('table')).not.toContainText('testuser')
+  })
+})
+```
+
+#### 定位器（推荐优先级）
+```typescript
+// 1. 角色定位（最推荐）
+page.getByRole('button', { name: '提交' })
+page.getByRole('textbox', { name: '用户名' })
+
+// 2. Label定位
+page.getByLabel('邮箱')
+
+// 3. 文本定位
+page.getByText('删除')
+
+// 4. CSS选择器
+page.locator('button.primary')
+page.locator('#user-form')
+```
+
+#### 常用操作
+```typescript
+// 导航
+await page.goto('/users')
+await page.goBack()
+
+// 交互
+await page.click('button')
+await page.fill('input', 'text')
+await page.selectOption('select', 'value')
+await page.check('input[type="checkbox"]')
+
+// 等待
+await page.waitForURL('/users')
+await page.waitForLoadState('networkidle')
+await page.waitForTimeout(1000)
+
+// 截图
+await page.screenshot({ path: 'screenshot.png' })
+```
+
+#### 断言
+```typescript
+// 页面断言
+await expect(page).toHaveURL('/users')
+await expect(page).toHaveTitle('用户管理')
+
+// 元素断言
+await expect(locator).toBeVisible()
+await expect(locator).toBeHidden()
+await expect(locator).toHaveText('text')
+await expect(locator).toContainText('text')
+await expect(locator).toHaveValue('value')
+await expect(locator).toHaveCount(5)
+```
+
+### 🛠️ 高级功能
+
+#### 多浏览器测试
+```typescript
+// playwright.config.ts已配置
+projects: [
+  { name: 'chromium' },
+  { name: 'firefox' },
+  { name: 'webkit' },
+  { name: 'Mobile Chrome' },
+  { name: 'Mobile Safari' },
+]
+```
+
+#### 网络拦截
+```typescript
+await page.route('**/api/v1/users/', route => {
+  route.fulfill({
+    status: 200,
+    body: JSON.stringify([{ id: 1, username: 'mock' }])
+  })
+})
+```
+
+#### 失败时自动截图和录像
+```typescript
+// 已在配置中启用
+use: {
+  screenshot: 'only-on-failure',
+  video: 'retain-on-failure',
+}
+```
+
+### 🐛 调试技巧
+
+```bash
+# UI模式调试（最推荐）
+npx playwright test --ui
+
+# 调试器
+npx playwright test --debug
+
+# 慢动作
+npx playwright test --headed --slow-mo=1000
+
+# 暂停执行
+await page.pause()  # 在测试代码中
+```
+
+### 💡 最佳实践
+
+1. **语义化定位**: 优先用 `getByRole`、`getByLabel`
+2. **等待异步**: 用 `waitFor*` 而不是 `waitForTimeout`
+3. **测试用户行为**: 不测试实现细节
+4. **隔离数据**: 每个测试用独立数据（时间戳）
+5. **清理数据**: 测试后删除创建的数据
+
+### 🔗 相关资源
+- [Playwright官方文档](https://playwright.dev/)
+- [最佳实践](https://playwright.dev/docs/best-practices)
+
+---
+
+## ⚠️ 重要说明
+
+### Lint错误
+示例文件（`.example.ts/tsx`）会显示TypeScript错误，这是**正常的**，因为：
+- 文件在tests/目录，依赖未安装
+- 重命名并安装依赖后错误会消失
+
+### 配置位置
+- ✅ **所有配置都在tests/目录** - 不污染frontend/或项目根目录
+- ✅ **独立的package.json** - tests/有自己的依赖
+- ✅ **独立的node_modules** - 完全隔离
+
+### 路径别名
+Vitest配置已设置路径别名：
+- `@` → `frontend/src`
+- `@components` → `frontend/src/components`
+- `@pages` → `frontend/src/pages`
+- `@services` → `frontend/src/services`
+
+可以直接在测试中使用：
+```typescript
+import UserForm from '@components/forms/UserForm'
+import { fetchUsers } from '@services/api'
+```
+
+---
+
 ## 📝 更新日志
+
+### 2025-11-22 v3.1 - Vitest和Playwright示例 ⭐
+- ✨ 新增Vitest单元测试示例（可选实现）
+  - vitest.config.example.ts - 配置文件
+  - UserForm.test.example.tsx - 组件测试示例
+  - 完整README说明文档
+- ✨ 新增Playwright E2E测试示例（可选实现）
+  - playwright.config.example.ts - 配置文件
+  - users.spec.example.ts - E2E测试示例
+  - 完整README说明文档
+- 📚 两个独立示例目录（vitest_examples/、playwright_examples/）
+- 🎯 提供完整的使用指南和最佳实践
+- ⚠️ 示例文件有lint错误是正常的（需复制到正确位置使用）
 
 ### 2025-11-22 v3.0 - 完整测试体系
 - ✨ 新增23个测试分组（全覆盖）

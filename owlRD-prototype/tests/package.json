@@ -1,0 +1,27 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "description": "本目录包含owlRD项目的**完整系统测试** - 后端API + 前端编译 + 代码质量",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^19.2.6",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "jsdom": "^27.2.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "vitest": "^4.0.13"
+  }
+}
