@@ -8,7 +8,9 @@ import {
   Radio, 
   AlertTriangle, 
   Activity,
-  LogOut
+  LogOut,
+  CreditCard,
+  TrendingUp
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
@@ -19,6 +21,8 @@ const navigation = [
   { name: '位置管理', href: '/locations', icon: MapPin },
   { name: '住户管理', href: '/residents', icon: Users },
   { name: '设备管理', href: '/devices', icon: Radio },
+  { name: 'IoT数据', href: '/iot-data', icon: TrendingUp },
+  { name: '卡片管理', href: '/cards', icon: CreditCard },
   { name: '告警中心', href: '/alerts', icon: AlertTriangle },
   { name: '护理质量', href: '/care-quality', icon: Activity },
 ]

@@ -12,6 +12,8 @@ import Residents from './pages/Residents'
 import Devices from './pages/Devices'
 import Alerts from './pages/Alerts'
 import CareQuality from './pages/CareQuality'
+import IoTData from './pages/IoTData'
+import Cards from './pages/Cards'
 
 function App() {
   return (
@@ -41,6 +43,8 @@ function App() {
             
             {/* Devices & Monitoring */}
             <Route path="devices" element={<Devices />} />
+            <Route path="iot-data" element={<IoTData />} />
+            <Route path="cards" element={<Cards />} />
             <Route path="alerts" element={<Alerts />} />
             
             {/* Quality & Reports */}
