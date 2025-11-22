@@ -1,6 +1,14 @@
 """
 位置相关数据模型
-对应 locations (04_locations.sql), rooms (05_rooms.sql), beds (06_beds.sql) 表
+
+对齐源参考：
+- 04_locations.sql - 位置表定义
+- 05_rooms.sql - 房间表定义
+- 06_beds.sql - 床位表定义
+- 25_Alarm_Notification_Flow.md - Location卡片告警路由规则
+  * alert_user_ids: 直接指定的告警接收者
+  * alert_tags: 标签匹配的告警接收者（如NightShift, TeamA）
+  * 用于公共空间/多人房间的告警路由
 """
 
 from datetime import datetime

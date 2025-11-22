@@ -212,19 +212,28 @@ def get_device_validator() -> Validator:
 
 
 def get_alert_validator() -> Validator:
-    """告警数据验证器"""
+    """
+    告警数据验证器
+    对齐源参考: TDPv2-0916.md + 25_Alarm_Notification_Flow.md
+    告警级别: L1/L2/L3/L5/L8/L9/DISABLE
+    """
     validator = Validator()
     
     validator.add_rule("alert_type", required, "告警类型不能为空")
-    validator.add_rule("severity", required, "告警级别不能为空")
-    validator.add_rule("severity", in_choices(["low", "medium", "high", "critical"]), "告警级别无效")
+    
+    # 使用alert_level而非severity（对齐源参考）
+    validator.add_rule("alert_level", required, "告警级别不能为空")
+    validator.add_rule("alert_level", in_choices([
+        "L1", "L2", "L3", "L5", "L8", "L9", "DISABLE"
+    ]), "告警级别无效，必须是L1/L2/L3/L5/L8/L9/DISABLE")
     
     validator.add_rule("status", in_choices([
-        "pending", "acknowledged", "resolved", "ignored"
+        "pending", "acknowledged", "resolved", "dismissed"
     ]), "状态值无效")
     
-    validator.add_rule("alert_time", required, "告警时间不能为空")
-    validator.add_rule("alert_time", is_date, "告警时间格式不正确")
+    # 使用timestamp而非alert_time（对齐models/alert.py）
+    validator.add_rule("timestamp", required, "告警时间不能为空")
+    validator.add_rule("timestamp", is_date, "告警时间格式不正确")
     
     validator.add_rule("tenant_id", required, "租户ID不能为空")
     validator.add_rule("tenant_id", is_uuid, "租户ID格式不正确")

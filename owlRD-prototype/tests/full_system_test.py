@@ -3,8 +3,15 @@
 owlRD系统全自动测试脚本
 测试所有API端点、数据完整性、功能可用性
 
+对齐源参考：
+- 所有db/*.sql文件定义的表结构
+- models/*.py的数据模型
+- TDPv2-0916.md和25_Alarm_Notification_Flow.md的告警协议
+- 告警级别使用L1/L2/L3/L5/L8/L9/DISABLE
+- 告警时间字段使用timestamp
+
 运行方式：
-    python scripts/full_system_test.py
+    python tests/full_system_test.py
 
 注意：需要后端服务已启动在 http://localhost:8000
 """
@@ -438,17 +445,25 @@ def generate_report():
         return 2
 
 def get_default_tenant_id() -> str:
-    """获取默认租户ID"""
+    """获取默认租户ID - 使用init_sample_data.py创建的固定ID"""
     global DEFAULT_TENANT_ID
+    # 查找示例数据租户（由init_sample_data.py创建）
     try:
-        response = requests.get(f"{BASE_URL}{API_PREFIX}/tenants/", params={'tenant_id': 1}, timeout=5)
+        response = requests.get(f"{BASE_URL}{API_PREFIX}/tenants/", timeout=5)
         if response.status_code == 200:
             tenants = response.json()
-            if tenants and len(tenants) > 0:
+            # 查找示例租户（tenant_name="示例养老院"）
+            for tenant in tenants:
+                if tenant.get('tenant_name') == '示例养老院':
+                    DEFAULT_TENANT_ID = tenant['tenant_id']
+                    return DEFAULT_TENANT_ID
+            # 如果没找到示例租户，使用第一个
+            if tenants:
                 DEFAULT_TENANT_ID = tenants[0]['tenant_id']
+                print(f"{Colors.YELLOW}⚠ 未找到'示例养老院'，使用第一个租户{Colors.END}")
                 return DEFAULT_TENANT_ID
-    except:
-        pass
+    except Exception as e:
+        print(f"{Colors.RED}✗ 获取租户ID失败: {str(e)}{Colors.END}")
     return None
 
 def main():

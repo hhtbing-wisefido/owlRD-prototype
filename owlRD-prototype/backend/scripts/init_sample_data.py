@@ -824,65 +824,60 @@ async def init_alert_policies():
 
 async def init_alerts():
     """
-    初始化告警记录
-    对齐: 13_iot_monitor_alerts.sql
+    初始化告警实例记录
+    对齐源参考: TDPv2-0916.md + 25_Alarm_Notification_Flow.md + models/alert.py
+    注意: 源SQL中没有alerts表定义，这是基于协议和Model的扩展实现
     """
     print("\n🚨 Creating sample alerts...")
     storage = StorageService("alerts")
     
-    # 严格按照源参考 13_iot_monitor_alerts.sql 的字段
+    # 严格对齐 models/alert.py 和源参考协议
     alerts = [
         {
             "alert_id": str(uuid4()),
             "tenant_id": SAMPLE_TENANT_ID,
             "alert_type": "HEART_RATE_HIGH",
-            "severity": "L1",  # L1紧急
-            "status": "pending",  # pending/acknowledged/resolved
-            "source_type": "IOT_DEVICE",
-            "source_id": SAMPLE_DEVICE_ID,
+            "alert_level": "L1",  # L1=EMERGENCY（对齐TDPv2）
+            "status": "pending",  # pending/acknowledged/resolved/dismissed
+            "timestamp": (datetime.now() - timedelta(hours=2)).isoformat(),  # 告警时间（对齐validation）
+            "message": "心率异常：120 bpm（正常范围：55-95）",  # 对齐models/alert.py
+            # 关联信息
             "resident_id": SAMPLE_RESIDENT_ID,
+            "device_id": SAMPLE_DEVICE_ID,
             "location_id": SAMPLE_LOCATION_ID,
-            "room_id": SAMPLE_ROOM_ID,
-            "bed_id": SAMPLE_BED_ID,
-            # 告警详情
-            "alert_message": "心率异常：120 bpm（正常范围：55-95）",
-            "alert_data": {
-                "heart_rate": 120,
-                "threshold": 95,
-                "timestamp": (datetime.now() - timedelta(hours=2)).isoformat()
-            },
             # 处理信息
             "acknowledged_by": None,
             "acknowledged_at": None,
             "resolved_by": None,
             "resolved_at": None,
-            "resolution_notes": None,
-            # 路由信息
-            "notified_user_ids": [SAMPLE_USER_ID_2, SAMPLE_USER_ID_3],
+            # 升级/抑制机制（对齐25_Alarm_Notification_Flow.md）
             "escalation_level": 0,
-            "created_at": (datetime.now() - timedelta(hours=2)).isoformat(),
-            "updated_at": (datetime.now() - timedelta(hours=2)).isoformat()
+            "escalated_at": None,
+            "suppressed_until": None,
+            "auto_escalate": True
         },
         {
             "alert_id": str(uuid4()),
             "tenant_id": SAMPLE_TENANT_ID,
             "alert_type": "RESPIRATORY_RATE_HIGH",
-            "severity": "L2",
+            "alert_level": "L2",  # L2=ALERT（对齐TDPv2）
             "status": "acknowledged",
-            "source_type": "IOT_DEVICE",
-            "source_id": SAMPLE_DEVICE_ID,
+            "timestamp": (datetime.now() - timedelta(hours=1, minutes=45)).isoformat(),
+            "message": "呼吸率异常：25 次/分（正常范围：10-23）",
+            # 关联信息
             "resident_id": SAMPLE_RESIDENT_ID,
+            "device_id": SAMPLE_DEVICE_ID,
             "location_id": SAMPLE_LOCATION_ID,
-            "alert_message": "呼吸率异常：25 /min（正常范围：10-23）",
-            "alert_data": {
-                "respiratory_rate": 25,
-                "threshold": 23
-            },
+            # 处理信息
             "acknowledged_by": SAMPLE_USER_ID_2,
             "acknowledged_at": (datetime.now() - timedelta(hours=1, minutes=30)).isoformat(),
-            "notified_user_ids": [SAMPLE_USER_ID_2],
-            "created_at": (datetime.now() - timedelta(hours=2)).isoformat(),
-            "updated_at": (datetime.now() - timedelta(hours=1, minutes=30)).isoformat()
+            "resolved_by": None,
+            "resolved_at": None,
+            # 升级/抑制机制
+            "escalation_level": 0,
+            "escalated_at": None,
+            "suppressed_until": None,
+            "auto_escalate": True
         }
     ]
     

@@ -268,14 +268,15 @@ export interface Device {
 }
 
 // Alert types
+// 对齐源参考：TDPv2-0916.md, 25_Alarm_Notification_Flow.md, models/alert.py
 export interface Alert {
   alert_id: string
   tenant_id: string
-  alert_level: string
-  alert_type: string
+  alert_level: string  // L1/L2/L3/L5/L8/L9/DISABLE（对齐TDPv2协议）
+  alert_type: string   // FALL/HEART_RATE_HIGH/RESPIRATORY_RATE_HIGH等
   message: string
-  timestamp: string
-  status: string
+  timestamp: string    // 告警发生时间（对齐协议alert_timestamp）
+  status: string       // pending/acknowledged/resolved/dismissed
   resident_id?: string
   device_id?: string
   location_id?: string
@@ -284,7 +285,7 @@ export interface Alert {
   resolved_by?: string
   resolved_at?: string
   
-  // 告警升级/抑制机制
+  // 告警升级/抑制机制（对齐25_Alarm_Notification_Flow.md）
   escalation_level?: number  // 0=初始, 1-3=升级次数
   escalated_at?: string
   suppressed_until?: string  // 抑制到期时间

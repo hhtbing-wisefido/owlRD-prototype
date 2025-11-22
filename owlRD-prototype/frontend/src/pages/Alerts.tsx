@@ -1,3 +1,11 @@
+/**
+ * 告警管理页面
+ * 
+ * 对齐源参考：
+ * - TDPv2-0916.md - 告警协议（alert_level: L1/L2/L3等）
+ * - 25_Alarm_Notification_Flow.md - 告警流程和处理
+ * - models/alert.py - Alert数据模型
+ */
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, CheckCircle, Clock, Check, X, Eye, Filter } from 'lucide-react'

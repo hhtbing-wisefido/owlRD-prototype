@@ -1,6 +1,21 @@
 """
-告警引擎服务
-多级报警处理、路由和发送
+告警引擎服务 - 多级报警处理、路由和发送
+
+对齐源参考：
+- 25_Alarm_Notification_Flow.md - 完整告警流程定义
+  * 告警路由机制（ActiveBed/Location卡片路由）
+  * 告警级别确定规则：max(云端级别, IoT级别)
+  * 用户过滤（alert_levels, alert_scope, alert_channels）
+  * 升级、抑制、静默机制
+- TDPv2-0916.md - DangerLevel协议定义
+- 14_cloud_alert_policies.sql - 云端策略表
+
+核心功能：
+1. 告警级别计算：最终级别 = max(云端级别, IoT级别)
+2. 告警路由：根据卡片类型和位置特征决定接收者
+3. 用户过滤：根据用户配置过滤接收者
+4. 升级机制：超时自动升级告警级别
+5. 抑制机制：避免重复告警（静默期）
 """
 
 from typing import Dict, List, Any, Optional

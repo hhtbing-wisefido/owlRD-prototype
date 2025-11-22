@@ -1,6 +1,15 @@
 """
 用户和角色数据模型
-对应 roles 表 (02_roles.sql) 和 users 表 (03_users.sql)
+
+对齐源参考：
+- 02_roles.sql - 角色表定义
+- 03_users.sql - 用户表定义  
+- 25_Alarm_Notification_Flow.md - 用户告警配置说明
+  * alert_levels: 接收的告警级别（L1/L2/L3等）
+  * alert_channels: 接收通道（APP/EMAIL等）
+  * alert_scope: 接收范围（ALL/LOCATION-TAG/ASSIGNED_ONLY）
+
+用户告警配置用于告警路由和过滤。
 """
 
 from datetime import datetime

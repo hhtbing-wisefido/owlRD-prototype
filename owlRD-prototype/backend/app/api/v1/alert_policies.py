@@ -1,6 +1,15 @@
 """
 云端告警策略管理API端点
-对应 cloud_alert_policies 表 (14_cloud_alert_policies.sql)
+
+对齐源参考：
+- 14_cloud_alert_policies.sql - 云端告警策略表定义
+- TDPv2-0916.md - DangerLevel定义（L1/L2/DISABLE）
+- 25_Alarm_Notification_Flow.md - 告警策略配置说明
+
+字段说明：
+- DangerLevel字段：DISABLE/L1/L2（每个报警类型对应一个危险等级）
+- notification_rules: 通知规则配置（通道、升级、抑制、静默）
+- conditions: 报警阈值配置（心率、呼吸率等生理指标）
 """
 
 from typing import Optional

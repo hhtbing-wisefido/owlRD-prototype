@@ -1,6 +1,10 @@
 """
-护理质量评估服务
-基于空间智能的护理质量分析和团队报告生成
+护理质量评估服务 - 基于空间智能的护理质量分析
+
+对齐源参考：
+- 17_care_quality_reports.sql - 护理质量报告表
+- AI护理.md - AI分析方法和指标
+- 评分维度包含告警响应速度和告警处理质量
 """
 
 from typing import Dict, List, Any, Optional, Tuple

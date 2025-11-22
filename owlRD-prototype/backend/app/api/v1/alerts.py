@@ -1,5 +1,15 @@
 """
 告警管理API - 查询和管理
+
+对齐源参考：
+- TDPv2-0916.md - 告警协议定义
+- 25_Alarm_Notification_Flow.md - 告警路由和处理流程
+- models/alert.py - Alert数据模型
+
+字段说明：
+- alert_level: L1/L2/L3/L5/L8/L9/DISABLE（对齐TDPv2协议）
+- status: pending/acknowledged/resolved/dismissed
+- timestamp: 告警发生时间
 """
 
 from fastapi import APIRouter, HTTPException, Query

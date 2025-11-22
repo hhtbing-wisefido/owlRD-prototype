@@ -1,3 +1,11 @@
+/**
+ * 告警策略管理页面
+ * 
+ * 对齐源参考：
+ * - 14_cloud_alert_policies.sql - 云端告警策略表
+ * - TDPv2-0916.md - DangerLevel定义
+ * - 25_Alarm_Notification_Flow.md - 策略配置说明
+ */
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Shield, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, AlertTriangle } from 'lucide-react'

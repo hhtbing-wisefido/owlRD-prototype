@@ -1,6 +1,14 @@
 """
 卡片数据模型
-对应 cards (18_cards.sql) 表
+
+对齐源参考：
+- 18_cards.sql - 卡片表定义
+- 19_card_functions.sql - 卡片功能表定义
+- 25_Alarm_Notification_Flow.md - 卡片告警路由规则
+  * routing_alert_user_ids: 覆盖location的告警接收者
+  * routing_alert_tags: 覆盖location的告警标签
+  * 如果设置，则优先使用卡片配置而非location配置
+- 24_Card_Permission_Design.md - 卡片权限设计
 """
 
 from datetime import datetime

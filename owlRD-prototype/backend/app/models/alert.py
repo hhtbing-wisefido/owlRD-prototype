@@ -1,8 +1,20 @@
 """
 告警数据模型
+
+对齐源参考：
+1. TDPv2-0916.md - 协议定义（DangerLevel枚举：L1/L2/L3/L5/L8/L9）
+2. 25_Alarm_Notification_Flow.md - 告警流程和级别说明
+3. 14_cloud_alert_policies.sql - 云端告警策略表（CloudAlertPolicy）
+
+注意：
+- Alert模型是协议扩展实现，源SQL中没有对应表定义
+- 告警级别使用 L1/L2/L3/L5/L8/L9/DISABLE（对齐TDPv2协议）
+- 时间字段使用 timestamp（对齐协议中的alert_timestamp）
+- 状态字段使用 pending/acknowledged/resolved/dismissed
+
 包含：
-1. Alert - 告警实例记录
-2. CloudAlertPolicy - 云端告警策略配置
+1. Alert - 告警实例记录（协议扩展）
+2. CloudAlertPolicy - 云端告警策略配置（对齐14_cloud_alert_policies.sql）
 """
 
 from datetime import datetime
