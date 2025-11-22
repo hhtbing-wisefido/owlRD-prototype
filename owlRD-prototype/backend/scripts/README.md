@@ -7,7 +7,28 @@
 
 ## 📋 脚本清单
 
-### 1. validate_alignment.py (442行)
+### 1. init_sample_data.py (1236行) ⭐
+
+**功能**: 初始化完整示例数据（19/19表）
+
+**详细功能**:
+- 严格按照SQL Schema生成示例数据
+- 覆盖所有19个表（Tenant/User/Resident/Device/IoT/Alert等）
+- 包含加密PHI数据、告警策略、卡片功能等
+- ~100条示例记录，可立即用于演示和测试
+
+**用法**:
+```bash
+python scripts/init_sample_data.py
+```
+
+**输出**:
+- 在`app/data/`目录下创建所有JSON数据文件
+- 控制台显示详细初始化进度
+
+---
+
+### 2. validate_alignment.py (442行)
 
 **功能**: 验证后端Pydantic Model与SQL定义的对齐度
 
@@ -33,7 +54,7 @@ python scripts/validate_alignment.py
 
 ---
 
-### 2. sync_checklist.py (420行)
+### 3. sync_checklist.py (420行)
 
 **功能**: 智能同步检查清单，自动更新对齐状态
 
@@ -65,7 +86,7 @@ REASONABLE_EXTRA_FIELDS = {
 
 ---
 
-### 3. validate_frontend_types.py (400行)
+### 4. validate_frontend_types.py (400行)
 
 **功能**: 验证前端TypeScript类型与后端Pydantic Model的对齐度
 
@@ -142,33 +163,44 @@ ls ../../项目记录/AUTO_*.md
 
 ---
 
-### 4. init_sample_data.py (1236行) ⭐
+### 5. test_docs.py (62行)
 
-**功能**: 初始化完整示例数据（19/19表）
+**功能**: 测试所有API文档端点
 
 **详细功能**:
-- 严格按照SQL Schema生成示例数据
-- 覆盖所有19个表（Tenant/User/Resident/Device/IoT/Alert等）
-- 包含加密PHI数据、告警策略、卡片功能等
-- ~100条示例记录，可立即用于演示和测试
+- 测试8个文档端点是否正常工作
+- 包括Swagger UI、ReDoc、OpenAPI等
+- 自动检测端点可访问性
+- 生成测试报告
 
 **用法**:
 ```bash
-python scripts/init_sample_data.py
+python scripts/test_docs.py
 ```
 
 **输出**:
-- 在`app/data/`目录下创建所有JSON数据文件
-- 控制台显示详细初始化进度
+- 控制台：每个端点的测试结果
+- 推荐访问地址
 
-**数据覆盖**:
-- ✅ 基础数据：租户、角色、用户、位置
-- ✅ 住户数据：住户、PHI、联系人、护理人员
-- ✅ 设备数据：IoT设备、时序数据
-- ✅ 告警数据：告警策略、告警记录
-- ✅ 卡片数据：卡片、卡片功能
-- ✅ 配置数据：配置版本、映射表
-- ✅ 报告数据：护理质量报告
+---
+
+### 6. download_swagger_ui.py (2913 bytes)
+
+**功能**: 下载本地Swagger UI资源
+
+**详细功能**:
+- 从CDN下载Swagger UI静态文件
+- 支持完全离线使用
+- 自动创建本地文档目录
+
+**用法**:
+```bash
+python scripts/download_swagger_ui.py
+```
+
+**输出**:
+- `static/swagger-ui/` 目录及文件
+- 允许`/docs-local`端点完全离线访问
 
 ---
 
@@ -221,6 +253,7 @@ python scripts/init_sample_data.py
 ---
 
 **维护者**: Development Team  
-**最后更新**: 2025-11-22  
-**脚本数量**: 4个  
-**总代码量**: ~2500行
+**最后更新**: 2025-11-22 15:10  
+**脚本数量**: 6个（已归档2个废弃脚本）  
+**总代码量**: ~3100行  
+**废弃脚本**: create_sample_alert_policies.py, create_sample_phi.py（已归档）
