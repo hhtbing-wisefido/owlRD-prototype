@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Activity, Radio, Heart, Wind, AlertTriangle, TrendingUp } from 'lucide-react'
+import { Activity, Radio, Heart, Wind, AlertTriangle, TrendingUp, BarChart3, List } from 'lucide-react'
 import api from '../services/api'
 import { API_CONFIG } from '../config/api'
+import VitalSignsChart from '../components/charts/VitalSignsChart'
 
 interface IOTTimeseries {
   iot_id: string
@@ -24,6 +25,7 @@ interface IOTTimeseries {
 export default function IoTData() {
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null)
   const [timeRange, setTimeRange] = useState(24) // 默认24小时
+  const [viewMode, setViewMode] = useState<'list' | 'chart'>('list') // 视图模式
 
   const TENANT_ID = API_CONFIG.DEFAULT_TENANT_ID
 
@@ -200,6 +202,32 @@ export default function IoTData() {
             </select>
           </div>
 
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700">视图:</label>
+            <div className="flex gap-1 border border-gray-300 rounded overflow-hidden">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-1 text-sm transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('chart')}
+                className={`px-3 py-1 text-sm transition-colors ${
+                  viewMode === 'chart'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <BarChart3 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
           <div className="ml-auto flex items-center gap-2 text-sm text-gray-600">
             <Activity className="h-4 w-4 animate-pulse text-green-500" />
             <span>自动刷新中</span>
@@ -207,10 +235,12 @@ export default function IoTData() {
         </div>
       </div>
 
-      {/* IoT数据列表 */}
+      {/* IoT数据展示 */}
       <div className="bg-white rounded-lg shadow">
         <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">实时数据流</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            {viewMode === 'list' ? '实时数据流' : '数据趋势图'}
+          </h2>
           <p className="text-sm text-gray-600 mt-1">
             {iotDataList?.length || 0} 条记录 (最近{timeRange}小时)
           </p>
@@ -222,7 +252,67 @@ export default function IoTData() {
             <p>加载数据中...</p>
           </div>
         ) : iotDataList && iotDataList.length > 0 ? (
-          <div className="divide-y divide-gray-200">
+          <>
+            {/* 图表视图 */}
+            {viewMode === 'chart' && (
+              <div className="p-6 space-y-6">
+                {/* 心率图表 */}
+                <div>
+                  <h3 className="text-md font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <Heart className="h-5 w-5 text-pink-500" />
+                    心率趋势
+                  </h3>
+                  <VitalSignsChart
+                    data={iotDataList.filter((d) => d.data_type === 'heart_rate')}
+                    dataType="heart_rate"
+                  />
+                  <div className="mt-2 flex items-center gap-4 text-xs text-gray-600">
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block w-3 h-3 bg-red-500 rounded"></span>
+                      正常范围: 55-95 bpm
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block w-3 h-3 bg-orange-500 rounded"></span>
+                      L2警报: 45-54 或 96-115 bpm
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block w-3 h-3 bg-red-600 rounded"></span>
+                      L1紧急: &lt;44 或 &gt;116 bpm
+                    </span>
+                  </div>
+                </div>
+
+                {/* 呼吸率图表 */}
+                <div>
+                  <h3 className="text-md font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <Wind className="h-5 w-5 text-cyan-500" />
+                    呼吸率趋势
+                  </h3>
+                  <VitalSignsChart
+                    data={iotDataList.filter((d) => d.data_type === 'respiratory_rate')}
+                    dataType="respiratory_rate"
+                  />
+                  <div className="mt-2 flex items-center gap-4 text-xs text-gray-600">
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block w-3 h-3 bg-blue-500 rounded"></span>
+                      正常范围: 10-23 /min
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block w-3 h-3 bg-orange-500 rounded"></span>
+                      L2警报: 8-9 或 24-26 /min
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="inline-block w-3 h-3 bg-red-600 rounded"></span>
+                      L1紧急: &lt;7 或 &gt;27 /min
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 列表视图 */}
+            {viewMode === 'list' && (
+              <div className="divide-y divide-gray-200">
             {iotDataList.map((data) => (
               <div
                 key={data.iot_id}
@@ -285,7 +375,9 @@ export default function IoTData() {
                 </div>
               </div>
             ))}
-          </div>
+              </div>
+            )}
+          </>
         ) : (
           <div className="p-8 text-center text-gray-500">
             <Radio className="h-12 w-12 mx-auto mb-3 text-gray-400" />
