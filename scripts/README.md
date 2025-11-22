@@ -43,6 +43,54 @@ python update_project_status.py
 
 ---
 
+### 3. `check_directory_standards.py` ⭐
+
+**功能**: 项目记录目录规范检查
+
+**作用**:
+- 检查顶层目录完整性（1-8编号）
+- 检查子目录结构（如2-源参考对照的1-5子目录）
+- 检查根目录文件规范
+- 检测临时文件和需要归档的文件
+- 检查聊天记录完整性
+- 生成检查报告JSON
+
+**使用**:
+```bash
+# 命令行运行
+python scripts/check_directory_standards.py
+
+# 或使用批处理文件
+scripts\check_standards.bat
+```
+
+**检查项**:
+- ✅ 目录编号是否连续
+- ✅ 必需目录是否存在
+- ✅ 根目录是否有不规范文件
+- ✅ 是否有临时文件需要清理
+- ✅ 聊天记录是否完整
+
+**输出**:
+- 控制台：详细检查结果
+- 文件：`项目记录/directory_check_report.json`
+
+---
+
+### 4. `check_standards.bat`
+
+**功能**: Windows目录规范检查快捷脚本
+
+**作用**:
+- 双击运行`check_directory_standards.py`
+- 显示检查结果
+- 等待查看后关闭
+
+**使用**:
+- 双击`check_standards.bat`文件
+
+---
+
 ## 🔧 维护
 
 ### 添加新脚本
