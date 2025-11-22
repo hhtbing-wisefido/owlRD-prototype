@@ -24,6 +24,27 @@ router = APIRouter()
 policy_storage = StorageService[CloudAlertPolicy]("cloud_alert_policies")
 
 
+@router.get("/", response_model=list[CloudAlertPolicy])
+async def list_alert_policies(
+    tenant_id: Optional[UUID] = Query(None, description="租户ID筛选")
+):
+    """
+    获取告警策略列表
+    
+    Args:
+        tenant_id: 可选的租户ID筛选
+    
+    Returns:
+        告警策略列表
+    """
+    if tenant_id:
+        policy = policy_storage.find_by_id("tenant_id", str(tenant_id))
+        return [policy] if policy else []
+    else:
+        policies = policy_storage.find_all()
+        return policies
+
+
 @router.get("/{tenant_id}", response_model=CloudAlertPolicy)
 async def get_alert_policy(tenant_id: UUID):
     """

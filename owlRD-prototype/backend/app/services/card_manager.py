@@ -376,7 +376,7 @@ class CardManager:
             
             return True
         
-        cards = await self.card_storage.find_all(filter_func)
+        cards = self.card_storage.find_all(filter_func)
         return cards[:limit]
 
 

@@ -32,7 +32,7 @@ async def list_tenants(
 async def get_tenant(tenant_id: UUID):
     """获取单个租户详情"""
     try:
-        tenant = tenant_storage.get(tenant_id)
+        tenant = tenant_storage.find_by_id("tenant_id", str(tenant_id))
         if not tenant:
             raise HTTPException(status_code=404, detail="Tenant not found")
         return tenant

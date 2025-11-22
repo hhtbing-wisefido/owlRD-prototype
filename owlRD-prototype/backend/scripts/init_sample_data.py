@@ -252,16 +252,22 @@ async def init_locations():
     room_storage = StorageService("rooms")
     bed_storage = StorageService("beds")
     
-    # 创建位置
+    # 创建位置（对齐models/location.py）
     location = {
         "location_id": SAMPLE_LOCATION_ID,
         "tenant_id": SAMPLE_TENANT_ID,
-        "location_name": "A楼",
-        "location_type": "BUILDING",
-        "door_number": "A",
-        "floor": 1,
+        "location_tag": "BuildingA",
+        "location_name": "A楼2层201房间",
+        "location_type": "Institutional",  # 只能是Institutional或HomeCare
+        "building": "A楼",
+        "floor": "2F",  # 字符串类型
+        "area_id": "老年护理区",
+        "door_number": "201",
         "is_public_space": False,
+        "is_multi_person_room": False,
+        "timezone": "Asia/Shanghai",  # 必需字段
         "alert_user_ids": [SAMPLE_USER_ID],
+        "is_active": True,
         "created_at": datetime.now().isoformat()
     }
     location_storage.create(location)
@@ -577,6 +583,8 @@ async def init_iot_data():
         
         # 严格按照 IOTTimeseries Model 生成数据
         iot_data = {
+            # 主键（BIGSERIAL，自增）
+            "id": count + 1,
             # 设备索引（必需）
             "tenant_id": SAMPLE_TENANT_ID,
             "device_id": SAMPLE_DEVICE_ID,
@@ -642,6 +650,7 @@ async def init_iot_data():
     }
     
     alert_data = {
+        "id": count + 1,
         "tenant_id": SAMPLE_TENANT_ID,
         "device_id": SAMPLE_DEVICE_ID,
         "timestamp": timestamp_alert.isoformat(),

@@ -1,0 +1,203 @@
+{
+  "timestamp": "2025-11-22T17:28:50.984932",
+  "summary": {
+    "total": 32,
+    "passed": 21,
+    "failed": 11,
+    "pass_rate": 65.625
+  },
+  "tests": [
+    {
+      "test": "健康检查端点",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T17:27:47.201644"
+    },
+    {
+      "test": "根路径",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T17:27:49.250268"
+    },
+    {
+      "test": "本地Swagger UI (/docs-local)",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T17:27:51.309579"
+    },
+    {
+      "test": "国内CDN Swagger (/docs-cn)",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T17:27:53.360939"
+    },
+    {
+      "test": "OpenAPI规范 (/api/openapi.json)",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T17:27:55.426621"
+    },
+    {
+      "test": "获取租户列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T17:27:57.485893"
+    },
+    {
+      "test": "创建新租户",
+      "passed": true,
+      "details": "状态码: 201",
+      "timestamp": "2025-11-22T17:27:59.539540"
+    },
+    {
+      "test": "获取租户详情 (ID: a6bdb963-e5bf-48fe-a5ed-f067f7dfd2b5)",
+      "passed": false,
+      "details": "期望状态码: 200, 实际: 500",
+      "timestamp": "2025-11-22T17:28:01.609221"
+    },
+    {
+      "test": "获取角色列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T17:28:03.652386"
+    },
+    {
+      "test": "获取用户列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T17:28:05.715916"
+    },
+    {
+      "test": "创建新用户",
+      "passed": true,
+      "details": "状态码: 201",
+      "timestamp": "2025-11-22T17:28:07.760009"
+    },
+    {
+      "test": "获取位置列表",
+      "passed": false,
+      "details": "期望状态码: 200, 实际: 500",
+      "timestamp": "2025-11-22T17:28:09.815448"
+    },
+    {
+      "test": "创建新位置",
+      "passed": false,
+      "details": "期望状态码: 201, 实际: 422",
+      "timestamp": "2025-11-22T17:28:11.857906"
+    },
+    {
+      "test": "获取住户列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T17:28:13.909856"
+    },
+    {
+      "test": "创建新住户",
+      "passed": false,
+      "details": "期望状态码: 201, 实际: 422",
+      "timestamp": "2025-11-22T17:28:15.957782"
+    },
+    {
+      "test": "获取设备列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T17:28:18.008280"
+    },
+    {
+      "test": "创建新设备",
+      "passed": false,
+      "details": "期望状态码: 201, 实际: 422",
+      "timestamp": "2025-11-22T17:28:20.059095"
+    },
+    {
+      "test": "查询IoT数据",
+      "passed": false,
+      "details": "期望状态码: 200, 实际: 500",
+      "timestamp": "2025-11-22T17:28:22.117029"
+    },
+    {
+      "test": "获取IoT数据统计",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T17:28:24.169831"
+    },
+    {
+      "test": "获取告警列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T17:28:26.238170"
+    },
+    {
+      "test": "获取告警统计",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T17:28:28.296352"
+    },
+    {
+      "test": "获取告警策略列表",
+      "passed": false,
+      "details": "期望状态码: 200, 实际: 404",
+      "timestamp": "2025-11-22T17:28:30.345464"
+    },
+    {
+      "test": "获取卡片列表",
+      "passed": false,
+      "details": "期望状态码: 200, 实际: 500",
+      "timestamp": "2025-11-22T17:28:32.396061"
+    },
+    {
+      "test": "获取护理质量报告",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T17:28:34.457592"
+    },
+    {
+      "test": "获取质量评分",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T17:28:36.520569"
+    },
+    {
+      "test": "获取空间覆盖",
+      "passed": false,
+      "details": "期望状态码: 200, 实际: 422",
+      "timestamp": "2025-11-22T17:28:38.605223"
+    },
+    {
+      "test": "租户数据存在性检查",
+      "passed": true,
+      "details": "找到 3 条记录",
+      "timestamp": "2025-11-22T17:28:40.669533"
+    },
+    {
+      "test": "角色数据存在性检查",
+      "passed": false,
+      "details": "状态码: 422",
+      "timestamp": "2025-11-22T17:28:42.733661"
+    },
+    {
+      "test": "用户数据存在性检查",
+      "passed": true,
+      "details": "找到 4 条记录",
+      "timestamp": "2025-11-22T17:28:44.792386"
+    },
+    {
+      "test": "位置数据存在性检查",
+      "passed": false,
+      "details": "状态码: 500",
+      "timestamp": "2025-11-22T17:28:46.863994"
+    },
+    {
+      "test": "住户数据存在性检查",
+      "passed": true,
+      "details": "找到 2 条记录",
+      "timestamp": "2025-11-22T17:28:48.931192"
+    },
+    {
+      "test": "设备数据存在性检查",
+      "passed": true,
+      "details": "找到 2 条记录",
+      "timestamp": "2025-11-22T17:28:50.981709"
+    }
+  ]
+}

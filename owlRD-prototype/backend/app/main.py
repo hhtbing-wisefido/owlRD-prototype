@@ -122,7 +122,7 @@ app.include_router(resident_contacts.router, prefix="/api/v1", tags=["Resident C
 app.include_router(resident_caregivers.router, prefix="/api/v1", tags=["Resident Caregivers"])
 app.include_router(devices.router, prefix="/api/v1/devices", tags=["Devices"])
 app.include_router(alerts.router, prefix="/api/v1/alerts", tags=["Alerts"])
-app.include_router(alert_policies.router, prefix="/api/v1/alert_policies", tags=["Alert Policies"])
+app.include_router(alert_policies.router, prefix="/api/v1/alert-policies", tags=["Alert Policies"])
 app.include_router(config_versions.router, prefix="/api/v1/config_versions", tags=["Config Versions"])
 app.include_router(mappings.router, prefix="/api/v1/mappings", tags=["Mappings"])
 app.include_router(cards.router, prefix="/api/v1/cards", tags=["Cards"])
