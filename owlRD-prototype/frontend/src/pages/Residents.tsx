@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { UserCircle, Plus, Edit2, Trash2 } from 'lucide-react'
+import { UserCircle, Plus, Edit2, Trash2, Tag, Heart, Activity } from 'lucide-react'
 import { API_CONFIG, API_ENDPOINTS } from '../config/api'
 import ResidentModal from '../components/modals/ResidentModal'
 import type { Resident } from '../types'
@@ -130,6 +130,9 @@ export default function Residents() {
                   状态
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  健康标签
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   联系人
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -169,6 +172,45 @@ export default function Residents() {
                     `}>
                       {resident.status === 'active' ? '在院' : '已出院'}
                     </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-wrap gap-1">
+                      {(resident as any).health_tags && (resident as any).health_tags.length > 0 ? (
+                        (resident as any).health_tags.map((tag: string, index: number) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 border border-purple-300"
+                          >
+                            <Tag className="h-3 w-3 mr-1" />
+                            {tag}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-sm text-gray-400 flex items-center gap-1">
+                          <Activity className="h-4 w-4" />
+                          无标签
+                        </span>
+                      )}
+                    </div>
+                    {(resident as any).snomed_codes && (resident as any).snomed_codes.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {(resident as any).snomed_codes.slice(0, 2).map((code: any, index: number) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800 border border-indigo-300"
+                            title={code.display || code.code}
+                          >
+                            <Heart className="h-3 w-3 mr-1" />
+                            SNOMED: {code.code}
+                          </span>
+                        ))}
+                        {(resident as any).snomed_codes.length > 2 && (
+                          <span className="text-xs text-gray-500">
+                            +{(resident as any).snomed_codes.length - 2} 更多
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
