@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { TrendingUp, Users, Clock, AlertTriangle, CheckCircle, XCircle } from 'lucide-react'
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { TrendingUp, Users, Clock, AlertTriangle, CheckCircle, XCircle, Award, Target, Lightbulb, Activity, Heart } from 'lucide-react'
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import api from '../services/api'
 
 const TENANT_ID = '10000000-0000-0000-0000-000000000001'
@@ -8,6 +9,8 @@ const TENANT_ID = '10000000-0000-0000-0000-000000000001'
 const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#6366f1']
 
 export default function CareQuality() {
+  const [viewMode, setViewMode] = useState<'overview' | 'detailed'>('overview')
+
   // Fetch care quality report
   const { data: report, isLoading } = useQuery({
     queryKey: ['care-quality'],
@@ -27,6 +30,59 @@ export default function CareQuality() {
 
   // Mock data for demonstration
   const qualityScore = report?.quality_score || 85
+  
+  // 多维度评分数据
+  const qualityDimensions = [
+    { dimension: '响应速度', score: 92, fullMark: 100 },
+    { dimension: '服务态度', score: 88, fullMark: 100 },
+    { dimension: '专业技能', score: 85, fullMark: 100 },
+    { dimension: '房间覆盖', score: 90, fullMark: 100 },
+    { dimension: '文档记录', score: 78, fullMark: 100 },
+    { dimension: '应急处理', score: 95, fullMark: 100 },
+  ]
+  
+  // AI分析结果
+  const aiInsights = [
+    {
+      type: 'strength',
+      icon: <CheckCircle className="h-5 w-5 text-green-600" />,
+      title: '优势项',
+      items: [
+        '应急处理能力优秀，95分位列前茅',
+        '响应速度快速稳定，平均45秒内到达',
+        '房间覆盖率高达92%，服务全面',
+      ]
+    },
+    {
+      type: 'weakness',
+      icon: <AlertTriangle className="h-5 w-5 text-yellow-600" />,
+      title: '改进项',
+      items: [
+        '文档记录有待加强，仅78分需要重点提升',
+        '中班护理质量偏低，建议加强培训',
+        '周末服务覆盖不足，需增加人员配置',
+      ]
+    },
+    {
+      type: 'recommendation',
+      icon: <Lightbulb className="h-5 w-5 text-blue-600" />,
+      title: '智能建议',
+      items: [
+        '推荐引入电子记录系统，提升文档完整性',
+        '建议优化排班算法，平衡各班次工作量',
+        '可考虑增加周末激励措施，提升覆盖率',
+      ]
+    },
+  ]
+  
+  // 护理员绩效排名
+  const staffPerformance = [
+    { name: '张护士', score: 95, services: 156, satisfaction: 98 },
+    { name: '李护士', score: 92, services: 148, satisfaction: 96 },
+    { name: '王护士', score: 88, services: 142, satisfaction: 94 },
+    { name: '赵护士', score: 85, services: 138, satisfaction: 92 },
+    { name: '刘护士', score: 82, services: 135, satisfaction: 90 },
+  ]
   const responseData = [
     { name: '周一', 响应时间: 45, 达标率: 92 },
     { name: '周二', 响应时间: 38, 达标率: 95 },
@@ -64,7 +120,37 @@ export default function CareQuality() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">护理质量评估</h1>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <Award className="h-8 w-8 text-yellow-500" />
+            护理质量评估
+          </h1>
+          <p className="text-gray-600 mt-1">AI智能分析 · 多维度评估</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setViewMode('overview')}
+            className={`px-4 py-2 rounded transition-colors ${
+              viewMode === 'overview'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            概览
+          </button>
+          <button
+            onClick={() => setViewMode('detailed')}
+            className={`px-4 py-2 rounded transition-colors ${
+              viewMode === 'detailed'
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            详细分析
+          </button>
+        </div>
+      </div>
 
       {/* Quality Score Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -168,7 +254,106 @@ export default function CareQuality() {
         </ResponsiveContainer>
       </div>
 
-      {/* Improvement Suggestions */}
+      {/* AI智能分析 - 仅在详细模式显示 */}
+      {viewMode === 'detailed' && (
+        <>
+          {/* 多维度雷达图 */}
+          <div className="bg-white rounded-lg shadow border border-gray-200 p-6 mt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Target className="h-5 w-5 text-blue-600" />
+              多维度质量评估
+            </h3>
+            <ResponsiveContainer width="100%" height={400}>
+              <RadarChart data={qualityDimensions}>
+                <PolarGrid />
+                <PolarAngleAxis dataKey="dimension" />
+                <PolarRadiusAxis angle={90} domain={[0, 100]} />
+                <Radar
+                  name="评分"
+                  dataKey="score"
+                  stroke="#3b82f6"
+                  fill="#3b82f6"
+                  fillOpacity={0.6}
+                />
+                <Tooltip />
+                <Legend />
+              </RadarChart>
+            </ResponsiveContainer>
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+              {qualityDimensions.map((dim, idx) => (
+                <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                  <span className="text-sm text-gray-700">{dim.dimension}</span>
+                  <span className={`font-bold ${getScoreColor(dim.score)}`}>{dim.score}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* AI分析洞察 */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+            {aiInsights.map((insight, idx) => (
+              <div key={idx} className="bg-white rounded-lg shadow border border-gray-200 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  {insight.icon}
+                  <h3 className="text-lg font-semibold text-gray-900">{insight.title}</h3>
+                </div>
+                <ul className="space-y-2">
+                  {insight.items.map((item, itemIdx) => (
+                    <li key={itemIdx} className="flex items-start gap-2 text-sm text-gray-700">
+                      <span className="text-blue-600 font-bold">•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          {/* 护理员绩效排名 */}
+          <div className="bg-white rounded-lg shadow border border-gray-200 p-6 mt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Activity className="h-5 w-5 text-green-600" />
+              护理员绩效排名
+            </h3>
+            <div className="space-y-3">
+              {staffPerformance.map((staff, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
+                      idx === 0 ? 'bg-yellow-100' : idx === 1 ? 'bg-gray-100' : idx === 2 ? 'bg-orange-100' : 'bg-blue-50'
+                    }`}>
+                      <span className={`font-bold ${
+                        idx === 0 ? 'text-yellow-600' : idx === 1 ? 'text-gray-600' : idx === 2 ? 'text-orange-600' : 'text-blue-600'
+                      }`}>
+                        {idx + 1}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{staff.name}</p>
+                      <p className="text-xs text-gray-500">{staff.services} 次服务</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <div className="text-center">
+                      <p className="text-xs text-gray-500">评分</p>
+                      <p className={`text-lg font-bold ${getScoreColor(staff.score)}`}>{staff.score}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-gray-500">满意度</p>
+                      <p className="text-lg font-bold text-green-600">{staff.satisfaction}%</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Improvement Suggestions - 总是显示 */}
       <div className="bg-white rounded-lg shadow border border-gray-200 p-6 mt-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">改进建议</h3>
         <ul className="space-y-3">
@@ -205,6 +390,20 @@ export default function CareQuality() {
             </p>
           </li>
         </ul>
+      </div>
+
+      {/* 底部提示 */}
+      <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+        <div className="flex items-start gap-2">
+          <Heart className="h-5 w-5 text-blue-600 mt-0.5" />
+          <div className="text-sm text-blue-800">
+            <p className="font-medium mb-1">AI智能分析说明</p>
+            <p className="text-xs">
+              本报告基于IoT数据、告警记录、护理日志等多维度数据，通过AI算法自动生成。
+              建议每周查看一次，持续优化护理质量。点击右上角"详细分析"查看更多内容。
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   )
