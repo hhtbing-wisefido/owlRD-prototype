@@ -5,6 +5,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List
 from uuid import UUID
+import uuid
 from loguru import logger
 
 from app.models.location import Location, LocationCreate, LocationUpdate
@@ -50,6 +51,7 @@ async def create_location(location_data: LocationCreate):
     """创建新位置"""
     try:
         location_dict = location_data.model_dump()
+        location_dict["location_id"] = str(uuid.uuid4())
         location = location_storage.create(location_dict)
         return location
     except Exception as e:

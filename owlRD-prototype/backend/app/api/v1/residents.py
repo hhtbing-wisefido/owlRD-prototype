@@ -5,6 +5,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 from uuid import UUID
+import uuid
 from loguru import logger
 
 from app.models.resident import Resident, ResidentCreate, ResidentUpdate
@@ -75,6 +76,7 @@ async def create_resident(resident: ResidentCreate):
     try:
         # 将Pydantic模型转换为字典，排除None值避免循环引用
         resident_dict = resident.model_dump(exclude_none=True, mode='json')
+        resident_dict["resident_id"] = str(uuid.uuid4())
         # 确保anonymous_name字段存在
         if 'anonymous_name' not in resident_dict or not resident_dict['anonymous_name']:
             resident_dict['anonymous_name'] = resident_dict['last_name']

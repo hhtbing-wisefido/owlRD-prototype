@@ -5,6 +5,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 from uuid import UUID
+import uuid
 from loguru import logger
 
 from app.models.device import Device, DeviceCreate, DeviceUpdate
