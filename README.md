@@ -324,9 +324,11 @@ taskkill /PID <进程ID> /F
 **运行完整系统测试**:
 ```bash
 # 方法1: 使用便捷脚本（Windows）
+cd owlRD-prototype/scripts
 run_tests.bat
 
 # 方法2: 直接运行
+cd owlRD-prototype
 python tests/full_system_test.py
 ```
 
@@ -339,9 +341,9 @@ python tests/full_system_test.py
 - ✅ API文档可访问性
 - ✅ 响应格式验证
 
-**测试报告**: 自动生成JSON格式报告在 `tests/test_reports/`
+**测试报告**: 自动生成JSON格式报告在 `owlRD-prototype/tests/test_reports/`
 
-**详细说明**: 查看 [tests/README.md](tests/README.md)
+**详细说明**: 查看 [owlRD-prototype/tests/README.md](owlRD-prototype/tests/README.md)
 
 ---
 
