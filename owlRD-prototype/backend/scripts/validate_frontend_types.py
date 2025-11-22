@@ -277,7 +277,7 @@ def main():
         ("IoTData", "iot_data", "IOTTimeseries"),
         ("Alert", "alert", "Alert"),
         ("CloudAlertPolicy", "alert", "CloudAlertPolicy"),
-        ("ConfigVersion", "config_version", "ConfigVersion"),
+        ("ConfigVersion", "config", "ConfigVersion"),
         ("PostureMapping", "mapping", "PostureMapping"),
         ("EventMapping", "mapping", "EventMapping"),
         ("Card", "card", "Card"),

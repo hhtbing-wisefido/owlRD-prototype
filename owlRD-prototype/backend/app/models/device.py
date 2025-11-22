@@ -103,6 +103,7 @@ class Device(DeviceBase):
     
     device_id: UUID = Field(default_factory=generate_uuid, description="设备唯一标识")
     tenant_id: UUID = Field(..., description="所属租户ID")
+    created_at: datetime = Field(default_factory=datetime.utcnow, description="创建时间")
     
     class Config:
         json_schema_extra = {

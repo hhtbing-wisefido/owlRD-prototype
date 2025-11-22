@@ -1,6 +1,6 @@
 # 前端类型对齐验证报告
 
-**生成时间**: 1763704459.3813689
+**生成时间**: 1763781132.173281
 
 ```
 ================================================================================
@@ -9,38 +9,36 @@
 
 📊 总体统计:
   - 总类型数: 13
-  - 完美对齐: 6 (46.2%)
+  - 完美对齐: 8 (61.5%)
   - 良好对齐: 3 (23.1%)
   - 部分对齐: 1 (7.7%)
   - 严重不对齐: 1 (7.7%)
-  - 平均对齐度: 93.8%
+  - 平均对齐度: 93.9%
 
 ❌ 严重不对齐 User - 55.6%
   TypeScript: 15 fields
   Python Model: 18 fields
-  ⚠️  TS缺少字段: phone_hash, email_hash, last_login_at, password_hash, pin_hash
-  ⚠️  Python缺少字段: certifications, shift, department, nurse_group
+  ⚠️  TS缺少字段: pin_hash, last_login_at, email_hash, password_hash, phone_hash
+  ⚠️  Python缺少字段: nurse_group, shift, department, certifications
   ⚠️  类型不匹配:
       tags: TS={, Py=typing.Optional[typing.Dict[str, typing.Any]]
 
 ⚠️ 部分对齐 Tenant - 85.7%
   TypeScript: 14 fields
   Python Model: 7 fields
-  ⚠️  Python缺少字段: max_users, address, license_type, contact_email, contact_phone
+  ⚠️  Python缺少字段: max_residents, contact_phone, contact_email, address, max_users
       ... 等共7个
   ⚠️  类型不匹配:
       metadata: TS={, Py=typing.Optional[typing.Dict[str, typing.Any]]
 
-⚠️ 良好对齐 Resident - 90.0%
+⚠️ 良好对齐 Resident - 90.5%
   TypeScript: 19 fields
-  Python Model: 20 fields
-  ⚠️  TS缺少字段: phone_hash, email_hash
-  ⚠️  Python缺少字段: created_at
+  Python Model: 21 fields
+  ⚠️  TS缺少字段: email_hash, phone_hash
 
-⚠️ 良好对齐 Card - 91.7%
+⚠️ 良好对齐 Card - 92.9%
   TypeScript: 14 fields
-  Python Model: 12 fields
-  ⚠️  Python缺少字段: updated_at, created_at
+  Python Model: 14 fields
   ⚠️  类型不匹配:
       card_type: TS=string, Py=<enum 'CardType'>
 
@@ -58,10 +56,9 @@
   TypeScript: 33 fields
   Python Model: 33 fields
 
-⚠️ 良好对齐 Device - 100.0%
+✅ 完美对齐 Device - 100.0%
   TypeScript: 21 fields
-  Python Model: 20 fields
-  ⚠️  Python缺少字段: created_at
+  Python Model: 21 fields
 
 ✅ 完美对齐 Alert - 100.0%
   TypeScript: 14 fields
@@ -71,10 +68,9 @@
   TypeScript: 29 fields
   Python Model: 29 fields
 
-⚠️ 良好对齐 ConfigVersion - 100.0%
+✅ 完美对齐 ConfigVersion - 100.0%
   TypeScript: 13 fields
-  Python Model: 11 fields
-  ⚠️  Python缺少字段: metadata, created_by
+  Python Model: 13 fields
 
 ✅ 完美对齐 PostureMapping - 100.0%
   TypeScript: 12 fields

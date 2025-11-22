@@ -3,6 +3,7 @@
 对应 cards (18_cards.sql) 表
 """
 
+from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
 from enum import Enum
@@ -81,6 +82,8 @@ class Card(CardBase):
     
     card_id: UUID = Field(default_factory=generate_uuid, description="卡片唯一标识")
     tenant_id: UUID = Field(..., description="所属租户ID")
+    created_at: datetime = Field(default_factory=datetime.utcnow, description="创建时间")
+    updated_at: datetime = Field(default_factory=datetime.utcnow, description="更新时间")
     
     class Config:
         json_schema_extra = {

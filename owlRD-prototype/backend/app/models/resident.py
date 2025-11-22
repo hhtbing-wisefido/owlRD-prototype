@@ -100,6 +100,9 @@ class Resident(ResidentBase):
     phone_hash: Optional[bytes] = Field(None, description="手机号哈希", exclude=True)
     email_hash: Optional[bytes] = Field(None, description="邮箱哈希", exclude=True)
     
+    # 时间戳
+    created_at: datetime = Field(default_factory=datetime.utcnow, description="创建时间")
+    
     class Config:
         json_schema_extra = {
             "example": {

@@ -63,6 +63,10 @@ class ConfigVersion(ConfigVersionBase):
     
     version_id: UUID = Field(default_factory=generate_uuid, description="版本唯一标识")
     tenant_id: UUID = Field(..., description="所属租户ID")
+    created_by: Optional[str] = Field(None, description="创建人ID或用户名")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="扩展信息")
+    created_at: datetime = Field(default_factory=datetime.utcnow, description="创建时间")
+    updated_at: datetime = Field(default_factory=datetime.utcnow, description="更新时间")
     
     class Config:
         json_schema_extra = {
