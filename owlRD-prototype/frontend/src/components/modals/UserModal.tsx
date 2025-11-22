@@ -18,7 +18,7 @@ export default function UserModal({ isOpen, onClose, onSave, user, tenantId }: U
     phone: '',
     role: 'Nurse',
     alert_scope: 'ALL',
-    is_active: true
+    status: 'active'
   })
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function UserModal({ isOpen, onClose, onSave, user, tenantId }: U
         phone: '',
         role: 'Nurse',
         alert_scope: 'ALL',
-        is_active: true
+        status: 'active'
       })
     }
   }, [user, tenantId])
@@ -143,9 +143,14 @@ export default function UserModal({ isOpen, onClose, onSave, user, tenantId }: U
             <div className="flex items-center">
               <input
                 type="checkbox"
-                name="is_active"
-                checked={formData.is_active}
-                onChange={handleChange}
+                name="status"
+                checked={formData.status === 'active'}
+                onChange={(e) => {
+                  setFormData({
+                    ...formData,
+                    status: e.target.checked ? 'active' : 'disabled'
+                  })
+                }}
                 className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
               />
               <label className="ml-2 text-sm font-medium text-gray-700">

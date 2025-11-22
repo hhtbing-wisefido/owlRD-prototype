@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { X } from 'lucide-react'
 import FormInput from './FormInput'
 import FormSelect from './FormSelect'
 
@@ -157,7 +156,7 @@ export default function UserForm({
         label="手机号"
         name="phone"
         type="tel"
-        value={formData.phone}
+        value={formData.phone || ''}
         onChange={handleChange}
         error={errors.phone}
         disabled={loading}
