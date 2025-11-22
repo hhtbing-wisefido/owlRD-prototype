@@ -236,10 +236,16 @@ owlRD-原型项目/                        ← 主项目目录 = Git仓库根目
 │   │   ├── sync_validator.py        # 源文件校验
 │   │   ├── sql_parser.py            # SQL解析器
 │   │   └── data_migrator.py         # 数据迁移
-│   ├── tests/                        # 测试
-│   │   ├── unit/
-│   │   ├── integration/
-│   │   └── e2e/
+│   ├── tests/                        # 测试框架（48个测试，100%通过）✅
+│   │   ├── full_system_test.py      # 主测试脚本（统一入口）
+│   │   ├── test_frontend_unit.py    # 前端单元测试
+│   │   ├── test_e2e.py              # E2E端到端测试
+│   │   ├── test_api_integration.py  # API集成测试
+│   │   ├── test_security.py         # 安全测试
+│   │   ├── locustfile.py            # 性能测试配置
+│   │   ├── test_reports/            # 测试报告
+│   │   │   └── test_report_*.json
+│   │   └── README.md                # 测试文档
 │   └── docs/                         # 项目文档
 │       ├── API.md                    # API文档
 │       ├── DATA_MODEL.md             # 数据模型
