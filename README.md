@@ -319,7 +319,9 @@ taskkill /PID <进程ID> /F
 
 ## 🧪 系统测试
 
-### 全自动测试
+### 全自动测试框架
+
+**测试结果**: ✅ **48个测试，100%通过** 🎉
 
 **运行完整系统测试**:
 ```bash
@@ -327,23 +329,59 @@ taskkill /PID <进程ID> /F
 cd owlRD-prototype/scripts
 run_tests.bat
 
-# 方法2: 直接运行
+# 方法2: 直接运行（推荐）
 cd owlRD-prototype
-python tests/full_system_test.py
+python tests/full_system_test.py --all
+
+# 方法3: 分类运行
+python tests/full_system_test.py --backend    # 后端API测试（37个）
+python tests/full_system_test.py --frontend   # 前端测试（8个）
+python tests/full_system_test.py --integration # 集成测试（3个）
+
+# 查看测试报告
+python tests/full_system_test.py --report
 ```
 
-**前提条件**: 后端服务必须已启动
+**前提条件**: 后端服务必须已启动（`http://localhost:8000`）
 
-**测试覆盖**:
-- ✅ 所有API端点（50+个）
-- ✅ CRUD操作测试
-- ✅ 数据完整性检查
-- ✅ API文档可访问性
-- ✅ 响应格式验证
+### 测试覆盖详情
 
-**测试报告**: 自动生成JSON格式报告在 `owlRD-prototype/tests/test_reports/`
+#### 后端API测试（37个）✅
+- **健康检查**: 2项 - 系统状态、根路径
+- **API文档**: 3项 - Swagger UI、OpenAPI规范
+- **租户管理**: 3项 - 列表、创建、查询
+- **用户管理**: 3项 - 列表、创建、**删除** ⭐
+- **位置管理**: 3项 - 列表、创建、**删除** ⭐
+- **住户管理**: 5项 - 列表、创建、**删除** ⭐、联系人、护理关联
+- **设备管理**: 3项 - 列表、创建、**删除** ⭐
+- **IoT数据**: 2项 - 查询、统计
+- **告警管理**: 3项 - 列表、统计、策略
+- **卡片管理**: 1项 - 列表
+- **护理质量**: 2项 - 报告、评分
+- **数据完整性**: 6项 - 各实体数据存在性检查
 
-**详细说明**: 查看 [owlRD-prototype/tests/README.md](owlRD-prototype/tests/README.md)
+#### 前端测试（8个）✅
+- **编译构建**: TypeScript编译、构建输出
+- **代码质量**: ESLint检查（0错误，1警告）
+- **组件检测**: 20个组件、14个页面、1个服务
+- **功能组件**: 5个表单（新建/编辑）、16个模态框（删除）⭐
+
+#### 集成测试（3个）✅
+- **E2E测试**: 用户/住户/设备 完整CRUD流程测试框架
+- **API集成**: 后端连通性测试
+
+### 测试报告
+
+**报告位置**: `tests/test_reports/test_report_YYYYMMDD_HHMMSS.json`
+
+**报告内容**:
+- 测试统计（总数、通过、失败、通过率）
+- 详细测试结果（每个测试的状态和详情）
+- 执行时间戳
+
+**详细文档**: 
+- 📖 [完整测试指南](owlRD-prototype/tests/README.md)
+- 📝 [测试框架完善报告](项目记录/7-过程记录/2025-11-22_1940_测试框架完善完成报告.md)
 
 ---
 
