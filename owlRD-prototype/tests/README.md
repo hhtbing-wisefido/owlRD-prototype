@@ -646,6 +646,179 @@ for (const browserType of [chromium, firefox, webkit]) {
 
 ---
 
+## 📁 测试脚本文件说明
+
+### 已创建的测试脚本
+
+#### 1. `tests/locustfile.py` - 性能测试
+**功能**: 后端API性能和压力测试
+
+**运行方式**:
+```bash
+# 安装Locust
+pip install locust
+
+# 启动性能测试
+locust -f tests/locustfile.py
+
+# 访问 http://localhost:8089 配置并发用户数
+```
+
+**测试场景**:
+- 用户列表查询（权重3）
+- 告警列表查询（权重5）
+- 设备列表查询（权重2）
+- 住户列表查询（权重2）
+- IoT数据查询（权重1）
+- 健康检查（权重1）
+
+#### 2. `tests/test_security.py` - 安全测试
+**功能**: 基础安全漏洞扫描
+
+**运行方式**:
+```bash
+# 直接运行
+python tests/test_security.py
+
+# 或通过测试系统
+python tests/full_system_test.py --security
+```
+
+**测试内容**:
+- ✅ SQL注入防护
+- ✅ XSS防护检查
+- ✅ 认证机制验证
+- ✅ 敏感数据暴露检查
+
+### 配置文件示例
+
+#### Vitest配置（`frontend/vitest.config.ts`）
+```typescript
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/test/setup.ts',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+    },
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+})
+```
+
+#### Playwright配置（`e2e-tests/playwright.config.ts`）
+```typescript
+import { defineConfig, devices } from '@playwright/test'
+
+export default defineConfig({
+  testDir: './tests',
+  timeout: 30 * 1000,
+  
+  use: {
+    baseURL: 'http://localhost:3000',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+    trace: 'on-first-retry',
+  },
+  
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
+  
+  webServer: {
+    command: 'cd ../frontend && npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+  },
+})
+```
+
+#### MSW Handlers（`frontend/src/test/mocks/handlers.ts`）
+```typescript
+import { rest } from 'msw'
+
+const API_BASE_URL = 'http://localhost:8000/api/v1'
+
+export const handlers = [
+  rest.get(`${API_BASE_URL}/users/`, (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json([{
+        user_id: '1',
+        username: 'test_user',
+        email: 'test@example.com',
+        role: 'Nurse',
+        status: 'active',
+      }])
+    )
+  }),
+  
+  rest.get(`${API_BASE_URL}/alerts/`, (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json([{
+        alert_id: '1',
+        alert_type: 'HEART_RATE_HIGH',
+        alert_level: 'L1',
+        status: 'pending',
+        timestamp: '2025-11-22T10:00:00',
+        message: '心率异常',
+      }])
+    )
+  }),
+]
+```
+
+### 测试示例代码
+
+#### 前端组件测试示例
+```typescript
+// src/components/__tests__/UserForm.test.tsx
+import { describe, it, expect } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import UserForm from '../UserForm'
+
+describe('UserForm', () => {
+  it('should render form fields', () => {
+    render(<UserForm />)
+    expect(screen.getByLabelText('用户名')).toBeInTheDocument()
+    expect(screen.getByLabelText('邮箱')).toBeInTheDocument()
+  })
+})
+```
+
+#### E2E测试示例
+```typescript
+// e2e-tests/tests/login.spec.ts
+import { test, expect } from '@playwright/test'
+
+test('用户登录流程', async ({ page }) => {
+  await page.goto('/')
+  
+  await page.fill('[name="username"]', 'admin')
+  await page.fill('[name="password"]', 'password')
+  await page.click('button[type="submit"]')
+  
+  await expect(page).toHaveURL('/dashboard')
+})
+```
+
+---
+
 ## 📚 相关文档
 
 - [完成报告](../项目记录/7-过程记录/2025-11-22_1755_Alert系统对齐与测试100%通过完成报告.md)
