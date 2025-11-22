@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-owlRD系统全自动测试脚本
-测试所有API端点、数据完整性、功能可用性
+owlRD完整系统测试脚本
+测试后端API、前端编译、数据完整性、功能可用性
 
 对齐源参考：
 - 所有db/*.sql文件定义的表结构
@@ -11,16 +11,30 @@ owlRD系统全自动测试脚本
 - 告警时间字段使用timestamp
 
 运行方式：
+    # 交互式菜单
     python tests/full_system_test.py
+    
+    # 命令行参数
+    python tests/full_system_test.py --all              # 运行所有测试
+    python tests/full_system_test.py --backend          # 只测试后端API
+    python tests/full_system_test.py --frontend         # 只测试前端编译
+    python tests/full_system_test.py --api health       # 测试特定API分组
+    python tests/full_system_test.py --list             # 列出所有测试
+    python tests/full_system_test.py --report           # 查看最新测试报告
 
-注意：需要后端服务已启动在 http://localhost:8000
+注意：
+- 后端测试需要后端服务启动在 http://localhost:8000
+- 前端测试需要Node.js环境
 """
 
 import requests
 import json
+import subprocess
+import argparse
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 import sys
+import os
 from pathlib import Path
 
 # 配置
@@ -466,9 +480,742 @@ def get_default_tenant_id() -> str:
     DEFAULT_TENANT_ID = "10000000-0000-0000-0000-000000000001"
     return DEFAULT_TENANT_ID
 
-def main():
-    """主测试流程"""
-    print_header("owlRD 系统全自动测试")
+def test_frontend_build():
+    """测试前端TypeScript编译和构建"""
+    print_section("前端编译测试")
+    
+    frontend_dir = Path(__file__).parent.parent / "frontend"
+    
+    if not frontend_dir.exists():
+        test_result("前端目录检查", False, "frontend目录不存在")
+        return
+    
+    test_result("前端目录检查", True)
+    
+    try:
+        # 检查package.json
+        package_json = frontend_dir / "package.json"
+        if package_json.exists():
+            test_result("package.json存在", True)
+        else:
+            test_result("package.json存在", False)
+            return
+        
+        # 运行TypeScript编译
+        print(f"{Colors.BLUE}▶ 运行 TypeScript 编译...{Colors.END}")
+        result = subprocess.run(
+            ["npm", "run", "build"],
+            cwd=frontend_dir,
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        
+        if result.returncode == 0:
+            # 检查dist目录
+            dist_dir = frontend_dir / "dist"
+            if dist_dir.exists():
+                files = list(dist_dir.glob("**/*"))
+                test_result("前端构建成功", True, f"生成{len(files)}个文件")
+            else:
+                test_result("前端构建成功", False, "dist目录未生成")
+        else:
+            error_msg = result.stderr[-200:] if result.stderr else "未知错误"
+            test_result("前端构建成功", False, f"构建失败: {error_msg}")
+            
+    except subprocess.TimeoutExpired:
+        test_result("前端构建", False, "构建超时（>120秒）")
+    except FileNotFoundError:
+        test_result("前端构建", False, "npm命令未找到，请安装Node.js")
+    except Exception as e:
+        test_result("前端构建", False, f"异常: {str(e)}")
+
+
+def test_frontend_lint():
+    """测试前端代码质量"""
+    print_section("前端代码质量测试")
+    
+    frontend_dir = Path(__file__).parent.parent / "frontend"
+    
+    try:
+        print(f"{Colors.BLUE}▶ 运行 ESLint 检查...{Colors.END}")
+        result = subprocess.run(
+            ["npm", "run", "lint"],
+            cwd=frontend_dir,
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+        
+        if result.returncode == 0:
+            test_result("ESLint代码检查", True, "无警告")
+        else:
+            warnings = result.stdout.count("warning")
+            errors = result.stdout.count("error")
+            test_result("ESLint代码检查", errors == 0, f"{errors}个错误, {warnings}个警告")
+            
+    except subprocess.TimeoutExpired:
+        test_result("ESLint检查", False, "检查超时")
+    except Exception as e:
+        test_result("ESLint检查", False, f"异常: {str(e)}")
+
+
+# ============================================================================
+# 前端单元测试
+# ============================================================================
+
+def test_frontend_unit():
+    """测试前端组件单元测试"""
+    print_section("前端单元测试")
+    
+    frontend_dir = Path(__file__).parent.parent / "frontend"
+    
+    # 检查是否配置了测试框架
+    package_json = frontend_dir / "package.json"
+    if not package_json.exists():
+        test_result("前端配置检查", False, "package.json不存在")
+        return
+    
+    try:
+        with open(package_json, 'r', encoding='utf-8') as f:
+            pkg = json.load(f)
+        
+        # 检查是否有test脚本
+        if 'test' not in pkg.get('scripts', {}):
+            test_result("单元测试配置", False, "未配置test脚本，需要安装Vitest")
+            print(f"{Colors.YELLOW}  💡 建议: npm install -D vitest @testing-library/react @testing-library/jest-dom{Colors.END}")
+            return
+        
+        test_result("单元测试配置", True)
+        
+        # 运行测试
+        print(f"{Colors.BLUE}▶ 运行前端单元测试...{Colors.END}")
+        result = subprocess.run(
+            ["npm", "test", "--", "--run"],
+            cwd=frontend_dir,
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        
+        if result.returncode == 0:
+            # 解析测试结果
+            output = result.stdout
+            test_result("前端单元测试", True, "所有测试通过")
+        else:
+            test_result("前端单元测试", False, "部分测试失败")
+            
+    except subprocess.TimeoutExpired:
+        test_result("前端单元测试", False, "测试超时")
+    except Exception as e:
+        test_result("前端单元测试", False, f"异常: {str(e)}")
+
+
+# ============================================================================
+# E2E端到端测试
+# ============================================================================
+
+def test_e2e():
+    """E2E端到端测试"""
+    print_section("E2E端到端测试")
+    
+    e2e_dir = Path(__file__).parent.parent / "e2e-tests"
+    
+    if not e2e_dir.exists():
+        test_result("E2E测试目录", False, "e2e-tests目录不存在")
+        print(f"{Colors.YELLOW}  💡 建议: 创建e2e-tests目录并安装Playwright{Colors.END}")
+        print(f"{Colors.YELLOW}     npm init playwright@latest{Colors.END}")
+        return
+    
+    try:
+        # 检查Playwright配置
+        playwright_config = e2e_dir / "playwright.config.ts"
+        if not playwright_config.exists():
+            test_result("Playwright配置", False, "配置文件不存在")
+            return
+        
+        test_result("Playwright配置", True)
+        
+        # 运行E2E测试
+        print(f"{Colors.BLUE}▶ 运行Playwright E2E测试...{Colors.END}")
+        result = subprocess.run(
+            ["npx", "playwright", "test"],
+            cwd=e2e_dir,
+            capture_output=True,
+            text=True,
+            timeout=300
+        )
+        
+        if result.returncode == 0:
+            test_result("E2E测试", True, "所有测试通过")
+        else:
+            test_result("E2E测试", False, "部分测试失败")
+            
+    except subprocess.TimeoutExpired:
+        test_result("E2E测试", False, "测试超时")
+    except FileNotFoundError:
+        test_result("E2E测试", False, "Playwright未安装")
+    except Exception as e:
+        test_result("E2E测试", False, f"异常: {str(e)}")
+
+
+# ============================================================================
+# API集成测试
+# ============================================================================
+
+def test_api_integration():
+    """API集成测试（前端→后端）"""
+    print_section("API集成测试")
+    
+    test_result("API集成测试", False, "测试未实现")
+    print(f"{Colors.YELLOW}  💡 建议: 使用MSW (Mock Service Worker)实现前后端集成测试{Colors.END}")
+    print(f"{Colors.YELLOW}     npm install -D msw{Colors.END}")
+
+
+# ============================================================================
+# 性能测试
+# ============================================================================
+
+def test_performance():
+    """性能测试"""
+    print_section("性能测试")
+    
+    print(f"{Colors.BOLD}后端性能测试：{Colors.END}")
+    test_result("API响应时间测试", False, "测试未实现")
+    print(f"{Colors.YELLOW}  💡 建议: 使用Locust进行压力测试{Colors.END}")
+    
+    print(f"\n{Colors.BOLD}前端性能测试：{Colors.END}")
+    test_result("页面加载性能", False, "测试未实现")
+    print(f"{Colors.YELLOW}  💡 建议: 使用Lighthouse进行性能分析{Colors.END}")
+
+
+# ============================================================================
+# 安全测试
+# ============================================================================
+
+def test_security():
+    """安全测试"""
+    print_section("安全测试")
+    
+    test_result("认证授权测试", False, "测试未实现")
+    test_result("SQL注入防护", False, "测试未实现")
+    test_result("XSS防护", False, "测试未实现")
+    test_result("CSRF防护", False, "测试未实现")
+    
+    print(f"{Colors.YELLOW}  💡 建议: 使用OWASP ZAP或Burp Suite进行安全扫描{Colors.END}")
+
+
+# ============================================================================
+# 兼容性测试
+# ============================================================================
+
+def test_compatibility():
+    """兼容性测试"""
+    print_section("兼容性测试")
+    
+    test_result("Chrome浏览器", False, "测试未实现")
+    test_result("Firefox浏览器", False, "测试未实现")
+    test_result("Safari浏览器", False, "测试未实现")
+    test_result("Edge浏览器", False, "测试未实现")
+    test_result("移动端响应式", False, "测试未实现")
+    
+    print(f"{Colors.YELLOW}  💡 建议: 使用Playwright或BrowserStack进行跨浏览器测试{Colors.END}")
+
+
+# ============================================================================
+# 数据库测试
+# ============================================================================
+
+def test_database():
+    """数据库测试"""
+    print_section("数据库测试")
+    
+    test_result("数据一致性", False, "测试未实现")
+    test_result("备份恢复", False, "测试未实现")
+    
+    print(f"{Colors.YELLOW}  💡 建议: 添加数据库迁移和一致性验证测试{Colors.END}")
+
+
+# ============================================================================
+# 压力测试
+# ============================================================================
+
+def test_stress():
+    """压力测试"""
+    print_section("压力测试")
+    
+    test_result("高并发测试", False, "测试未实现")
+    test_result("长时间稳定性", False, "测试未实现")
+    test_result("资源泄漏检测", False, "测试未实现")
+    
+    print(f"{Colors.YELLOW}  💡 建议: 使用Locust或Apache JMeter进行压力测试{Colors.END}")
+
+
+# ============================================================================
+# 冒烟测试（快速验证）
+# ============================================================================
+
+def test_smoke():
+    """冒烟测试 - 快速验证核心功能"""
+    print_section("冒烟测试（快速验证）")
+    
+    # 只测试最关键的端点
+    test_health_endpoints()
+    
+    # 简单的CRUD测试
+    print(f"\n{Colors.BOLD}快速CRUD测试：{Colors.END}")
+    test_api_endpoint("GET", "/tenants/", "租户列表")
+    test_api_endpoint("GET", "/users/", "用户列表", params={'tenant_id': DEFAULT_TENANT_ID})
+    test_api_endpoint("GET", "/alerts/", "告警列表")
+
+
+# ============================================================================
+# 测试分组定义
+# ============================================================================
+
+TEST_GROUPS = {
+    # 后端API测试
+    'health': {
+        'name': '健康检查',
+        'category': 'backend',
+        'tests': [test_health_endpoints]
+    },
+    'docs': {
+        'name': 'API文档',
+        'category': 'backend',
+        'tests': [test_api_documentation]
+    },
+    'tenant': {
+        'name': '租户管理',
+        'category': 'backend',
+        'tests': [test_tenant_endpoints]
+    },
+    'user': {
+        'name': '用户和角色',
+        'category': 'backend',
+        'tests': [test_user_role_endpoints]
+    },
+    'location': {
+        'name': '位置管理',
+        'category': 'backend',
+        'tests': [test_location_endpoints]
+    },
+    'resident': {
+        'name': '住户管理',
+        'category': 'backend',
+        'tests': [test_resident_endpoints]
+    },
+    'device': {
+        'name': '设备管理',
+        'category': 'backend',
+        'tests': [test_device_endpoints]
+    },
+    'iot': {
+        'name': 'IoT数据',
+        'category': 'backend',
+        'tests': [test_iot_data_endpoints]
+    },
+    'alert': {
+        'name': '告警管理',
+        'category': 'backend',
+        'tests': [test_alert_endpoints]
+    },
+    'card': {
+        'name': '卡片管理',
+        'category': 'backend',
+        'tests': [test_card_endpoints]
+    },
+    'quality': {
+        'name': '护理质量',
+        'category': 'backend',
+        'tests': [test_care_quality_endpoints]
+    },
+    'integrity': {
+        'name': '数据完整性',
+        'category': 'backend',
+        'tests': [test_data_integrity]
+    },
+    
+    # 前端测试
+    'frontend-build': {
+        'name': '前端构建',
+        'category': 'frontend',
+        'tests': [test_frontend_build]
+    },
+    'frontend-lint': {
+        'name': '代码质量',
+        'category': 'frontend',
+        'tests': [test_frontend_lint]
+    },
+    'frontend-unit': {
+        'name': '单元测试',
+        'category': 'frontend',
+        'tests': [test_frontend_unit]
+    },
+    
+    # 集成测试
+    'e2e': {
+        'name': 'E2E端到端',
+        'category': 'integration',
+        'tests': [test_e2e]
+    },
+    'api-integration': {
+        'name': 'API集成',
+        'category': 'integration',
+        'tests': [test_api_integration]
+    },
+    
+    # 专项测试
+    'performance': {
+        'name': '性能测试',
+        'category': 'specialist',
+        'tests': [test_performance]
+    },
+    'security': {
+        'name': '安全测试',
+        'category': 'specialist',
+        'tests': [test_security]
+    },
+    'compatibility': {
+        'name': '兼容性测试',
+        'category': 'specialist',
+        'tests': [test_compatibility]
+    },
+    'database': {
+        'name': '数据库测试',
+        'category': 'specialist',
+        'tests': [test_database]
+    },
+    'stress': {
+        'name': '压力测试',
+        'category': 'specialist',
+        'tests': [test_stress]
+    },
+    
+    # 快速测试
+    'smoke': {
+        'name': '冒烟测试',
+        'category': 'quick',
+        'tests': [test_smoke]
+    }
+}
+
+
+def list_all_tests():
+    """列出所有可用的测试"""
+    print_header("可用的测试分组")
+    
+    categories = {
+        'backend': ('后端API测试', Colors.BLUE),
+        'frontend': ('前端测试', Colors.GREEN),
+        'integration': ('集成测试', Colors.YELLOW),
+        'specialist': ('专项测试', Colors.RED),
+        'quick': ('快速测试', Colors.BLUE)
+    }
+    
+    for category, (title, color) in categories.items():
+        tests_in_category = [(gid, ginfo) for gid, ginfo in TEST_GROUPS.items() 
+                             if ginfo.get('category') == category]
+        
+        if tests_in_category:
+            print(f"\n{Colors.BOLD}{color}{title}：{Colors.END}")
+            for group_id, group_info in tests_in_category:
+                # 标记已实现和未实现的测试
+                if category in ['backend', 'frontend', 'quick']:
+                    status = f"{Colors.GREEN}✓{Colors.END}"
+                else:
+                    status = f"{Colors.YELLOW}○{Colors.END}"
+                print(f"  {status} {color}{group_id:20}{Colors.END} - {group_info['name']}")
+    
+    print(f"\n{Colors.BOLD}使用方法：{Colors.END}")
+    print(f"  python tests/full_system_test.py --api <group_id>")
+    print(f"  python tests/full_system_test.py --backend      # 所有后端测试")
+    print(f"  python tests/full_system_test.py --frontend     # 所有前端测试")
+    print(f"  python tests/full_system_test.py --integration  # 集成测试")
+    print(f"  python tests/full_system_test.py --specialist   # 专项测试")
+    print(f"  python tests/full_system_test.py --all          # 所有测试")
+    
+    print(f"\n{Colors.BOLD}图例：{Colors.END}")
+    print(f"  {Colors.GREEN}✓{Colors.END} 已实现   {Colors.YELLOW}○{Colors.END} 框架已搭建（待实现）")
+
+
+def show_interactive_menu():
+    """显示交互式菜单"""
+    while True:
+        print_header("owlRD 完整系统测试 - 交互式菜单")
+        
+        print(f"{Colors.BOLD}【核心功能测试】{Colors.END}")
+        print(f"  {Colors.GREEN}1{Colors.END}. 运行所有测试（后端 + 前端 + 集成）")
+        print(f"  {Colors.GREEN}2{Colors.END}. 运行所有后端API测试")
+        print(f"  {Colors.GREEN}3{Colors.END}. 运行所有前端测试")
+        print(f"  {Colors.GREEN}4{Colors.END}. 运行E2E端到端测试")
+        print(f"  {Colors.GREEN}5{Colors.END}. 运行API集成测试")
+        print(f"  {Colors.GREEN}6{Colors.END}. 运行冒烟测试（快速验证）")
+        
+        print(f"\n{Colors.BOLD}【专项测试】{Colors.END}")
+        print(f"  {Colors.YELLOW}7{Colors.END}. 运行性能测试")
+        print(f"  {Colors.YELLOW}8{Colors.END}. 运行安全测试")
+        print(f"  {Colors.YELLOW}9{Colors.END}. 运行兼容性测试")
+        print(f"  {Colors.YELLOW}10{Colors.END}. 运行数据库测试")
+        print(f"  {Colors.YELLOW}11{Colors.END}. 运行压力测试")
+        
+        print(f"\n{Colors.BOLD}【分组和工具】{Colors.END}")
+        print(f"  {Colors.BLUE}12{Colors.END}. 选择特定测试分组（交互式）")
+        print(f"  {Colors.BLUE}13{Colors.END}. 查看最新测试报告")
+        print(f"  {Colors.BLUE}14{Colors.END}. 列出所有可用测试")
+        
+        print(f"\n  {Colors.RED}0{Colors.END}. 退出")
+        
+        choice = input(f"\n{Colors.BOLD}请输入选项 (0-14): {Colors.END}").strip()
+        
+        if choice == '0':
+            print(f"\n{Colors.BLUE}退出测试{Colors.END}")
+            sys.exit(0)
+        elif choice == '1':
+            run_all_tests()
+            break
+        elif choice == '2':
+            run_backend_tests()
+            break
+        elif choice == '3':
+            run_frontend_tests()
+            break
+        elif choice == '4':
+            run_test_group('e2e')
+            break
+        elif choice == '5':
+            run_test_group('api-integration')
+            break
+        elif choice == '6':
+            run_test_group('smoke')
+            break
+        elif choice == '7':
+            run_test_group('performance')
+            break
+        elif choice == '8':
+            run_test_group('security')
+            break
+        elif choice == '9':
+            run_test_group('compatibility')
+            break
+        elif choice == '10':
+            run_test_group('database')
+            break
+        elif choice == '11':
+            run_test_group('stress')
+            break
+        elif choice == '12':
+            show_test_group_menu()
+            break
+        elif choice == '13':
+            show_latest_report()
+        elif choice == '14':
+            list_all_tests()
+            input(f"\n{Colors.BOLD}按Enter返回菜单...{Colors.END}")
+        else:
+            print(f"{Colors.RED}无效选项，请重新选择{Colors.END}")
+
+
+def show_test_group_menu():
+    """显示测试分组选择菜单"""
+    print_header("选择测试分组")
+    
+    groups = list(TEST_GROUPS.keys())
+    for i, group_id in enumerate(groups, 1):
+        group_info = TEST_GROUPS[group_id]
+        print(f"  {Colors.GREEN}{i:2}{Colors.END}. {group_info['name']} ({group_id})")
+    
+    choice = input(f"\n{Colors.BOLD}请输入选项 (1-{len(groups)}): {Colors.END}").strip()
+    
+    try:
+        index = int(choice) - 1
+        if 0 <= index < len(groups):
+            group_id = groups[index]
+            run_test_group(group_id)
+        else:
+            print(f"{Colors.RED}无效选项{Colors.END}")
+    except ValueError:
+        print(f"{Colors.RED}无效输入{Colors.END}")
+
+
+def run_test_group(group_id: str):
+    """运行特定测试分组"""
+    if group_id not in TEST_GROUPS:
+        print(f"{Colors.RED}错误: 测试分组 '{group_id}' 不存在{Colors.END}")
+        return 1
+    
+    group_info = TEST_GROUPS[group_id]
+    print_header(f"运行测试分组: {group_info['name']}")
+    
+    # 初始化
+    global TEST_RESULTS, TOTAL_TESTS, PASSED_TESTS, FAILED_TESTS
+    TEST_RESULTS = []
+    TOTAL_TESTS = 0
+    PASSED_TESTS = 0
+    FAILED_TESTS = 0
+    
+    # 检查服务器（后端测试需要）
+    if not group_id.startswith('frontend'):
+        if not check_server():
+            print(f"{Colors.RED}✗ 后端服务器未运行，无法执行测试{Colors.END}")
+            return 1
+        
+        global DEFAULT_TENANT_ID
+        DEFAULT_TENANT_ID = get_default_tenant_id()
+    
+    # 运行测试
+    try:
+        for test_func in group_info['tests']:
+            test_func()
+    except KeyboardInterrupt:
+        print(f"\n\n{Colors.YELLOW}测试被用户中断{Colors.END}")
+        return 1
+    
+    # 生成报告
+    return generate_report()
+
+
+def run_backend_tests():
+    """运行所有后端测试"""
+    return run_all_backend_tests()
+
+
+def run_frontend_tests():
+    """运行所有前端测试"""
+    print_header("owlRD 前端测试")
+    
+    global TEST_RESULTS, TOTAL_TESTS, PASSED_TESTS, FAILED_TESTS
+    TEST_RESULTS = []
+    TOTAL_TESTS = 0
+    PASSED_TESTS = 0
+    FAILED_TESTS = 0
+    
+    try:
+        test_frontend_build()
+        test_frontend_lint()
+    except KeyboardInterrupt:
+        print(f"\n\n{Colors.YELLOW}测试被用户中断{Colors.END}")
+        return 1
+    
+    return generate_report()
+
+
+def run_all_tests():
+    """运行所有测试（后端+前端+集成）"""
+    print_header("owlRD 完整系统测试（所有测试）")
+    
+    global TEST_RESULTS, TOTAL_TESTS, PASSED_TESTS, FAILED_TESTS
+    TEST_RESULTS = []
+    TOTAL_TESTS = 0
+    PASSED_TESTS = 0
+    FAILED_TESTS = 0
+    
+    # 第一部分：后端测试
+    print(f"\n{Colors.BOLD}{Colors.BLUE}{'='*80}{Colors.END}")
+    print(f"{Colors.BOLD}{Colors.BLUE}第一部分：后端API测试{Colors.END}")
+    print(f"{Colors.BOLD}{Colors.BLUE}{'='*80}{Colors.END}\n")
+    
+    if not check_server():
+        print(f"{Colors.RED}✗ 后端服务器未运行，跳过后端测试{Colors.END}")
+    else:
+        global DEFAULT_TENANT_ID
+        DEFAULT_TENANT_ID = get_default_tenant_id()
+        
+        try:
+            test_health_endpoints()
+            test_api_documentation()
+            test_tenant_endpoints()
+            test_user_role_endpoints()
+            test_location_endpoints()
+            test_resident_endpoints()
+            test_device_endpoints()
+            test_iot_data_endpoints()
+            test_alert_endpoints()
+            test_card_endpoints()
+            test_care_quality_endpoints()
+            test_standard_codes_endpoints()
+            test_data_integrity()
+        except KeyboardInterrupt:
+            print(f"\n\n{Colors.YELLOW}测试被用户中断{Colors.END}")
+            return 1
+    
+    # 第二部分：前端测试
+    print(f"\n{Colors.BOLD}{Colors.BLUE}{'='*80}{Colors.END}")
+    print(f"{Colors.BOLD}{Colors.BLUE}第二部分：前端测试{Colors.END}")
+    print(f"{Colors.BOLD}{Colors.BLUE}{'='*80}{Colors.END}\n")
+    
+    try:
+        test_frontend_build()
+        test_frontend_lint()
+        test_frontend_unit()
+    except KeyboardInterrupt:
+        print(f"\n\n{Colors.YELLOW}测试被用户中断{Colors.END}")
+        return 1
+    
+    # 第三部分：集成测试
+    print(f"\n{Colors.BOLD}{Colors.BLUE}{'='*80}{Colors.END}")
+    print(f"{Colors.BOLD}{Colors.BLUE}第三部分：集成测试{Colors.END}")
+    print(f"{Colors.BOLD}{Colors.BLUE}{'='*80}{Colors.END}\n")
+    
+    try:
+        test_e2e()
+        test_api_integration()
+    except KeyboardInterrupt:
+        print(f"\n\n{Colors.YELLOW}测试被用户中断{Colors.END}")
+        return 1
+    
+    return generate_report()
+
+
+def show_latest_report():
+    """显示最新的测试报告"""
+    report_dir = Path(__file__).parent.parent / "test_reports"
+    
+    if not report_dir.exists():
+        print(f"{Colors.YELLOW}测试报告目录不存在{Colors.END}")
+        return
+    
+    reports = sorted(report_dir.glob("test_report_*.json"), reverse=True)
+    
+    if not reports:
+        print(f"{Colors.YELLOW}没有找到测试报告{Colors.END}")
+        return
+    
+    latest_report = reports[0]
+    
+    try:
+        with open(latest_report, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        print_header(f"测试报告 - {latest_report.name}")
+        
+        print(f"{Colors.BOLD}测试时间:{Colors.END} {data.get('timestamp', 'N/A')}")
+        print(f"{Colors.BOLD}总测试数:{Colors.END} {data.get('total_tests', 0)}")
+        print(f"{Colors.BOLD}通过数:{Colors.END} {Colors.GREEN}{data.get('passed_tests', 0)}{Colors.END}")
+        print(f"{Colors.BOLD}失败数:{Colors.END} {Colors.RED}{data.get('failed_tests', 0)}{Colors.END}")
+        print(f"{Colors.BOLD}通过率:{Colors.END} {data.get('pass_rate', 0):.1f}%")
+        
+        if data.get('failed_tests', 0) > 0:
+            print(f"\n{Colors.BOLD}失败的测试：{Colors.END}")
+            for result in data.get('test_results', []):
+                if not result.get('passed'):
+                    print(f"  {Colors.RED}✗{Colors.END} {result.get('name')}")
+                    if result.get('details'):
+                        print(f"    {result.get('details')}")
+        
+    except Exception as e:
+        print(f"{Colors.RED}读取报告失败: {str(e)}{Colors.END}")
+
+
+def run_all_backend_tests():
+    """运行所有后端API测试（原main函数逻辑）"""
+    global TEST_RESULTS, TOTAL_TESTS, PASSED_TESTS, FAILED_TESTS
+    TEST_RESULTS = []
+    TOTAL_TESTS = 0
+    PASSED_TESTS = 0
+    FAILED_TESTS = 0
+    
+    print_header("owlRD 后端API测试")
     
     print(f"{Colors.BOLD}测试配置:{Colors.END}")
     print(f"  后端地址: {BASE_URL}")
@@ -522,6 +1269,151 @@ def main():
     # 生成报告
     return generate_report()
 
+def run_integration_tests():
+    """运行所有集成测试"""
+    print_header("owlRD 集成测试")
+    
+    global TEST_RESULTS, TOTAL_TESTS, PASSED_TESTS, FAILED_TESTS
+    TEST_RESULTS = []
+    TOTAL_TESTS = 0
+    PASSED_TESTS = 0
+    FAILED_TESTS = 0
+    
+    try:
+        test_e2e()
+        test_api_integration()
+    except KeyboardInterrupt:
+        print(f"\n\n{Colors.YELLOW}测试被用户中断{Colors.END}")
+        return 1
+    
+    return generate_report()
+
+
+def run_specialist_tests():
+    """运行所有专项测试"""
+    print_header("owlRD 专项测试")
+    
+    global TEST_RESULTS, TOTAL_TESTS, PASSED_TESTS, FAILED_TESTS
+    TEST_RESULTS = []
+    TOTAL_TESTS = 0
+    PASSED_TESTS = 0
+    FAILED_TESTS = 0
+    
+    try:
+        test_performance()
+        test_security()
+        test_compatibility()
+        test_database()
+        test_stress()
+    except KeyboardInterrupt:
+        print(f"\n\n{Colors.YELLOW}测试被用户中断{Colors.END}")
+        return 1
+    
+    return generate_report()
+
+
+def main():
+    """主入口函数 - 解析命令行参数或显示菜单"""
+    parser = argparse.ArgumentParser(
+        description="owlRD完整系统测试 - 后端API + 前端 + E2E + 专项测试",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+示例：
+  # 交互式菜单
+  python tests/full_system_test.py
+  
+  # 核心测试
+  python tests/full_system_test.py --all              # 运行所有测试
+  python tests/full_system_test.py --backend          # 只测试后端API
+  python tests/full_system_test.py --frontend         # 只测试前端
+  python tests/full_system_test.py --integration      # 集成测试
+  python tests/full_system_test.py --specialist       # 专项测试
+  
+  # 特定分组
+  python tests/full_system_test.py --api health       # 健康检查
+  python tests/full_system_test.py --api alert        # 告警系统
+  python tests/full_system_test.py --e2e              # E2E测试
+  python tests/full_system_test.py --smoke            # 冒烟测试
+  
+  # 专项测试
+  python tests/full_system_test.py --performance      # 性能测试
+  python tests/full_system_test.py --security         # 安全测试
+  python tests/full_system_test.py --compatibility    # 兼容性测试
+  
+  # 工具
+  python tests/full_system_test.py --list             # 列出所有测试
+  python tests/full_system_test.py --report           # 查看最新报告
+        """
+    )
+    
+    # 核心测试参数
+    parser.add_argument('--all', action='store_true', help='运行所有测试')
+    parser.add_argument('--backend', action='store_true', help='运行所有后端API测试')
+    parser.add_argument('--frontend', action='store_true', help='运行所有前端测试')
+    parser.add_argument('--integration', action='store_true', help='运行集成测试')
+    parser.add_argument('--specialist', action='store_true', help='运行专项测试')
+    
+    # 特定测试参数
+    parser.add_argument('--api', metavar='GROUP', help='运行特定API测试分组')
+    parser.add_argument('--e2e', action='store_true', help='运行E2E端到端测试')
+    parser.add_argument('--smoke', action='store_true', help='运行冒烟测试')
+    
+    # 专项测试参数
+    parser.add_argument('--performance', action='store_true', help='运行性能测试')
+    parser.add_argument('--security', action='store_true', help='运行安全测试')
+    parser.add_argument('--compatibility', action='store_true', help='运行兼容性测试')
+    parser.add_argument('--database', action='store_true', help='运行数据库测试')
+    parser.add_argument('--stress', action='store_true', help='运行压力测试')
+    
+    # 工具参数
+    parser.add_argument('--list', action='store_true', help='列出所有可用测试')
+    parser.add_argument('--report', action='store_true', help='查看最新测试报告')
+    
+    args = parser.parse_args()
+    
+    # 处理命令行参数
+    if args.list:
+        list_all_tests()
+        return 0
+    elif args.report:
+        show_latest_report()
+        return 0
+    elif args.all:
+        return run_all_tests()
+    elif args.backend:
+        return run_backend_tests()
+    elif args.frontend:
+        return run_frontend_tests()
+    elif args.integration:
+        return run_integration_tests()
+    elif args.specialist:
+        return run_specialist_tests()
+    elif args.e2e:
+        return run_test_group('e2e')
+    elif args.smoke:
+        return run_test_group('smoke')
+    elif args.performance:
+        return run_test_group('performance')
+    elif args.security:
+        return run_test_group('security')
+    elif args.compatibility:
+        return run_test_group('compatibility')
+    elif args.database:
+        return run_test_group('database')
+    elif args.stress:
+        return run_test_group('stress')
+    elif args.api:
+        return run_test_group(args.api)
+    else:
+        # 无参数时显示交互式菜单
+        show_interactive_menu()
+        return 0
+
+
 if __name__ == "__main__":
-    exit_code = main()
-    sys.exit(exit_code)
+    try:
+        exit_code = main()
+        sys.exit(exit_code)
+    except KeyboardInterrupt:
+        print(f"\n\n{Colors.YELLOW}程序被用户中断{Colors.END}")
+        sys.exit(1)
