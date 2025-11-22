@@ -107,6 +107,17 @@ export default function Cards() {
     },
   })
 
+  // 创建卡片
+  const createCardMutation = useMutation({
+    mutationFn: async (cardData: any) => {
+      await api.post('/api/v1/cards/', cardData)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cards'] })
+      setShowCreateModal(false)
+    },
+  })
+
   // 更新卡片状态
   const updateCardStatusMutation = useMutation({
     mutationFn: async ({ cardId, status }: { cardId: string; status: string }) => {
@@ -442,25 +453,143 @@ export default function Cards() {
         </div>
       )}
 
-      {/* 创建卡片提示 */}
+      {/* 创建卡片表单 */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <div className="text-center">
-              <AlertCircle className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">创建卡片</h2>
-              <p className="text-gray-600 mb-6">
-                卡片创建功能需要配合完整的表单实现。
-                <br />
-                当前版本请使用API直接创建或通过系统自动创建。
-              </p>
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition-colors"
-              >
-                关闭
-              </button>
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-900">创建卡片</h2>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
             </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                const formData = new FormData(e.currentTarget)
+                const cardData = {
+                  tenant_id: TENANT_ID,
+                  resident_id: formData.get('resident_id') || undefined,
+                  device_id: formData.get('device_id'),
+                  location_id: formData.get('location_id'),
+                  card_type: formData.get('card_type'),
+                  priority: Number(formData.get('priority')),
+                  status: 'active',
+                }
+                createCardMutation.mutate(cardData)
+              }}
+              className="p-6 space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  卡片类型 *
+                </label>
+                <select
+                  name="card_type"
+                  required
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">请选择</option>
+                  <option value="private">私人卡片</option>
+                  <option value="public">公共卡片</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  住户 (私人卡片必填)
+                </label>
+                <select
+                  name="resident_id"
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">无</option>
+                  {residents?.map((resident: any) => (
+                    <option key={resident.resident_id} value={resident.resident_id}>
+                      {resident.last_name} ({resident.resident_account})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  设备 *
+                </label>
+                <select
+                  name="device_id"
+                  required
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">请选择</option>
+                  {devices?.map((device: any) => (
+                    <option key={device.device_id} value={device.device_id}>
+                      {device.device_name || device.device_id}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  位置 *
+                </label>
+                <select
+                  name="location_id"
+                  required
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">请选择</option>
+                  {locations?.map((location: any) => (
+                    <option key={location.location_id} value={location.location_id}>
+                      {location.location_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  优先级 *
+                </label>
+                <input
+                  type="number"
+                  name="priority"
+                  defaultValue={1}
+                  min={1}
+                  max={100}
+                  required
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="数字越小优先级越高"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  优先级决定告警路由顺序，数字越小优先级越高
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded transition-colors hover:bg-gray-50"
+                >
+                  取消
+                </button>
+                <button
+                  type="submit"
+                  disabled={createCardMutation.isPending}
+                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors disabled:opacity-50"
+                >
+                  {createCardMutation.isPending ? '创建中...' : '创建卡片'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

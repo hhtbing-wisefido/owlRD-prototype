@@ -14,6 +14,7 @@ import Alerts from './pages/Alerts'
 import CareQuality from './pages/CareQuality'
 import IoTData from './pages/IoTData'
 import Cards from './pages/Cards'
+import AlertPolicies from './pages/AlertPolicies'
 
 function App() {
   return (
@@ -46,6 +47,7 @@ function App() {
             <Route path="iot-data" element={<IoTData />} />
             <Route path="cards" element={<Cards />} />
             <Route path="alerts" element={<Alerts />} />
+            <Route path="alert-policies" element={<AlertPolicies />} />
             
             {/* Quality & Reports */}
             <Route path="care-quality" element={<CareQuality />} />

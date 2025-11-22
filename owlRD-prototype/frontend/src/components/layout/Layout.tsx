@@ -24,6 +24,7 @@ const navigation = [
   { name: 'IoT数据', href: '/iot-data', icon: TrendingUp },
   { name: '卡片管理', href: '/cards', icon: CreditCard },
   { name: '告警中心', href: '/alerts', icon: AlertTriangle },
+  { name: '告警规则', href: '/alert-policies', icon: Shield },
   { name: '护理质量', href: '/care-quality', icon: Activity },
 ]
 
