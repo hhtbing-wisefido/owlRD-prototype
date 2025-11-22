@@ -63,7 +63,7 @@ async def create_user(user: UserCreate):
 async def update_user(user_id: UUID, user: UserUpdate):
     """更新用户"""
     try:
-        result = user_storage.update(user_id, user.model_dump(exclude_unset=True))
+        result = user_storage.update("user_id", user_id, user.model_dump(exclude_unset=True))
         if not result:
             raise HTTPException(status_code=404, detail="User not found")
         return result
@@ -78,7 +78,7 @@ async def update_user(user_id: UUID, user: UserUpdate):
 async def delete_user(user_id: UUID):
     """删除用户"""
     try:
-        success = user_storage.delete(user_id)
+        success = user_storage.delete("user_id", user_id)
         if not success:
             raise HTTPException(status_code=404, detail="User not found")
         return {"status": "success", "user_id": str(user_id)}
