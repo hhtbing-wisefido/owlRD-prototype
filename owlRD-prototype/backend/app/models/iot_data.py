@@ -51,6 +51,10 @@ class IOTTimeseriesBase(BaseModel):
     sleep_state_snomed_code: Optional[str] = Field(None, max_length=50, description="睡眠状态SNOMED CT编码")
     sleep_state_display: Optional[str] = Field(None, max_length=100, description="睡眠状态显示名称")
     
+    # 睡眠时段（TDPv2 SleepPeriod）
+    sleep_period_start: Optional[str] = Field(None, max_length=5, description="睡眠开始时间 HH:MM，空表示非睡眠时段")
+    sleep_period_end: Optional[str] = Field(None, max_length=5, description="睡眠结束时间 HH:MM")
+    
     # 位置信息（冗余，加速查询）
     location_id: Optional[UUID] = Field(None, description="门牌号/地址")
     room_id: Optional[UUID] = Field(None, description="房间ID")

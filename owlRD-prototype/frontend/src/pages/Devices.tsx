@@ -3,19 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Radio, Plus, Edit2, Trash2, Circle } from 'lucide-react'
 import { API_CONFIG, API_ENDPOINTS } from '../config/api'
 import DeviceModal from '../components/modals/DeviceModal'
-
-interface Device {
-  device_id: string
-  tenant_id: string
-  device_type: string
-  device_tag?: string
-  manufacturer?: string
-  model?: string
-  status: string
-  is_active: boolean
-  created_at: string
-  updated_at: string
-}
+import { Device } from '../types'
 
 export default function Devices() {
   const queryClient = useQueryClient()
@@ -176,7 +164,7 @@ export default function Devices() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    {device.device_tag || device.device_type}
+                    {device.device_name || device.device_type}
                   </h3>
                   <p className="text-sm text-gray-500">{device.device_id.slice(0, 8)}</p>
                 </div>
@@ -189,16 +177,10 @@ export default function Devices() {
                 <span className="text-gray-600">类型</span>
                 <span className="text-gray-900">{device.device_type}</span>
               </div>
-              {device.manufacturer && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">制造商</span>
-                  <span className="text-gray-900">{device.manufacturer}</span>
-                </div>
-              )}
-              {device.model && (
+              {device.device_model && (
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-600">型号</span>
-                  <span className="text-gray-900">{device.model}</span>
+                  <span className="text-gray-900">{device.device_model}</span>
                 </div>
               )}
               <div className="flex items-center justify-between text-sm">

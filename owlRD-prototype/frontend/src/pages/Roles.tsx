@@ -1,20 +1,9 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Shield, UserCheck, AlertCircle, Edit2, Trash2, Plus } from 'lucide-react'
+import { Shield, Plus, Edit2, Trash2, UserCheck, AlertCircle } from 'lucide-react'
 import { API_CONFIG, API_ENDPOINTS } from '../config/api'
 import RoleModal from '../components/modals/RoleModal'
-
-interface Role {
-  role_id: string
-  tenant_id: string
-  role_code: string
-  display_name: string
-  description?: string
-  is_system: boolean
-  is_active: boolean
-  created_at: string
-  updated_at: string
-}
+import { Role } from '../types'
 
 export default function Roles() {
   const queryClient = useQueryClient()

@@ -3,22 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { UserCircle, UserPlus, Edit2, Trash2, Shield } from 'lucide-react'
 import { API_CONFIG, API_ENDPOINTS } from '../config/api'
 import UserModal from '../components/modals/UserModal'
-
-interface User {
-  user_id: string
-  tenant_id: string
-  username?: string
-  email?: string
-  phone?: string
-  role: string
-  alert_levels?: string[]
-  alert_channels?: string[]
-  alert_scope?: string
-  tags?: Record<string, any>
-  is_active: boolean
-  created_at: string
-  updated_at: string
-}
+import { User } from '../types'
 
 export default function Users() {
   const queryClient = useQueryClient()
@@ -155,7 +140,7 @@ export default function Users() {
         </div>
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="text-3xl font-bold text-green-600">
-            {users?.filter(u => u.is_active).length || 0}
+            {users?.filter(u => u.status === 'active').length || 0}
           </div>
           <div className="text-gray-600 text-sm mt-1">活跃用户</div>
         </div>
@@ -234,7 +219,7 @@ export default function Users() {
                     <div className="flex flex-wrap gap-1">
                       {user.tags && Object.keys(user.tags).slice(0, 2).map((key, i) => (
                         <span key={i} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
-                          {key}: {String(user.tags[key])}
+                          {key}: {String(user.tags?.[key])}
                         </span>
                       ))}
                       {user.tags && Object.keys(user.tags).length > 2 && (
@@ -245,7 +230,7 @@ export default function Users() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {user.is_active ? (
+                    {user.status === 'active' ? (
                       <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                         活跃
                       </span>

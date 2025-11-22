@@ -283,6 +283,12 @@ export interface Alert {
   acknowledged_at?: string
   resolved_by?: string
   resolved_at?: string
+  
+  // 告警升级/抑制机制
+  escalation_level?: number  // 0=初始, 1-3=升级次数
+  escalated_at?: string
+  suppressed_until?: string  // 抑制到期时间
+  auto_escalate?: boolean    // 是否启用自动升级
 }
 
 // IoT Data types (对齐 12_iot_timeseries.sql)
@@ -320,6 +326,10 @@ export interface IoTData {
   // 睡眠状态
   sleep_state_snomed_code?: string
   sleep_state_display?: string
+  
+  // 睡眠时段（TDPv2 SleepPeriod）
+  sleep_period_start?: string  // HH:MM
+  sleep_period_end?: string    // HH:MM
   
   // 位置信息
   location_id?: string

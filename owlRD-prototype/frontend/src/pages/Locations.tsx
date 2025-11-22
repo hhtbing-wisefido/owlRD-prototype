@@ -1,27 +1,9 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { MapPin, Building2, Home, Plus, Edit2, Trash2, Users } from 'lucide-react'
+import { MapPin, Plus, Edit2, Trash2, Building2, Home, Users } from 'lucide-react'
 import { API_CONFIG, API_ENDPOINTS } from '../config/api'
 import LocationModal from '../components/modals/LocationModal'
-
-interface Location {
-  location_id: string
-  tenant_id: string
-  location_tag?: string
-  location_name: string
-  building?: string
-  floor?: string
-  area_id?: string
-  door_number: string
-  location_type: string
-  primary_resident_id?: string
-  is_public_space: boolean
-  is_multi_person_room: boolean
-  timezone: string
-  is_active: boolean
-  created_at: string
-  updated_at: string
-}
+import { Location } from '../types'
 
 export default function Locations() {
   const queryClient = useQueryClient()

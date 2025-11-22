@@ -68,6 +68,12 @@ class AlertBase(BaseModel):
     acknowledged_at: Optional[datetime] = Field(None, description="确认时间")
     resolved_by: Optional[UUID] = Field(None, description="解决人ID")
     resolved_at: Optional[datetime] = Field(None, description="解决时间")
+    
+    # 告警升级/抑制机制（25_Alarm_Notification_Flow.md）
+    escalation_level: Optional[int] = Field(None, ge=0, le=3, description="升级级别: 0=初始, 1-3=升级次数")
+    escalated_at: Optional[datetime] = Field(None, description="最后升级时间")
+    suppressed_until: Optional[datetime] = Field(None, description="抑制到期时间（静默期）")
+    auto_escalate: bool = Field(default=True, description="是否启用自动升级")
 
 
 class AlertCreate(AlertBase):
