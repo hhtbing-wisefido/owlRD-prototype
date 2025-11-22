@@ -1,0 +1,59 @@
+{
+  "timestamp": "2025-11-22T18:53:01.132255",
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "pass_rate": 100.0
+  },
+  "tests": [
+    {
+      "test": "前端目录检查",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T18:52:40.657918"
+    },
+    {
+      "test": "Node.js环境检查",
+      "passed": true,
+      "details": "Node.js v22.20.0, npm 10.9.3",
+      "timestamp": "2025-11-22T18:52:41.590408"
+    },
+    {
+      "test": "package.json检查",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T18:52:41.590829"
+    },
+    {
+      "test": "依赖安装检查",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T18:52:41.591151"
+    },
+    {
+      "test": "前端构建",
+      "passed": true,
+      "details": "生成4个文件",
+      "timestamp": "2025-11-22T18:52:58.956422"
+    },
+    {
+      "test": "Node.js环境检查",
+      "passed": true,
+      "details": "Node.js v22.20.0, npm 10.9.3",
+      "timestamp": "2025-11-22T18:52:59.622137"
+    },
+    {
+      "test": "依赖安装检查",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T18:52:59.622552"
+    },
+    {
+      "test": "ESLint代码检查",
+      "passed": true,
+      "details": "0个错误, 1个警告",
+      "timestamp": "2025-11-22T18:53:01.130352"
+    }
+  ]
+}

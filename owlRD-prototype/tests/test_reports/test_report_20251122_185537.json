@@ -1,0 +1,275 @@
+{
+  "timestamp": "2025-11-22T18:55:37.320250",
+  "summary": {
+    "total": 44,
+    "passed": 41,
+    "failed": 3,
+    "pass_rate": 93.18181818181817
+  },
+  "tests": [
+    {
+      "test": "健康检查端点",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:13.094237"
+    },
+    {
+      "test": "根路径",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:15.151772"
+    },
+    {
+      "test": "本地Swagger UI (/docs-local)",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T18:54:17.204253"
+    },
+    {
+      "test": "国内CDN Swagger (/docs-cn)",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T18:54:19.236428"
+    },
+    {
+      "test": "OpenAPI规范 (/api/openapi.json)",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T18:54:21.298851"
+    },
+    {
+      "test": "获取租户列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:23.359760"
+    },
+    {
+      "test": "创建新租户",
+      "passed": true,
+      "details": "状态码: 201",
+      "timestamp": "2025-11-22T18:54:25.409083"
+    },
+    {
+      "test": "获取租户详情 (ID: a9e90baa-adf6-4c99-8d6a-6f4f4d547327)",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:27.467862"
+    },
+    {
+      "test": "获取角色列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:29.521417"
+    },
+    {
+      "test": "获取用户列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:31.568624"
+    },
+    {
+      "test": "创建新用户",
+      "passed": true,
+      "details": "状态码: 201",
+      "timestamp": "2025-11-22T18:54:33.628506"
+    },
+    {
+      "test": "获取位置列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:35.667077"
+    },
+    {
+      "test": "创建新位置",
+      "passed": true,
+      "details": "状态码: 201",
+      "timestamp": "2025-11-22T18:54:37.712394"
+    },
+    {
+      "test": "获取住户列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:39.754841"
+    },
+    {
+      "test": "创建新住户",
+      "passed": true,
+      "details": "状态码: 201",
+      "timestamp": "2025-11-22T18:54:41.799924"
+    },
+    {
+      "test": "获取住户联系人列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:43.843474"
+    },
+    {
+      "test": "获取护理关联列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:45.903607"
+    },
+    {
+      "test": "获取设备列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:47.948260"
+    },
+    {
+      "test": "创建新设备",
+      "passed": true,
+      "details": "状态码: 201",
+      "timestamp": "2025-11-22T18:54:49.997130"
+    },
+    {
+      "test": "查询IoT数据",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:52.044877"
+    },
+    {
+      "test": "获取IoT数据统计",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:54.102272"
+    },
+    {
+      "test": "获取告警列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:56.137167"
+    },
+    {
+      "test": "获取告警统计",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:54:58.200931"
+    },
+    {
+      "test": "获取告警策略列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:55:00.246206"
+    },
+    {
+      "test": "获取卡片列表",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:55:02.303450"
+    },
+    {
+      "test": "获取护理质量报告",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:55:04.345124"
+    },
+    {
+      "test": "获取质量评分",
+      "passed": true,
+      "details": "状态码: 200",
+      "timestamp": "2025-11-22T18:55:06.392836"
+    },
+    {
+      "test": "租户数据存在性检查",
+      "passed": true,
+      "details": "找到 6 条记录",
+      "timestamp": "2025-11-22T18:55:08.432357"
+    },
+    {
+      "test": "角色数据存在性检查",
+      "passed": true,
+      "details": "找到 6 条记录",
+      "timestamp": "2025-11-22T18:55:10.491840"
+    },
+    {
+      "test": "用户数据存在性检查",
+      "passed": true,
+      "details": "找到 8 条记录",
+      "timestamp": "2025-11-22T18:55:12.552578"
+    },
+    {
+      "test": "位置数据存在性检查",
+      "passed": true,
+      "details": "找到 6 条记录",
+      "timestamp": "2025-11-22T18:55:14.614444"
+    },
+    {
+      "test": "住户数据存在性检查",
+      "passed": true,
+      "details": "找到 7 条记录",
+      "timestamp": "2025-11-22T18:55:16.666132"
+    },
+    {
+      "test": "设备数据存在性检查",
+      "passed": true,
+      "details": "找到 7 条记录",
+      "timestamp": "2025-11-22T18:55:18.713994"
+    },
+    {
+      "test": "前端目录检查",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T18:55:18.715528"
+    },
+    {
+      "test": "Node.js环境检查",
+      "passed": true,
+      "details": "Node.js v22.20.0, npm 10.9.3",
+      "timestamp": "2025-11-22T18:55:19.351852"
+    },
+    {
+      "test": "package.json检查",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T18:55:19.352245"
+    },
+    {
+      "test": "依赖安装检查",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T18:55:19.352674"
+    },
+    {
+      "test": "前端构建",
+      "passed": true,
+      "details": "生成4个文件",
+      "timestamp": "2025-11-22T18:55:35.351526"
+    },
+    {
+      "test": "Node.js环境检查",
+      "passed": true,
+      "details": "Node.js v22.20.0, npm 10.9.3",
+      "timestamp": "2025-11-22T18:55:36.016958"
+    },
+    {
+      "test": "依赖安装检查",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T18:55:36.018125"
+    },
+    {
+      "test": "ESLint代码检查",
+      "passed": true,
+      "details": "0个错误, 1个警告",
+      "timestamp": "2025-11-22T18:55:37.313610"
+    },
+    {
+      "test": "单元测试配置",
+      "passed": false,
+      "details": "未配置test脚本，需要安装Vitest",
+      "timestamp": "2025-11-22T18:55:37.314693"
+    },
+    {
+      "test": "E2E测试目录",
+      "passed": false,
+      "details": "e2e-tests目录不存在",
+      "timestamp": "2025-11-22T18:55:37.315855"
+    },
+    {
+      "test": "API集成测试",
+      "passed": false,
+      "details": "测试未实现",
+      "timestamp": "2025-11-22T18:55:37.316905"
+    }
+  ]
+}

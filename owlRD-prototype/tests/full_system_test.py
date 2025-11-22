@@ -204,6 +204,8 @@ def test_tenant_endpoints():
             "GET", f"/tenants/{tenant_id}",
             f"获取租户详情 (ID: {tenant_id})"
         )
+        # 注：跳过删除租户测试，因为租户有关联数据（用户、位置、住户等）
+        # 删除租户需要级联删除，这是复杂的业务逻辑，不适合在基础测试中进行
 
 def test_user_role_endpoints():
     """测试用户和角色API"""
@@ -229,13 +231,22 @@ def test_user_role_endpoints():
         "tenant_id": DEFAULT_TENANT_ID,
         "password": "TestPass123"
     }
-    test_api_endpoint(
+    passed, created_user = test_api_endpoint(
         "POST", "/users/",
         "创建新用户",
         data=new_user,
         expected_status=201,
         params={}
     )
+    
+    if passed and created_user:
+        user_id = created_user.get("user_id")
+        # 删除用户
+        test_api_endpoint(
+            "DELETE", f"/users/{user_id}",
+            f"删除用户 (ID: {user_id})",
+            expected_status=200
+        )
 
 def test_location_endpoints():
     """测试位置管理API"""
@@ -261,6 +272,15 @@ def test_location_endpoints():
         expected_status=201,
         params={}
     )
+    
+    if passed and location:
+        location_id = location.get("location_id")
+        # 删除位置（204 No Content也是成功）
+        test_api_endpoint(
+            "DELETE", f"/locations/{location_id}",
+            f"删除位置 (ID: {location_id})",
+            expected_status=204
+        )
 
 def test_resident_endpoints():
     """测试住户管理API"""
@@ -292,6 +312,15 @@ def test_resident_endpoints():
         params={}
     )
     
+    if passed and resident:
+        resident_id = resident.get("resident_id")
+        # 删除住户
+        test_api_endpoint(
+            "DELETE", f"/residents/{resident_id}",
+            f"删除住户 (ID: {resident_id})",
+            expected_status=200
+        )
+    
     if passed and residents:
         # 测试住户联系人（注意：没有斜杠）
         test_api_endpoint("GET", "/resident_contacts", "获取住户联系人列表", params={})
@@ -321,13 +350,22 @@ def test_device_endpoints():
         "installation_date_utc": datetime.now().isoformat(),
         "tenant_id": DEFAULT_TENANT_ID
     }
-    test_api_endpoint(
+    passed, device = test_api_endpoint(
         "POST", "/devices/",
         "创建新设备",
         data=new_device,
         expected_status=201,
         params={}
     )
+    
+    if passed and device:
+        device_id = device.get("device_id")
+        # 删除设备
+        test_api_endpoint(
+            "DELETE", f"/devices/{device_id}",
+            f"删除设备 (ID: {device_id})",
+            expected_status=200
+        )
 
 def test_iot_data_endpoints():
     """测试IoT数据API"""
@@ -440,8 +478,8 @@ def generate_report():
                 if result['details']:
                     print(f"    {result['details']}")
     
-    # 保存JSON报告
-    report_file = Path(__file__).parent.parent / "test_reports" / f"test_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    # 保存JSON报告到tests/test_reports/
+    report_file = Path(__file__).parent / "test_reports" / f"test_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     report_file.parent.mkdir(exist_ok=True)
     
     report_data = {
@@ -475,10 +513,50 @@ def generate_report():
 def get_default_tenant_id() -> str:
     """获取默认租户ID - 直接使用init_sample_data.py的固定ID"""
     global DEFAULT_TENANT_ID
-    # 使用init_sample_data.py中定义的固定ID
-    # 这样确保测试和示例数据使用同一个tenant_id
-    DEFAULT_TENANT_ID = "10000000-0000-0000-0000-000000000001"
-    return DEFAULT_TENANT_ID
+    return "10000000-0000-0000-0000-000000000001"
+
+
+# ============================================================================
+# 前端测试辅助函数
+# ============================================================================
+
+def check_nodejs_installed():
+    """检查Node.js和npm是否安装"""
+    try:
+        # Windows下需要使用shell=True和正确的编码
+        node_result = subprocess.run(
+            ["node", "--version"],
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='ignore',  # 忽略编码错误
+            timeout=5,
+            shell=True
+        )
+        npm_result = subprocess.run(
+            ["npm", "--version"],
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='ignore',
+            timeout=5,
+            shell=True
+        )
+        
+        if node_result.returncode == 0 and npm_result.returncode == 0:
+            node_ver = node_result.stdout.strip()
+            npm_ver = npm_result.stdout.strip()
+            return True, f"Node.js {node_ver}, npm {npm_ver}"
+        return False, "Node.js或npm未正确安装"
+    except FileNotFoundError:
+        return False, "Node.js未安装"
+    except Exception as e:
+        return False, f"检查失败: {str(e)}"
+
+
+# ============================================================================
+# 前端构建测试
+# ============================================================================
 
 def test_frontend_build():
     """测试前端TypeScript编译和构建"""
@@ -486,21 +564,36 @@ def test_frontend_build():
     
     frontend_dir = Path(__file__).parent.parent / "frontend"
     
+    # 检查前端目录
     if not frontend_dir.exists():
         test_result("前端目录检查", False, "frontend目录不存在")
         return
-    
     test_result("前端目录检查", True)
     
+    # 检查Node.js环境
+    node_installed, node_info = check_nodejs_installed()
+    if not node_installed:
+        test_result("Node.js环境检查", False, node_info)
+        print(f"{Colors.YELLOW}  建议: 安装Node.js https://nodejs.org/{Colors.END}")
+        return
+    test_result("Node.js环境检查", True, node_info)
+    
+    # 检查package.json
+    package_json = frontend_dir / "package.json"
+    if not package_json.exists():
+        test_result("package.json检查", False)
+        return
+    test_result("package.json检查", True)
+    
+    # 检查node_modules
+    node_modules = frontend_dir / "node_modules"
+    if not node_modules.exists():
+        test_result("依赖安装检查", False, "node_modules不存在")
+        print(f"{Colors.YELLOW}  建议: cd frontend && npm install{Colors.END}")
+        return
+    test_result("依赖安装检查", True)
+    
     try:
-        # 检查package.json
-        package_json = frontend_dir / "package.json"
-        if package_json.exists():
-            test_result("package.json存在", True)
-        else:
-            test_result("package.json存在", False)
-            return
-        
         # 运行TypeScript编译
         print(f"{Colors.BLUE}▶ 运行 TypeScript 编译...{Colors.END}")
         result = subprocess.run(
@@ -508,25 +601,27 @@ def test_frontend_build():
             cwd=frontend_dir,
             capture_output=True,
             text=True,
-            timeout=120
+            encoding='utf-8',
+            errors='ignore',
+            timeout=120,
+            shell=True
         )
         
         if result.returncode == 0:
-            # 检查dist目录
             dist_dir = frontend_dir / "dist"
             if dist_dir.exists():
                 files = list(dist_dir.glob("**/*"))
-                test_result("前端构建成功", True, f"生成{len(files)}个文件")
+                test_result("前端构建", True, f"生成{len(files)}个文件")
             else:
-                test_result("前端构建成功", False, "dist目录未生成")
+                test_result("前端构建", False, "dist目录未生成")
         else:
             error_msg = result.stderr[-200:] if result.stderr else "未知错误"
-            test_result("前端构建成功", False, f"构建失败: {error_msg}")
+            test_result("前端构建", False, f"构建失败")
+            if error_msg:
+                print(f"{Colors.YELLOW}  错误: {error_msg}{Colors.END}")
             
     except subprocess.TimeoutExpired:
         test_result("前端构建", False, "构建超时（>120秒）")
-    except FileNotFoundError:
-        test_result("前端构建", False, "npm命令未找到，请安装Node.js")
     except Exception as e:
         test_result("前端构建", False, f"异常: {str(e)}")
 
@@ -537,6 +632,22 @@ def test_frontend_lint():
     
     frontend_dir = Path(__file__).parent.parent / "frontend"
     
+    # 检查Node.js环境
+    node_installed, node_info = check_nodejs_installed()
+    if not node_installed:
+        test_result("Node.js环境检查", False, node_info)
+        print(f"{Colors.YELLOW}  💡 建议: 安装Node.js https://nodejs.org/{Colors.END}")
+        return
+    test_result("Node.js环境检查", True, node_info)
+    
+    # 检查node_modules
+    node_modules = frontend_dir / "node_modules"
+    if not node_modules.exists():
+        test_result("依赖安装检查", False, "node_modules不存在")
+        print(f"{Colors.YELLOW}  💡 建议: cd frontend && npm install{Colors.END}")
+        return
+    test_result("依赖安装检查", True)
+    
     try:
         print(f"{Colors.BLUE}▶ 运行 ESLint 检查...{Colors.END}")
         result = subprocess.run(
@@ -544,11 +655,14 @@ def test_frontend_lint():
             cwd=frontend_dir,
             capture_output=True,
             text=True,
-            timeout=60
+            encoding='utf-8',
+            errors='ignore',
+            timeout=60,
+            shell=True
         )
         
         if result.returncode == 0:
-            test_result("ESLint代码检查", True, "无警告")
+            test_result("ESLint代码检查", True, "无错误和警告")
         else:
             warnings = result.stdout.count("warning")
             errors = result.stdout.count("error")
@@ -568,42 +682,36 @@ def test_frontend_unit():
     """测试前端组件单元测试"""
     print_section("前端单元测试")
     
-    frontend_dir = Path(__file__).parent.parent / "frontend"
+    # 运行tests/目录下的前端单元测试
+    test_script = Path(__file__).parent / "test_frontend_unit.py"
     
-    # 检查是否配置了测试框架
-    package_json = frontend_dir / "package.json"
-    if not package_json.exists():
-        test_result("前端配置检查", False, "package.json不存在")
+    if not test_script.exists():
+        test_result("前端单元测试脚本", False, "test_frontend_unit.py不存在")
         return
     
     try:
-        with open(package_json, 'r', encoding='utf-8') as f:
-            pkg = json.load(f)
-        
-        # 检查是否有test脚本
-        if 'test' not in pkg.get('scripts', {}):
-            test_result("单元测试配置", False, "未配置test脚本，需要安装Vitest")
-            print(f"{Colors.YELLOW}  💡 建议: npm install -D vitest @testing-library/react @testing-library/jest-dom{Colors.END}")
-            return
-        
-        test_result("单元测试配置", True)
-        
-        # 运行测试
         print(f"{Colors.BLUE}▶ 运行前端单元测试...{Colors.END}")
         result = subprocess.run(
-            ["npm", "test", "--", "--run"],
-            cwd=frontend_dir,
+            ["python", str(test_script)],
             capture_output=True,
             text=True,
-            timeout=120
+            encoding='utf-8',
+            errors='ignore',
+            timeout=30
         )
         
+        # 解析输出获取详情
+        lines = result.stdout.strip().split('\n')
+        for line in lines:
+            if 'PASS' in line or 'FAIL' in line:
+                print(f"  {line}")
+        
         if result.returncode == 0:
-            # 解析测试结果
-            output = result.stdout
             test_result("前端单元测试", True, "所有测试通过")
         else:
-            test_result("前端单元测试", False, "部分测试失败")
+            test_result("前端单元测试", False, f"退出码: {result.returncode}")
+            if result.stderr:
+                print(f"{Colors.YELLOW}  stderr: {result.stderr[:200]}{Colors.END}")
             
     except subprocess.TimeoutExpired:
         test_result("前端单元测试", False, "测试超时")
@@ -619,42 +727,35 @@ def test_e2e():
     """E2E端到端测试"""
     print_section("E2E端到端测试")
     
-    e2e_dir = Path(__file__).parent.parent / "e2e-tests"
+    # 运行tests/目录下的E2E测试
+    test_script = Path(__file__).parent / "test_e2e.py"
     
-    if not e2e_dir.exists():
-        test_result("E2E测试目录", False, "e2e-tests目录不存在")
-        print(f"{Colors.YELLOW}  💡 建议: 创建e2e-tests目录并安装Playwright{Colors.END}")
-        print(f"{Colors.YELLOW}     npm init playwright@latest{Colors.END}")
+    if not test_script.exists():
+        test_result("E2E测试脚本", False, "test_e2e.py不存在")
         return
     
     try:
-        # 检查Playwright配置
-        playwright_config = e2e_dir / "playwright.config.ts"
-        if not playwright_config.exists():
-            test_result("Playwright配置", False, "配置文件不存在")
-            return
-        
-        test_result("Playwright配置", True)
-        
-        # 运行E2E测试
-        print(f"{Colors.BLUE}▶ 运行Playwright E2E测试...{Colors.END}")
         result = subprocess.run(
-            ["npx", "playwright", "test"],
-            cwd=e2e_dir,
+            ["python", str(test_script)],
             capture_output=True,
             text=True,
-            timeout=300
+            encoding='utf-8',
+            errors='ignore',
+            timeout=30
         )
+        
+        lines = result.stdout.strip().split('\n')
+        for line in lines:
+            if 'PASS' in line or 'FAIL' in line:
+                print(f"  {line}")
         
         if result.returncode == 0:
             test_result("E2E测试", True, "所有测试通过")
         else:
-            test_result("E2E测试", False, "部分测试失败")
+            test_result("E2E测试", False, f"退出码: {result.returncode}")
             
     except subprocess.TimeoutExpired:
         test_result("E2E测试", False, "测试超时")
-    except FileNotFoundError:
-        test_result("E2E测试", False, "Playwright未安装")
     except Exception as e:
         test_result("E2E测试", False, f"异常: {str(e)}")
 
@@ -667,9 +768,37 @@ def test_api_integration():
     """API集成测试（前端→后端）"""
     print_section("API集成测试")
     
-    test_result("API集成测试", False, "测试未实现")
-    print(f"{Colors.YELLOW}  💡 建议: 使用MSW (Mock Service Worker)实现前后端集成测试{Colors.END}")
-    print(f"{Colors.YELLOW}     npm install -D msw{Colors.END}")
+    # 运行tests/目录下的API集成测试
+    test_script = Path(__file__).parent / "test_api_integration.py"
+    
+    if not test_script.exists():
+        test_result("API集成测试脚本", False, "test_api_integration.py不存在")
+        return
+    
+    try:
+        result = subprocess.run(
+            ["python", str(test_script)],
+            capture_output=True,
+            text=True,
+            encoding='utf-8',
+            errors='ignore',
+            timeout=30
+        )
+        
+        lines = result.stdout.strip().split('\n')
+        for line in lines:
+            if 'PASS' in line or 'FAIL' in line:
+                print(f"  {line}")
+        
+        if result.returncode == 0:
+            test_result("API集成测试", True, "所有测试通过")
+        else:
+            test_result("API集成测试", False, f"退出码: {result.returncode}")
+            
+    except subprocess.TimeoutExpired:
+        test_result("API集成测试", False, "测试超时")
+    except Exception as e:
+        test_result("API集成测试", False, f"异常: {str(e)}")
 
 
 # ============================================================================
@@ -1115,7 +1244,7 @@ def run_all_tests():
     print(f"{Colors.BOLD}{Colors.BLUE}第一部分：后端API测试{Colors.END}")
     print(f"{Colors.BOLD}{Colors.BLUE}{'='*80}{Colors.END}\n")
     
-    if not check_server():
+    if not check_server_running():
         print(f"{Colors.RED}✗ 后端服务器未运行，跳过后端测试{Colors.END}")
     else:
         global DEFAULT_TENANT_ID
@@ -1169,7 +1298,7 @@ def run_all_tests():
 
 def show_latest_report():
     """显示最新的测试报告"""
-    report_dir = Path(__file__).parent.parent / "test_reports"
+    report_dir = Path(__file__).parent / "test_reports"
     
     if not report_dir.exists():
         print(f"{Colors.YELLOW}测试报告目录不存在{Colors.END}")

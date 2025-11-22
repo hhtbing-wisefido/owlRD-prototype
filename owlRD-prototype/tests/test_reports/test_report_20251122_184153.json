@@ -1,0 +1,29 @@
+{
+  "timestamp": "2025-11-22T18:41:53.318533",
+  "summary": {
+    "total": 3,
+    "passed": 1,
+    "failed": 2,
+    "pass_rate": 33.33333333333333
+  },
+  "tests": [
+    {
+      "test": "前端目录检查",
+      "passed": true,
+      "details": "",
+      "timestamp": "2025-11-22T18:41:53.148181"
+    },
+    {
+      "test": "Node.js环境检查",
+      "passed": false,
+      "details": "Node.js未安装",
+      "timestamp": "2025-11-22T18:41:53.246698"
+    },
+    {
+      "test": "Node.js环境检查",
+      "passed": false,
+      "details": "Node.js未安装",
+      "timestamp": "2025-11-22T18:41:53.311743"
+    }
+  ]
+}
