@@ -76,14 +76,10 @@ async def create_role(role_data: RoleCreate):
             )
     
     # 创建角色
-    from app.models.base import generate_uuid
     role_dict = role_data.model_dump()
-    role_dict["role_id"] = str(generate_uuid())
-    role_dict["created_at"] = role_dict.get("created_at") or datetime.now().isoformat()
-    role_dict["updated_at"] = datetime.now().isoformat()
-    
-    role_storage.create(role_dict)
-    return role_dict
+    # StorageService.create()会自动生成ID和时间戳，不需要手动设置
+    created_role = role_storage.create(role_dict)
+    return created_role
 
 
 @router.put("/{role_id}", response_model=Role)
