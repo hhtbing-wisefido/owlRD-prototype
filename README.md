@@ -269,10 +269,10 @@ cd owlRD-prototype/backend
 pip install -r requirements.txt
 
 # 首次运行：下载Swagger UI（用于局域网访问）
-python download_swagger_ui.py
+python scripts/download_swagger_ui.py
 
-# 启动服务（支持局域网访问）
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# 启动服务（推荐 - 自动检查端口冲突）
+python start_with_check.py
 ```
 
 **访问地址**:
@@ -482,10 +482,10 @@ MIT License
 cd owlRD-prototype/backend
 
 # 首次运行：下载Swagger UI
-python download_swagger_ui.py
+python scripts/download_swagger_ui.py
 
-# 启动服务
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# 启动服务（推荐 - 自动检查端口冲突）
+python start_with_check.py
 ```
 
 **访问地址**:

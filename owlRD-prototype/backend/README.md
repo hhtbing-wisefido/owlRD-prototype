@@ -14,28 +14,33 @@ pip install -r requirements.txt
 ### 2. 下载Swagger UI（首次运行）
 
 ```bash
-python download_swagger_ui.py
+python scripts/download_swagger_ui.py
 ```
 
 ### 3. 初始化示例数据（可选）
 
 ```bash
-python init_sample_data.py
+python scripts/init_sample_data.py
 ```
 
 ### 4. 启动服务器
 
 ```bash
-# 方法1: uvicorn启动（推荐）
+# 方法1: 智能启动脚本（推荐 ⭐ - 自动检查端口冲突）
+python start_with_check.py
+
+# 方法2: 手动uvicorn启动（仅当确认端口未被占用）
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
-# 方法2: Python直接运行
+# 方法3: Python直接运行
 python -m app.main
-
-# 方法3: 使用启动脚本
-.\start_server.bat    # Windows
-./start_server.sh     # Linux/Mac
 ```
+
+**为什么推荐使用 `start_with_check.py`**:
+- ✅ 自动检测端口8000是否被占用
+- ✅ 提供交互式进程清理选项
+- ✅ 避免端口冲突错误
+- ✅ 友好的启动提示信息
 
 ### 5. 访问API文档
 
