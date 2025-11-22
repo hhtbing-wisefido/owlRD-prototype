@@ -114,8 +114,8 @@ function startVite() {
     console.log('========================================');
     console.log('');
 
-    // 启动npm run dev
-    const vite = spawn('npm', ['run', 'dev'], {
+    // 直接启动vite（避免无限循环）
+    const vite = spawn('npx', ['vite', '--host', '0.0.0.0', '--port', PORT.toString()], {
         stdio: 'inherit',
         shell: true
     });
