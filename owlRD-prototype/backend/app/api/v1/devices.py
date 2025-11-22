@@ -103,6 +103,7 @@ async def update_device(device_id: UUID, device: DeviceUpdate):
     """
     try:
         result = device_storage.update(
+            "device_id",
             device_id,
             device.model_dump(exclude_unset=True)
         )
@@ -127,7 +128,7 @@ async def delete_device(device_id: UUID):
     - 相关数据不会被删除
     """
     try:
-        success = device_storage.delete(device_id)
+        success = device_storage.delete("device_id", device_id)
         if not success:
             raise HTTPException(status_code=404, detail="Device not found")
         logger.info(f"Deleted device: {device_id}")

@@ -63,12 +63,12 @@ async def create_location(location_data: LocationCreate):
 async def update_location(location_id: UUID, location_data: LocationUpdate):
     """更新位置信息"""
     try:
-        existing = location_storage.find_by_id(location_id)
+        existing = location_storage.find_by_id("location_id", location_id)
         if not existing:
             raise HTTPException(status_code=404, detail="Location not found")
         
         update_dict = location_data.model_dump(exclude_unset=True)
-        updated = location_storage.update(location_id, update_dict)
+        updated = location_storage.update("location_id", location_id, update_dict)
         return updated
     except HTTPException:
         raise
@@ -81,11 +81,11 @@ async def update_location(location_id: UUID, location_data: LocationUpdate):
 async def delete_location(location_id: UUID):
     """删除位置"""
     try:
-        existing = location_storage.find_by_id(location_id)
+        existing = location_storage.find_by_id("location_id", location_id)
         if not existing:
             raise HTTPException(status_code=404, detail="Location not found")
         
-        location_storage.delete(location_id)
+        location_storage.delete("location_id", location_id)
         return None
     except HTTPException:
         raise
