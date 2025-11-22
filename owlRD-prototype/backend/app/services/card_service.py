@@ -163,6 +163,11 @@ class CardService:
                 
                 # 创建ActiveBed卡片
                 card_id = str(uuid.uuid4())
+                # 获取告警路由用户（20_Card_Creation_Rules场景A）
+                routing_alert_user_ids = self._get_routing_alert_users(
+                    resident, location, location_type
+                )
+                
                 card = {
                     "card_id": card_id,
                     "tenant_id": tenant_id,
@@ -172,10 +177,18 @@ class CardService:
                     "card_name": card_name,
                     "card_address": card_address,
                     "resident_id": bed.get("resident_id"),
+                    "routing_alert_user_ids": routing_alert_user_ids,
                     "created_at": datetime.now().isoformat(),
                     "updated_at": datetime.now().isoformat()
                 }
                 cards_storage.create(card)
+                
+                # 绑定设备到卡片（场景A: 该床位设备 + 该location未绑床设备）
+                self._bind_devices_to_card(
+                    card_id, location_id, bed.get("bed_id"),
+                    devices_data, card_devices_storage
+                )
+                
                 result["cards_created"].append({"type": "ActiveBed", "name": card_name})
         
         # 场景B: 多个ActiveBed (>=2)
@@ -190,6 +203,10 @@ class CardService:
                     card_address = self.calculate_activebed_address(location_tag, location_name, bed.get("bed_name"))
                     
                     card_id = str(uuid.uuid4())
+                    routing_alert_user_ids = self._get_routing_alert_users(
+                        resident, location, location_type
+                    )
+                    
                     card = {
                         "card_id": card_id,
                         "tenant_id": tenant_id,
@@ -199,10 +216,18 @@ class CardService:
                         "card_name": card_name,
                         "card_address": card_address,
                         "resident_id": bed.get("resident_id"),
+                        "routing_alert_user_ids": routing_alert_user_ids,
                         "created_at": datetime.now().isoformat(),
                         "updated_at": datetime.now().isoformat()
                     }
                     cards_storage.create(card)
+                    
+                    # 绑定该床位的设备（场景B: 只绑定床位设备，不包括未绑床设备）
+                    self._bind_devices_to_card(
+                        card_id, location_id, bed.get("bed_id"),
+                        devices_data, card_devices_storage
+                    )
+                    
                     result["cards_created"].append({"type": "ActiveBed", "name": card_name})
             
             # 检查是否有未绑床的设备，创建Location卡片
@@ -222,6 +247,9 @@ class CardService:
                 card_address = self.calculate_location_address(location_tag, location_name)
                 
                 card_id = str(uuid.uuid4())
+                # Location卡片告警路由（公共空间/多人房间）
+                routing_alert_user_ids = location.get("alert_user_ids", [])
+                
                 card = {
                     "card_id": card_id,
                     "tenant_id": tenant_id,
@@ -229,10 +257,18 @@ class CardService:
                     "location_id": location_id,
                     "card_name": card_name,
                     "card_address": card_address,
+                    "routing_alert_user_ids": routing_alert_user_ids,
                     "created_at": datetime.now().isoformat(),
                     "updated_at": datetime.now().isoformat()
                 }
                 cards_storage.create(card)
+                
+                # 绑定未绑床的设备到Location卡片
+                self._bind_devices_to_card(
+                    card_id, location_id, None,
+                    devices_data, card_devices_storage
+                )
+                
                 result["cards_created"].append({"type": "Location", "name": card_name})
         
         # 场景C: 无ActiveBed
@@ -256,6 +292,9 @@ class CardService:
                 card_address = self.calculate_location_address(location_tag, location_name)
                 
                 card_id = str(uuid.uuid4())
+                # Location卡片告警路由（公共空间/多人房间）
+                routing_alert_user_ids = location.get("alert_user_ids", [])
+                
                 card = {
                     "card_id": card_id,
                     "tenant_id": tenant_id,
@@ -263,10 +302,18 @@ class CardService:
                     "location_id": location_id,
                     "card_name": card_name,
                     "card_address": card_address,
+                    "routing_alert_user_ids": routing_alert_user_ids,
                     "created_at": datetime.now().isoformat(),
                     "updated_at": datetime.now().isoformat()
                 }
                 cards_storage.create(card)
+                
+                # 绑定未绑床的设备到Location卡片
+                self._bind_devices_to_card(
+                    card_id, location_id, None,
+                    devices_data, card_devices_storage
+                )
+                
                 result["cards_created"].append({"type": "Location", "name": card_name})
         
         return result
@@ -308,3 +355,84 @@ class CardService:
         
         # 后备: location_name
         return location_name
+    
+    def _get_routing_alert_users(
+        self,
+        resident: Optional[Dict],
+        location: Dict,
+        location_type: str
+    ) -> List[str]:
+        """
+        获取卡片告警路由用户列表（25_Alarm_Notification_Flow.md）
+        
+        路由规则：
+        - ActiveBed卡片: resident_caregivers（负责护士）
+        - Location卡片: 
+            - 公共空间/多人房间 → alert_user_ids + alert_tags
+            - 个人空间 → resident_caregivers ∪ alert_user_ids
+        """
+        routing_users = []
+        
+        # 获取住户的负责护士（resident_caregivers）
+        if resident:
+            caregivers = resident.get("caregivers_user_ids", [])
+            if caregivers:
+                routing_users.extend(caregivers)
+        
+        # 获取location的警报通报组
+        alert_user_ids = location.get("alert_user_ids", [])
+        if alert_user_ids:
+            routing_users.extend(alert_user_ids)
+        
+        # 去重
+        return list(set(routing_users))
+    
+    def _bind_devices_to_card(
+        self,
+        card_id: str,
+        location_id: str,
+        bed_id: Optional[str],
+        devices_data: List[Dict],
+        card_devices_storage: Any
+    ) -> None:
+        """
+        绑定设备到卡片（20_Card_Creation_Rules.md）
+        
+        绑定规则：
+        - ActiveBed卡片: 绑定该床位的设备 + 该location未绑床的设备
+        - Location卡片: 只绑定未绑床的设备
+        """
+        bound_devices = []
+        
+        if bed_id:
+            # ActiveBed卡片: 绑床设备
+            bed_devices = [
+                d for d in devices_data
+                if d.get("bound_bed_id") == bed_id
+                and d.get("monitoring_enabled") is True
+                and d.get("installed") is True
+            ]
+            bound_devices.extend([d.get("device_id") for d in bed_devices])
+        
+        # 所有卡片: 未绑床设备
+        unbound_devices = [
+            d for d in devices_data
+            if d.get("location_id") == location_id
+            and d.get("bound_bed_id") is None
+            and d.get("monitoring_enabled") is True
+            and d.get("installed") is True
+        ]
+        bound_devices.extend([d.get("device_id") for d in unbound_devices])
+        
+        # 创建card_devices关联记录
+        for device_id in bound_devices:
+            card_device = {
+                "card_id": card_id,
+                "device_id": device_id,
+                "created_at": datetime.now().isoformat()
+            }
+            try:
+                card_devices_storage.create(card_device)
+            except Exception:
+                # 忽略重复绑定错误
+                pass
