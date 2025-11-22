@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, Users, Radio, Activity, Wifi, WifiOff } from 'lucide-react'
+import { AlertTriangle, Users, Radio, Activity, Wifi, WifiOff, Heart, Wind, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import api from '../services/api'
@@ -53,6 +53,26 @@ export default function Dashboard() {
       const { data } = await api.get(`/api/v1/alerts?tenant_id=${TENANT_ID}`)
       return data
     },
+  })
+
+  // Fetch IoT statistics
+  const { data: iotStats } = useQuery({
+    queryKey: ['iot-statistics'],
+    queryFn: async () => {
+      const { data } = await api.get(`/api/v1/iot-data/statistics?tenant_id=${TENANT_ID}&hours=24`)
+      return data
+    },
+    refetchInterval: 30000, // 每30秒刷新
+  })
+
+  // Fetch latest IoT data for trend
+  const { data: iotDataList } = useQuery({
+    queryKey: ['iot-data-trend'],
+    queryFn: async () => {
+      const { data } = await api.get(`/api/v1/iot-data/query?tenant_id=${TENANT_ID}&limit=20`)
+      return data
+    },
+    refetchInterval: 10000, // 每10秒刷新
   })
 
   const stats = [
@@ -185,6 +205,122 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* IoT Data Overview */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+            <TrendingUp className="h-6 w-6 text-blue-600" />
+            IoT数据概览
+          </h2>
+          <span className="text-xs text-gray-500">最近24小时</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg shadow p-6 border border-pink-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-pink-700">平均心率</p>
+                <p className="text-3xl font-bold text-pink-900 mt-1">
+                  {iotStats?.avg_heart_rate?.toFixed(0) || '--'}
+                </p>
+                <p className="text-xs text-pink-600 mt-1">bpm</p>
+              </div>
+              <Heart className="h-12 w-12 text-pink-500 opacity-50" />
+            </div>
+            <div className="mt-3 text-xs text-pink-700">
+              <span>正常范围: 55-95 bpm</span>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-lg shadow p-6 border border-cyan-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-cyan-700">平均呼吸率</p>
+                <p className="text-3xl font-bold text-cyan-900 mt-1">
+                  {iotStats?.avg_respiratory_rate?.toFixed(0) || '--'}
+                </p>
+                <p className="text-xs text-cyan-600 mt-1">/min</p>
+              </div>
+              <Wind className="h-12 w-12 text-cyan-500 opacity-50" />
+            </div>
+            <div className="mt-3 text-xs text-cyan-700">
+              <span>正常范围: 10-23 /min</span>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow p-6 border border-blue-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-700">数据记录</p>
+                <p className="text-3xl font-bold text-blue-900 mt-1">
+                  {iotStats?.total_records || 0}
+                </p>
+                <p className="text-xs text-blue-600 mt-1">条</p>
+              </div>
+              <Activity className="h-12 w-12 text-blue-500 opacity-50" />
+            </div>
+            <div className="mt-3 text-xs text-blue-700">
+              <span>活跃设备: {iotStats?.active_devices || 0}台</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 实时生命体征趋势 */}
+        {iotDataList && iotDataList.length > 0 && (
+          <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">实时生命体征</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart
+                data={iotDataList.slice().reverse().map((d: any) => ({
+                  time: new Date(d.timestamp).toLocaleTimeString('zh-CN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  }),
+                  心率: d.data_type === 'heart_rate' ? d.value : null,
+                  呼吸率: d.data_type === 'respiratory_rate' ? d.value : null,
+                }))}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" style={{ fontSize: '12px' }} />
+                <YAxis style={{ fontSize: '12px' }} />
+                <Tooltip />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="心率"
+                  stroke="#ec4899"
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                  connectNulls
+                />
+                <Line
+                  type="monotone"
+                  dataKey="呼吸率"
+                  stroke="#06b6d4"
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                  connectNulls
+                />
+              </LineChart>
+            </ResponsiveContainer>
+            <div className="mt-3 flex items-center justify-center gap-6 text-xs text-gray-600">
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-3 h-3 bg-pink-500 rounded"></span>
+                心率 (bpm)
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-3 h-3 bg-cyan-500 rounded"></span>
+                呼吸率 (/min)
+              </span>
+              <span className="flex items-center gap-1">
+                <Activity className="h-3 w-3 text-green-500 animate-pulse" />
+                实时更新
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Charts Section */}
