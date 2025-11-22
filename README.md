@@ -317,6 +317,34 @@ taskkill /PID <进程ID> /F
 
 ---
 
+## 🧪 系统测试
+
+### 全自动测试
+
+**运行完整系统测试**:
+```bash
+# 方法1: 使用便捷脚本（Windows）
+run_tests.bat
+
+# 方法2: 直接运行
+python tests/full_system_test.py
+```
+
+**前提条件**: 后端服务必须已启动
+
+**测试覆盖**:
+- ✅ 所有API端点（50+个）
+- ✅ CRUD操作测试
+- ✅ 数据完整性检查
+- ✅ API文档可访问性
+- ✅ 响应格式验证
+
+**测试报告**: 自动生成JSON格式报告在 `tests/test_reports/`
+
+**详细说明**: 查看 [tests/README.md](tests/README.md)
+
+---
+
 ## 📊 数据模型
 
 ### 核心实体（19个）
