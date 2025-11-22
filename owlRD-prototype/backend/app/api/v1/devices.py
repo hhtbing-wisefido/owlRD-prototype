@@ -79,7 +79,9 @@ async def create_device(device: DeviceCreate):
     - serial_number或uid: 至少一个
     """
     try:
-        result = device_storage.create(device)
+        device_dict = device.model_dump()
+        device_dict["device_id"] = str(uuid.uuid4())
+        result = device_storage.create(device_dict)
         logger.info(f"Created device: {result.get('device_id')}")
         return result
     except Exception as e:

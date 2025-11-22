@@ -260,7 +260,7 @@ async def register(register_data: RegisterRequest):
         "alert_levels": ["L1", "L2"],
         "alert_channels": ["WEB", "APP"],
         "alert_scope": "ASSIGNED_ONLY",
-        "tags": [],
+        "tags": {},
         "created_at": datetime.now().isoformat(),
         "updated_at": datetime.now().isoformat()
     }
@@ -308,7 +308,7 @@ async def get_current_user_info(current_user: dict = Depends(get_current_user)):
         "alert_levels": current_user.get("alert_levels", []),
         "alert_channels": current_user.get("alert_channels", []),
         "alert_scope": current_user.get("alert_scope"),
-        "tags": current_user.get("tags", [])
+        "tags": current_user.get("tags", {})
     }
 
 

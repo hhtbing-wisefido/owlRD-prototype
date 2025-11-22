@@ -1,0 +1,127 @@
+{
+  "total": 20,
+  "passed": 4,
+  "failed": 16,
+  "details": [
+    {
+      "resource": "Users",
+      "operation": "CREATE",
+      "status": "❌ FAIL",
+      "message": "Status: 500"
+    },
+    {
+      "resource": "Users",
+      "operation": "READ",
+      "status": "✅ PASS",
+      "message": "Found 0 users"
+    },
+    {
+      "resource": "Users",
+      "operation": "UPDATE",
+      "status": "❌ FAIL",
+      "message": "No user_id available"
+    },
+    {
+      "resource": "Users",
+      "operation": "DELETE",
+      "status": "❌ FAIL",
+      "message": "No user_id available"
+    },
+    {
+      "resource": "Roles",
+      "operation": "CREATE",
+      "status": "❌ FAIL",
+      "message": "Status: 422"
+    },
+    {
+      "resource": "Roles",
+      "operation": "READ",
+      "status": "✅ PASS",
+      "message": "Found 0 roles"
+    },
+    {
+      "resource": "Roles",
+      "operation": "UPDATE",
+      "status": "❌ FAIL",
+      "message": "No role_id available"
+    },
+    {
+      "resource": "Roles",
+      "operation": "DELETE",
+      "status": "❌ FAIL",
+      "message": "No role_id available"
+    },
+    {
+      "resource": "Locations",
+      "operation": "CREATE",
+      "status": "❌ FAIL",
+      "message": "Status: 404"
+    },
+    {
+      "resource": "Locations",
+      "operation": "READ",
+      "status": "❌ FAIL",
+      "message": "Status: 404"
+    },
+    {
+      "resource": "Locations",
+      "operation": "UPDATE",
+      "status": "❌ FAIL",
+      "message": "No location_id available"
+    },
+    {
+      "resource": "Locations",
+      "operation": "DELETE",
+      "status": "❌ FAIL",
+      "message": "No location_id available"
+    },
+    {
+      "resource": "Devices",
+      "operation": "CREATE",
+      "status": "❌ FAIL",
+      "message": "Status: 422"
+    },
+    {
+      "resource": "Devices",
+      "operation": "READ",
+      "status": "✅ PASS",
+      "message": "Found 0 devices"
+    },
+    {
+      "resource": "Devices",
+      "operation": "UPDATE",
+      "status": "❌ FAIL",
+      "message": "No device_id available"
+    },
+    {
+      "resource": "Devices",
+      "operation": "DELETE",
+      "status": "❌ FAIL",
+      "message": "No device_id available"
+    },
+    {
+      "resource": "Residents",
+      "operation": "CREATE",
+      "status": "❌ FAIL",
+      "message": "Status: 422"
+    },
+    {
+      "resource": "Residents",
+      "operation": "READ",
+      "status": "✅ PASS",
+      "message": "Found 0 residents"
+    },
+    {
+      "resource": "Residents",
+      "operation": "UPDATE",
+      "status": "❌ FAIL",
+      "message": "No resident_id available"
+    },
+    {
+      "resource": "Residents",
+      "operation": "DELETE",
+      "status": "❌ FAIL",
+      "message": "No resident_id available"
+    }
+  ]
+}

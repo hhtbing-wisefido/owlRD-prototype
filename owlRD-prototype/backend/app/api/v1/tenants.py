@@ -46,7 +46,9 @@ async def get_tenant(tenant_id: UUID):
 async def create_tenant(tenant: TenantCreate):
     """创建新租户"""
     try:
-        result = tenant_storage.create(tenant)
+        tenant_dict = tenant.model_dump()
+        tenant_dict["tenant_id"] = str(uuid.uuid4())
+        result = tenant_storage.create(tenant_dict)
         logger.info(f"Created tenant: {result.get('tenant_id')}")
         return result
     except Exception as e:

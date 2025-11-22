@@ -49,7 +49,9 @@ async def get_user(user_id: UUID):
 async def create_user(user: UserCreate):
     """创建用户"""
     try:
-        result = user_storage.create(user)
+        user_data = user.model_dump()
+        user_data["user_id"] = str(uuid.uuid4())
+        result = user_storage.create(user_data)
         return result
     except Exception as e:
         logger.error(f"Error creating user: {e}")
