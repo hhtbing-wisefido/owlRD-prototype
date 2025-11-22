@@ -148,17 +148,13 @@ def test_roles():
     # UPDATE
     try:
         if "role_id" in created_ids:
-            role_id = created_ids['role_id']
-            print(f"DEBUG: Attempting UPDATE with role_id={role_id}")
             update_data = {"description": "Updated description"}
-            response = requests.put(f"{BASE_URL}/api/v1/roles/{role_id}", json=update_data)
-            print(f"DEBUG: UPDATE response status={response.status_code}")
+            response = requests.put(f"{BASE_URL}/api/v1/roles/{created_ids['role_id']}", json=update_data)
             if response.status_code == 200:
                 log_test(resource, "UPDATE", True, "Description updated")
             else:
                 log_test(resource, "UPDATE", False, f"Status {response.status_code}, Body: {response.text[:200]}")
         else:
-            print(f"DEBUG: created_ids={created_ids}")
             log_test(resource, "UPDATE", False, "No role_id from CREATE")
     except Exception as e:
         log_test(resource, "UPDATE", False, str(e))
