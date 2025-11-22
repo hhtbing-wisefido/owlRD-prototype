@@ -1,15 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
-
-interface Role {
-  role_id?: string
-  tenant_id: string
-  role_code: string
-  display_name: string
-  description?: string
-  is_system: boolean
-  is_active: boolean
-}
+import { Role } from '@/types'
 
 interface RoleModalProps {
   isOpen: boolean

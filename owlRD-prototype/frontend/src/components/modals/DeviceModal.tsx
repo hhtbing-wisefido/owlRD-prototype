@@ -1,16 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
-
-interface Device {
-  device_id?: string
-  tenant_id: string
-  device_type: string
-  device_tag?: string
-  manufacturer?: string
-  model?: string
-  status: string
-  is_active: boolean
-}
+import { Device } from '@/types'
 
 interface DeviceModalProps {
   isOpen: boolean
@@ -23,9 +13,14 @@ interface DeviceModalProps {
 export default function DeviceModal({ isOpen, onClose, onSave, device, tenantId }: DeviceModalProps) {
   const [formData, setFormData] = useState<Partial<Device>>({
     tenant_id: tenantId,
-    device_type: 'IoTMonitor',
-    status: 'Active',
-    is_active: true
+    device_name: '',
+    device_model: '',
+    device_type: 'Radar',
+    comm_mode: 'WiFi',
+    status: 'online',
+    installed: true,
+    business_access: true,
+    monitoring_enabled: true
   })
 
   useEffect(() => {
@@ -34,9 +29,14 @@ export default function DeviceModal({ isOpen, onClose, onSave, device, tenantId 
     } else {
       setFormData({
         tenant_id: tenantId,
-        device_type: 'IoTMonitor',
-        status: 'Active',
-        is_active: true
+        device_name: '',
+        device_model: '',
+        device_type: 'Radar',
+        comm_mode: 'WiFi',
+        status: 'online',
+        installed: true,
+        business_access: true,
+        monitoring_enabled: true
       })
     }
   }, [device, tenantId])
@@ -84,33 +84,35 @@ export default function DeviceModal({ isOpen, onClose, onSave, device, tenantId 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">设备标签</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">设备名称</label>
               <input
                 type="text"
-                name="device_tag"
-                value={formData.device_tag || ''}
+                name="device_name"
+                value={formData.device_name || ''}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">制造商</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">设备型号</label>
               <input
                 type="text"
-                name="manufacturer"
-                value={formData.manufacturer || ''}
+                name="device_model"
+                value={formData.device_model || ''}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">型号</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">序列号</label>
               <input
                 type="text"
-                name="model"
-                value={formData.model || ''}
+                name="serial_number"
+                value={formData.serial_number || ''}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -125,23 +127,35 @@ export default function DeviceModal({ isOpen, onClose, onSave, device, tenantId 
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
-                <option value="Active">运行中</option>
-                <option value="Idle">空闲</option>
-                <option value="Maintenance">维护中</option>
-                <option value="Fault">故障</option>
-                <option value="Offline">离线</option>
+                <option value="online">在线</option>
+                <option value="offline">离线</option>
+                <option value="error">错误</option>
+                <option value="dormant">休眠</option>
+                <option value="maintenance">维护</option>
               </select>
             </div>
 
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                name="is_active"
-                checked={formData.is_active}
-                onChange={handleChange}
-                className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-              />
-              <label className="ml-2 text-sm font-medium text-gray-700">激活状态</label>
+            <div className="flex items-center gap-4">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="installed"
+                  checked={formData.installed}
+                  onChange={handleChange}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm font-medium text-gray-700">已安装</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="monitoring_enabled"
+                  checked={formData.monitoring_enabled}
+                  onChange={handleChange}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <span className="ml-2 text-sm font-medium text-gray-700">启用监控</span>
+              </label>
             </div>
           </div>
 

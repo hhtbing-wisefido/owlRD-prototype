@@ -1,17 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
-
-interface Resident {
-  resident_id?: string
-  tenant_id: string
-  is_institutional: boolean
-  anonymous_name: string
-  last_name?: string
-  first_name?: string
-  gender?: string
-  can_view_status: boolean
-  is_active: boolean
-}
+import { Resident } from '@/types'
 
 interface ResidentModalProps {
   isOpen: boolean
@@ -26,9 +15,10 @@ export default function ResidentModal({ isOpen, onClose, onSave, resident, tenan
     tenant_id: tenantId,
     is_institutional: true,
     anonymous_name: '',
-    gender: 'Unknown',
-    can_view_status: true,
-    is_active: true
+    last_name: '',
+    resident_account: '',
+    status: 'active',
+    can_view_status: true
   })
 
   useEffect(() => {
@@ -39,9 +29,10 @@ export default function ResidentModal({ isOpen, onClose, onSave, resident, tenan
         tenant_id: tenantId,
         is_institutional: true,
         anonymous_name: '',
-        gender: 'Unknown',
-        can_view_status: true,
-        is_active: true
+        last_name: '',
+        resident_account: '',
+        status: 'active',
+        can_view_status: true
       })
     }
   }, [resident, tenantId])
@@ -86,17 +77,15 @@ export default function ResidentModal({ isOpen, onClose, onSave, resident, tenan
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">性别</label>
-              <select
-                name="gender"
-                value={formData.gender}
+              <label className="block text-sm font-medium text-gray-700 mb-1">住户账号</label>
+              <input
+                type="text"
+                name="resident_account"
+                value={formData.resident_account || ''}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="Male">男</option>
-                <option value="Female">女</option>
-                <option value="Unknown">未知</option>
-              </select>
+                required
+              />
             </div>
 
             <div>
@@ -144,16 +133,19 @@ export default function ResidentModal({ isOpen, onClose, onSave, resident, tenan
                 <span className="ml-2 text-sm font-medium text-gray-700">可查看状态</span>
               </label>
 
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="is_active"
-                  checked={formData.is_active}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">状态</label>
+                <select
+                  name="status"
+                  value={formData.status || 'active'}
                   onChange={handleChange}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                />
-                <span className="ml-2 text-sm font-medium text-gray-700">激活</span>
-              </label>
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="active">活跃</option>
+                  <option value="discharged">出院</option>
+                  <option value="transferred">转院</option>
+                </select>
+              </div>
             </div>
           </div>
 

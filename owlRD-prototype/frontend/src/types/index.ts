@@ -344,7 +344,7 @@ export interface IoTData {
 export interface Card {
   card_id: string
   tenant_id: string
-  card_type: string
+  card_type: string  // 'ActiveBed' | 'Location'
   bed_id?: string
   location_id?: string
   card_name: string
@@ -352,8 +352,10 @@ export interface Card {
   resident_id?: string
   is_public_space: boolean
   routing_alert_user_ids?: string[]
+  routing_alert_tags?: string[]  // 警报路由标签（新增）
   is_active: boolean
   created_at: string
+  updated_at?: string
 }
 
 // Location types

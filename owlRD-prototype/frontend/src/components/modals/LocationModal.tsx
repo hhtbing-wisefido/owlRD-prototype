@@ -1,21 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
-
-interface Location {
-  location_id?: string
-  tenant_id: string
-  location_tag?: string
-  location_name: string
-  building?: string
-  floor?: string
-  area_id?: string
-  door_number: string
-  location_type: string
-  is_public_space: boolean
-  is_multi_person_room: boolean
-  timezone: string
-  is_active: boolean
-}
+import { Location } from '@/types'
 
 interface LocationModalProps {
   isOpen: boolean
