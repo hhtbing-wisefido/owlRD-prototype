@@ -4,13 +4,14 @@ import { useState } from 'react'
 import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import api from '../services/api'
 import { useWebSocket } from '../hooks/useWebSocket'
+import { Alert, Device, Resident } from '../types'
 
 const TENANT_ID = '10000000-0000-0000-0000-000000000001'
 const WS_URL = `ws://localhost:8000/api/v1/realtime/ws/${TENANT_ID}`
 
 export default function Dashboard() {
   const queryClient = useQueryClient()
-  const [realtimeAlerts, setRealtimeAlerts] = useState<any[]>([])
+  const [realtimeAlerts, setRealtimeAlerts] = useState<Alert[]>([])
   
   // WebSocket connection
   const { isConnected } = useWebSocket(WS_URL, {
@@ -28,7 +29,7 @@ export default function Dashboard() {
   })
   
   // Fetch residents count
-  const { data: residents } = useQuery({
+  const { data: residents } = useQuery<Resident[]>({
     queryKey: ['residents'],
     queryFn: async () => {
       const { data } = await api.get(`/api/v1/residents?tenant_id=${TENANT_ID}`)
@@ -37,7 +38,7 @@ export default function Dashboard() {
   })
 
   // Fetch devices
-  const { data: devices } = useQuery({
+  const { data: devices } = useQuery<Device[]>({
     queryKey: ['devices'],
     queryFn: async () => {
       const { data } = await api.get(`/api/v1/devices?tenant_id=${TENANT_ID}`)
@@ -46,7 +47,7 @@ export default function Dashboard() {
   })
 
   // Fetch alerts
-  const { data: alerts } = useQuery({
+  const { data: alerts } = useQuery<Alert[]>({
     queryKey: ['alerts'],
     queryFn: async () => {
       const { data } = await api.get(`/api/v1/alerts?tenant_id=${TENANT_ID}`)
@@ -63,13 +64,13 @@ export default function Dashboard() {
     },
     {
       name: '在线设备',
-      value: devices?.filter((d: any) => d.status === 'online').length || 0,
+      value: devices?.filter((d) => d.status === 'online').length || 0,
       icon: Radio,
       color: 'bg-green-500',
     },
     {
       name: '未处理告警',
-      value: alerts?.filter((a: any) => a.status === 'pending').length || 0,
+      value: alerts?.filter((a) => a.status === 'pending').length || 0,
       icon: AlertTriangle,
       color: 'bg-red-500',
     },
