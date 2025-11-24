@@ -12,14 +12,16 @@
 - timestamp: 告警发生时间
 """
 
-from fastapi import APIRouter, HTTPException, Query
-from typing import List, Optional
+from fastapi import APIRouter, HTTPException, Query, Depends
+from typing import List, Optional, Dict, Any
 from uuid import UUID
 from datetime import datetime, timedelta
 from loguru import logger
 
 from app.services.storage import StorageService
 from app.models.alert import Alert, AlertCreate, AlertUpdate
+from app.dependencies.auth import get_current_user_from_token
+from app.middleware.permissions import check_tenant_access
 
 router = APIRouter()
 alert_storage = StorageService("alerts")
@@ -33,10 +35,11 @@ async def list_alerts(
     status: Optional[str] = Query(None, description="状态筛选"),
     start_time: Optional[datetime] = Query(None, description="开始时间"),
     end_time: Optional[datetime] = Query(None, description="结束时间"),
-    limit: int = Query(100, ge=1, le=1000)
+    limit: int = Query(100, ge=1, le=1000),
+    current_user: Dict[str, Any] = Depends(get_current_user_from_token)
 ) -> List[Alert]:
     """
-    获取告警列表
+    获取告警列表（需要认证）
     
     ## 筛选条件
     - **tenant_id**: 租户ID（必填）
@@ -50,6 +53,8 @@ async def list_alerts(
     按时间倒序返回告警列表
     """
     try:
+        check_tenant_access(current_user, tenant_id)
+        
         if end_time is None:
             end_time = datetime.now()
         if start_time is None:
@@ -90,12 +95,18 @@ async def list_alerts(
 
 
 @router.get("/{alert_id}", summary="获取告警详情", response_model=Alert)
-async def get_alert(alert_id: UUID) -> Alert:
-    """获取单个告警详情"""
+async def get_alert(
+    alert_id: UUID,
+    current_user: Dict[str, Any] = Depends(get_current_user_from_token)
+) -> Alert:
+    """获取单个告警详情（需要认证）"""
     try:
         alert = alert_storage.get(alert_id)
         if not alert:
             raise HTTPException(status_code=404, detail="Alert not found")
+        
+        check_tenant_access(current_user, alert.get("tenant_id"))
+        
         return alert
     except HTTPException:
         raise
@@ -107,11 +118,11 @@ async def get_alert(alert_id: UUID) -> Alert:
 @router.post("/{alert_id}/acknowledge", summary="确认告警", response_model=Alert)
 async def acknowledge_alert(
     alert_id: UUID,
-    user_id: UUID = Query(..., description="确认人ID"),
-    note: Optional[str] = Query(None, description="备注")
+    note: Optional[str] = Query(None, description="备注"),
+    current_user: Dict[str, Any] = Depends(get_current_user_from_token)
 ) -> Alert:
     """
-    确认告警
+    确认告警（需要认证）
     
     ## 功能
     - 将告警状态从pending改为acknowledged
@@ -123,6 +134,9 @@ async def acknowledge_alert(
         if not alert:
             raise HTTPException(status_code=404, detail="Alert not found")
         
+        check_tenant_access(current_user, alert.get("tenant_id"))
+        
+        user_id = current_user.get("user_id")
         update_data = {
             "status": "acknowledged",
             "acknowledged_by": str(user_id),
@@ -131,7 +145,7 @@ async def acknowledge_alert(
         }
         
         result = alert_storage.update(alert_id, update_data)
-        logger.info(f"Alert acknowledged: {alert_id} by {user_id}")
+        logger.info(f"Alert acknowledged: {alert_id} by {current_user.get('username')}")
         return result
     except HTTPException:
         raise
@@ -143,11 +157,11 @@ async def acknowledge_alert(
 @router.post("/{alert_id}/resolve", summary="解决告警", response_model=Alert)
 async def resolve_alert(
     alert_id: UUID,
-    user_id: UUID = Query(..., description="解决人ID"),
-    resolution: Optional[str] = Query(None, description="解决说明")
+    resolution: Optional[str] = Query(None, description="解决说明"),
+    current_user: Dict[str, Any] = Depends(get_current_user_from_token)
 ) -> Alert:
     """
-    解决告警
+    解决告警（需要认证）
     
     ## 功能
     - 将告警状态改为resolved
@@ -159,6 +173,9 @@ async def resolve_alert(
         if not alert:
             raise HTTPException(status_code=404, detail="Alert not found")
         
+        check_tenant_access(current_user, alert.get("tenant_id"))
+        
+        user_id = current_user.get("user_id")
         update_data = {
             "status": "resolved",
             "resolved_by": str(user_id),
@@ -167,7 +184,7 @@ async def resolve_alert(
         }
         
         result = alert_storage.update(alert_id, update_data)
-        logger.info(f"Alert resolved: {alert_id} by {user_id}")
+        logger.info(f"Alert resolved: {alert_id} by {current_user.get('username')}")
         return result
     except HTTPException:
         raise
@@ -179,10 +196,11 @@ async def resolve_alert(
 @router.get("/statistics/summary", summary="告警统计")
 async def get_alert_statistics(
     tenant_id: UUID = Query(..., description="租户ID"),
-    hours: int = Query(24, ge=1, le=168, description="统计时间范围（小时）")
+    hours: int = Query(24, ge=1, le=168, description="统计时间范围（小时）"),
+    current_user: Dict[str, Any] = Depends(get_current_user_from_token)
 ):
     """
-    获取告警统计信息
+    获取告警统计信息（需要认证）
     
     ## 统计项
     - 总告警数
@@ -192,6 +210,8 @@ async def get_alert_statistics(
     - 平均响应时间
     """
     try:
+        check_tenant_access(current_user, tenant_id)
+        
         end_time = datetime.now()
         start_time = end_time - timedelta(hours=hours)
         

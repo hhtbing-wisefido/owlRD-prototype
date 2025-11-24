@@ -12,13 +12,15 @@
 - conditions: 报警阈值配置（心率、呼吸率等生理指标）
 """
 
-from typing import Optional
+from typing import Optional, Dict, Any
 from uuid import UUID
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 
 from app.models.alert import CloudAlertPolicy, CloudAlertPolicyCreate, CloudAlertPolicyUpdate
 from app.services.storage import StorageService
+from app.dependencies.auth import get_current_user_from_token, require_role
+from app.middleware.permissions import check_tenant_access
 
 router = APIRouter()
 policy_storage = StorageService[CloudAlertPolicy]("cloud_alert_policies")
@@ -26,10 +28,11 @@ policy_storage = StorageService[CloudAlertPolicy]("cloud_alert_policies")
 
 @router.get("/", response_model=list[CloudAlertPolicy])
 async def list_alert_policies(
-    tenant_id: Optional[UUID] = Query(None, description="租户ID筛选")
+    tenant_id: Optional[UUID] = Query(None, description="租户ID筛选"),
+    current_user: Dict[str, Any] = Depends(get_current_user_from_token)
 ):
     """
-    获取告警策略列表
+    获取告警策略列表（需要认证）
     
     Args:
         tenant_id: 可选的租户ID筛选
@@ -38,21 +41,29 @@ async def list_alert_policies(
         告警策略列表
     """
     if tenant_id:
+        check_tenant_access(current_user, tenant_id)
         policy = policy_storage.find_by_id("tenant_id", str(tenant_id))
         return [policy] if policy else []
     else:
-        policies = policy_storage.find_all()
-        return policies
+        # 只返回当前租户的策略
+        user_tenant_id = current_user.get("tenant_id")
+        policy = policy_storage.find_by_id("tenant_id", str(user_tenant_id))
+        return [policy] if policy else []
 
 
 @router.get("/{tenant_id}", response_model=CloudAlertPolicy)
-async def get_alert_policy(tenant_id: UUID):
+async def get_alert_policy(
+    tenant_id: UUID,
+    current_user: Dict[str, Any] = Depends(get_current_user_from_token)
+):
     """
-    获取租户的告警策略配置
+    获取租户的告警策略配置（需要认证）
     
     每个租户只有一条配置记录
     - **tenant_id**: 租户ID（主键）
     """
+    check_tenant_access(current_user, tenant_id)
+    
     policy = policy_storage.find_by_id("tenant_id", tenant_id)
     if not policy:
         raise HTTPException(status_code=404, detail="Alert policy not found for this tenant")
@@ -60,7 +71,10 @@ async def get_alert_policy(tenant_id: UUID):
 
 
 @router.post("", response_model=CloudAlertPolicy, status_code=201)
-async def create_alert_policy(policy_data: CloudAlertPolicyCreate):
+async def create_alert_policy(
+    policy_data: CloudAlertPolicyCreate,
+    current_user: Dict[str, Any] = Depends(require_role(["Admin", "Director"]))
+):
     """
     为租户创建告警策略配置
     
@@ -123,6 +137,8 @@ async def create_alert_policy(policy_data: CloudAlertPolicyCreate):
     }
     ```
     """
+    check_tenant_access(current_user, policy_data.tenant_id)
+    
     # 检查租户是否已有配置
     existing_policy = policy_storage.find_by_id("tenant_id", policy_data.tenant_id)
     if existing_policy:
@@ -175,19 +191,24 @@ async def create_alert_policy(policy_data: CloudAlertPolicyCreate):
 
 
 @router.put("/{tenant_id}", response_model=CloudAlertPolicy)
-async def update_alert_policy(tenant_id: UUID, policy_data: CloudAlertPolicyUpdate):
+async def update_alert_policy(
+    tenant_id: UUID, 
+    policy_update: CloudAlertPolicyUpdate,
+    current_user: Dict[str, Any] = Depends(require_role(["Admin", "Director"]))
+):
     """
     更新租户的告警策略配置
     
     可以单独更新任何字段，未提供的字段保持不变
     - **tenant_id**: 租户ID
-    
     **常见更新场景**：
     1. 调整某个告警类型的级别：如将Fall从L1改为L2
     2. 修改阈值配置：如调整心率异常的范围
     3. 更新通知规则：如修改通知通道或重复间隔
     4. 启用/禁用静默规则：如夜间不发送告警
     """
+    check_tenant_access(current_user, tenant_id)
+    
     # 读取现有策略
     existing_policy = policy_storage.find_by_id("tenant_id", tenant_id)
     if not existing_policy:
@@ -203,13 +224,18 @@ async def update_alert_policy(tenant_id: UUID, policy_data: CloudAlertPolicyUpda
 
 
 @router.delete("/{tenant_id}", status_code=204)
-async def delete_alert_policy(tenant_id: UUID):
+async def delete_alert_policy(
+    tenant_id: UUID,
+    current_user: Dict[str, Any] = Depends(require_role(["Admin"]))
+):
     """
     删除租户的告警策略配置
     
     **警告**：删除后租户将没有告警配置，建议谨慎操作
     - **tenant_id**: 租户ID
     """
+    check_tenant_access(current_user, tenant_id)
+    
     # 读取策略
     policy = policy_storage.find_by_id("tenant_id", tenant_id)
     if not policy:
@@ -221,7 +247,10 @@ async def delete_alert_policy(tenant_id: UUID):
 
 
 @router.post("/{tenant_id}/initialize", response_model=CloudAlertPolicy, status_code=201)
-async def initialize_tenant_alert_policy(tenant_id: UUID):
+async def initialize_tenant_alert_policy(
+    tenant_id: UUID,
+    current_user: Dict[str, Any] = Depends(require_role(["Admin", "Director"]))
+):
     """
     为新租户初始化默认告警策略
     
@@ -234,6 +263,8 @@ async def initialize_tenant_alert_policy(tenant_id: UUID):
     - 自定义报警: 全部NULL（未启用）
     - 阈值: 基于vue_radar项目的老年群体优化标准
     """
+    check_tenant_access(current_user, tenant_id)
+    
     # 检查是否已有配置
     existing_policy = policy_storage.find_by_id("tenant_id", tenant_id)
     if existing_policy:
