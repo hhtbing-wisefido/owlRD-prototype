@@ -4,11 +4,14 @@ import { Radio, Plus, Edit2, Trash2, Circle } from 'lucide-react'
 import { API_CONFIG, API_ENDPOINTS } from '../config/api'
 import DeviceModal from '../components/modals/DeviceModal'
 import { Device } from '../types'
+import { usePermissions } from '../hooks/usePermissions'
+import PermissionGuard from '../components/PermissionGuard'
 
 export default function Devices() {
   const queryClient = useQueryClient()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedDevice, setSelectedDevice] = useState<Device | undefined>()
+  const { canManageDevices, isAdmin } = usePermissions()
 
   const { data: devices, isLoading } = useQuery({
     queryKey: ['devices', API_CONFIG.DEFAULT_TENANT_ID],
@@ -121,10 +124,12 @@ export default function Devices() {
           </h1>
           <p className="text-gray-600 mt-2">管理IoT监测设备和呼叫设备</p>
         </div>
-        <button onClick={handleCreate} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-          <Plus className="w-5 h-5" />
-          添加设备
-        </button>
+        <PermissionGuard requires={(p) => p.canManageDevices}>
+          <button onClick={handleCreate} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+            <Plus className="w-5 h-5" />
+            添加设备
+          </button>
+        </PermissionGuard>
       </div>
 
       {/* Stats */}
@@ -192,12 +197,16 @@ export default function Devices() {
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-4 border-t">
-              <button onClick={() => handleEdit(device)} className="p-2 text-gray-400 hover:text-blue-600 transition" title="编辑">
-                <Edit2 className="w-4 h-4" />
-              </button>
-              <button onClick={() => handleDelete(device.device_id)} className="p-2 text-gray-400 hover:text-red-600 transition" title="删除">
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <PermissionGuard requires={(p) => p.canManageDevices}>
+                <button onClick={() => handleEdit(device)} className="p-2 text-gray-400 hover:text-blue-600 transition" title="编辑">
+                  <Edit2 className="w-4 h-4" />
+                </button>
+              </PermissionGuard>
+              <PermissionGuard requires={(p) => p.isAdmin}>
+                <button onClick={() => handleDelete(device.device_id)} className="p-2 text-gray-400 hover:text-red-600 transition" title="删除">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </PermissionGuard>
             </div>
           </div>
         ))}
@@ -208,9 +217,11 @@ export default function Devices() {
         <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
           <Radio className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 mb-4">暂无设备数据</p>
-          <button onClick={handleCreate} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-            添加第一个设备
-          </button>
+          <PermissionGuard requires={(p) => p.canManageDevices}>
+            <button onClick={handleCreate} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+              添加第一个设备
+            </button>
+          </PermissionGuard>
         </div>
       )}
 

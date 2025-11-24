@@ -4,11 +4,14 @@ import { MapPin, Plus, Edit2, Trash2, Building2, Home, Users } from 'lucide-reac
 import { API_CONFIG, API_ENDPOINTS } from '../config/api'
 import LocationModal from '../components/modals/LocationModal'
 import { Location } from '../types'
+import { usePermissions } from '../hooks/usePermissions'
+import PermissionGuard from '../components/PermissionGuard'
 
 export default function Locations() {
   const queryClient = useQueryClient()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState<Location | undefined>()
+  const { isAdmin, isDirector } = usePermissions()
 
   const { data: locations, isLoading } = useQuery({
     queryKey: ['locations', API_CONFIG.DEFAULT_TENANT_ID],
