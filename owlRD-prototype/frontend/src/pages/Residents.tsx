@@ -4,11 +4,14 @@ import { UserCircle, Plus, Edit2, Trash2, Tag, Heart, Activity } from 'lucide-re
 import { API_CONFIG, API_ENDPOINTS } from '../config/api'
 import ResidentModal from '../components/modals/ResidentModal'
 import type { Resident } from '../types'
+import { usePermissions } from '../hooks/usePermissions'
+import PermissionGuard from '../components/PermissionGuard'
 
 export default function Residents() {
   const queryClient = useQueryClient()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedResident, setSelectedResident] = useState<Resident | undefined>()
+  const { canManageResidents, isAdmin } = usePermissions()
 
   const { data: residents, isLoading } = useQuery({
     queryKey: ['residents', API_CONFIG.DEFAULT_TENANT_ID],
@@ -103,10 +106,12 @@ export default function Residents() {
           </h1>
           <p className="text-gray-600 mt-2">管理住户信息和护理记录</p>
         </div>
-        <button onClick={handleCreate} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-          <Plus className="w-5 h-5" />
-          添加住户
-        </button>
+        <PermissionGuard requires={(p) => p.canManageResidents}>
+          <button onClick={handleCreate} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+            <Plus className="w-5 h-5" />
+            添加住户
+          </button>
+        </PermissionGuard>
       </div>
 
       <div className="bg-white rounded-lg shadow border border-gray-200">
@@ -225,12 +230,16 @@ export default function Residents() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
-                      <button onClick={() => handleEdit(resident)} className="text-blue-600 hover:text-blue-900 transition" title="编辑">
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => handleDelete(resident.resident_id)} className="text-red-600 hover:text-red-900 transition" title="删除">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <PermissionGuard requires={(p) => p.canManageResidents}>
+                        <button onClick={() => handleEdit(resident)} className="text-blue-600 hover:text-blue-900 transition" title="编辑">
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      </PermissionGuard>
+                      <PermissionGuard requires={(p) => p.isAdmin}>
+                        <button onClick={() => handleDelete(resident.resident_id)} className="text-red-600 hover:text-red-900 transition" title="删除">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </PermissionGuard>
                     </div>
                   </td>
                 </tr>

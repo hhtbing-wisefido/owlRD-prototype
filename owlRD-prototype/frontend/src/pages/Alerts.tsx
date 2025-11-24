@@ -11,6 +11,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, CheckCircle, Clock, Check, X, Eye, Filter } from 'lucide-react'
 import api from '../services/api'
 import type { Alert } from '../types'
+import { usePermissions } from '../hooks/usePermissions'
+import PermissionGuard from '../components/PermissionGuard'
 
 const TENANT_ID = '10000000-0000-0000-0000-000000000001'
 
@@ -18,6 +20,7 @@ export default function Alerts() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null)
   const queryClient = useQueryClient()
+  const { canViewAlerts } = usePermissions()
 
   const { data: alerts, isLoading } = useQuery({
     queryKey: ['alerts', statusFilter],
