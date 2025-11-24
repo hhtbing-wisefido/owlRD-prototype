@@ -18,6 +18,7 @@ const navigation = [
   { name: '仪表板', href: '/dashboard', icon: LayoutDashboard },
   { name: '用户管理', href: '/users', icon: UserCircle },
   { name: '角色管理', href: '/roles', icon: Shield },
+  { name: '权限配置', href: '/permissions', icon: Shield },
   { name: '位置管理', href: '/locations', icon: MapPin },
   { name: '住户管理', href: '/residents', icon: Users },
   { name: '设备管理', href: '/devices', icon: Radio },

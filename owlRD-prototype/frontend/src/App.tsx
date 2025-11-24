@@ -15,6 +15,7 @@ import CareQuality from './pages/CareQuality'
 import IoTData from './pages/IoTData'
 import Cards from './pages/Cards'
 import AlertPolicies from './pages/AlertPolicies'
+import PermissionSettings from './pages/PermissionSettings'
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
             {/* User Management */}
             <Route path="users" element={<Users />} />
             <Route path="roles" element={<Roles />} />
+            <Route path="permissions" element={<PermissionSettings />} />
             
             {/* Location & Residents */}
             <Route path="locations" element={<Locations />} />
