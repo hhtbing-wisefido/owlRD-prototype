@@ -11,6 +11,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Shield, Plus, Edit2, Trash2, ToggleLeft, ToggleRight, AlertTriangle } from 'lucide-react'
 import api from '../services/api'
 import { API_CONFIG } from '../config/api'
+import { usePermissions } from '../hooks/usePermissions'
+import PermissionGuard from '../components/PermissionGuard'
 
 interface AlertPolicy {
   policy_id: string
@@ -30,6 +32,7 @@ export default function AlertPolicies() {
   const [selectedPolicy, setSelectedPolicy] = useState<AlertPolicy | null>(null)
   const queryClient = useQueryClient()
   const TENANT_ID = API_CONFIG.DEFAULT_TENANT_ID
+  const { canManageAlertPolicies, isAdmin } = usePermissions()
 
   // 获取告警策略列表
   const { data: policies, isLoading } = useQuery<AlertPolicy[]>({
@@ -87,13 +90,15 @@ export default function AlertPolicies() {
           </h1>
           <p className="text-gray-600 mt-1">配置告警触发条件和响应策略</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-        >
-          <Plus className="h-5 w-5" />
-          创建策略
-        </button>
+        <PermissionGuard requires={(p) => p.canManageAlertPolicies}>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+          >
+            <Plus className="h-5 w-5" />
+            创建策略
+          </button>
+        </PermissionGuard>
       </div>
 
       {/* 统计信息 */}
@@ -192,44 +197,48 @@ export default function AlertPolicies() {
 
                   {/* 操作按钮 */}
                   <div className="flex items-center gap-2 ml-4">
-                    <button
-                      onClick={() => setSelectedPolicy(policy)}
-                      className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                      title="编辑"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() =>
-                        togglePolicyMutation.mutate({
-                          policyId: policy.policy_id,
-                          enabled: !policy.is_enabled,
-                        })
-                      }
-                      className={`p-2 rounded transition-colors ${
-                        policy.is_enabled
-                          ? 'text-orange-600 hover:bg-orange-50'
-                          : 'text-green-600 hover:bg-green-50'
-                      }`}
-                      title={policy.is_enabled ? '禁用' : '启用'}
-                    >
-                      {policy.is_enabled ? (
-                        <ToggleRight className="h-5 w-5" />
-                      ) : (
-                        <ToggleLeft className="h-5 w-5" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (confirm('确定要删除这个策略吗？')) {
-                          deletePolicyMutation.mutate(policy.policy_id)
+                    <PermissionGuard requires={(p) => p.canManageAlertPolicies}>
+                      <button
+                        onClick={() => setSelectedPolicy(policy)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        title="编辑"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() =>
+                          togglePolicyMutation.mutate({
+                            policyId: policy.policy_id,
+                            enabled: !policy.is_enabled,
+                          })
                         }
-                      }}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
-                      title="删除"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                        className={`p-2 rounded transition-colors ${
+                          policy.is_enabled
+                            ? 'text-orange-600 hover:bg-orange-50'
+                            : 'text-green-600 hover:bg-green-50'
+                        }`}
+                        title={policy.is_enabled ? '禁用' : '启用'}
+                      >
+                        {policy.is_enabled ? (
+                          <ToggleRight className="h-5 w-5" />
+                        ) : (
+                          <ToggleLeft className="h-5 w-5" />
+                        )}
+                      </button>
+                    </PermissionGuard>
+                    <PermissionGuard requires={(p) => p.isAdmin}>
+                      <button
+                        onClick={() => {
+                          if (confirm('确定要删除这个策略吗？')) {
+                            deletePolicyMutation.mutate(policy.policy_id)
+                          }
+                        }}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                        title="删除"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </PermissionGuard>
                   </div>
                 </div>
               </div>

@@ -4,11 +4,14 @@ import { Shield, Plus, Edit2, Trash2, UserCheck, AlertCircle } from 'lucide-reac
 import { API_CONFIG, API_ENDPOINTS } from '../config/api'
 import RoleModal from '../components/modals/RoleModal'
 import { Role } from '../types'
+import { usePermissions } from '../hooks/usePermissions'
+import PermissionGuard from '../components/PermissionGuard'
 
 export default function Roles() {
   const queryClient = useQueryClient()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedRole, setSelectedRole] = useState<Role | undefined>()
+  const { isAdmin } = usePermissions()
 
   const { data: roles, isLoading } = useQuery({
     queryKey: ['roles', API_CONFIG.DEFAULT_TENANT_ID],
