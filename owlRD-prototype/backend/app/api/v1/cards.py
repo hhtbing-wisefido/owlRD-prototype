@@ -3,35 +3,45 @@
 用于管理ActiveBed和Location卡片
 """
 
-from fastapi import APIRouter, HTTPException, Query
-from typing import List, Optional
+from fastapi import APIRouter, HTTPException, Query, Depends
+from typing import List, Optional, Dict, Any
 from uuid import UUID
 from loguru import logger
 
 from app.models.card import Card, CardCreate, CardType
 from app.services.card_manager import get_card_manager
 from app.services.storage import StorageService
+from app.services.permission_service import get_permission_service
+from app.dependencies.auth import get_current_user_from_token
 
 router = APIRouter()
 card_manager = get_card_manager()
 card_storage = StorageService[Card]("cards")
 
 
-@router.get("/", response_model=List[Card], summary="获取卡片列表")
+@router.get("/", response_model=List[dict], summary="获取卡片列表")
 async def list_cards(
     tenant_id: UUID = Query(..., description="租户ID"),
     card_type: Optional[str] = Query(None, description="卡片类型(ActiveBed/Location)"),
     is_active: Optional[bool] = Query(None, description="是否激活"),
     is_public_space: Optional[bool] = Query(None, description="是否公共空间"),
-    limit: int = Query(100, ge=1, le=1000, description="返回数量限制")
+    limit: int = Query(100, ge=1, le=1000, description="返回数量限制"),
+    current_user: Dict[str, Any] = Depends(get_current_user_from_token)
 ):
     """
-    获取卡片列表
+    获取卡片列表（带权限过滤）
     
     ## 功能
     - 按租户查询卡片
     - 支持类型、状态、空间类型筛选
     - 分页限制
+    - **自动根据用户权限过滤卡片**
+    
+    ## 权限规则
+    - **Admin角色**: 可查看租户下所有卡片
+    - **alert_scope=ALL**: 可查看租户下所有卡片
+    - **alert_scope=LOCATION**: 只能查看匹配location_tag的卡片
+    - **alert_scope=ASSIGNED_ONLY**: 只能查看分配给自己的住户卡片
     
     ## 参数
     - **tenant_id**: 租户ID（必需）
@@ -41,17 +51,36 @@ async def list_cards(
     - **limit**: 返回数量（1-1000）
     
     ## 返回
-    - 卡片列表
+    - 用户有权查看的卡片列表
     """
     try:
-        cards = await card_manager.search_cards(
-            tenant_id=tenant_id,
-            card_type=card_type,
-            is_active=is_active,
-            is_public_space=is_public_space,
-            limit=limit
-        )
+        # 验证用户租户权限
+        if str(current_user.get("tenant_id")) != str(tenant_id):
+            raise HTTPException(
+                status_code=403,
+                detail="无权访问其他租户的数据"
+            )
+        
+        # 使用权限服务获取用户可见的卡片
+        permission_service = get_permission_service()
+        user_id = current_user.get("user_id")
+        cards = permission_service.get_user_cards(user_id, tenant_id)
+        
+        # 应用额外过滤条件
+        if card_type:
+            cards = [c for c in cards if c.get("card_type") == card_type]
+        if is_active is not None:
+            cards = [c for c in cards if c.get("is_active") == is_active]
+        if is_public_space is not None:
+            cards = [c for c in cards if c.get("is_public_space") == is_public_space]
+        
+        # 限制返回数量
+        cards = cards[:limit]
+        
+        logger.info(f"User {user_id} accessed {len(cards)} cards (role: {current_user.get('role')}, alert_scope: {current_user.get('alert_scope')})")
         return cards
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing cards: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -60,19 +89,30 @@ async def list_cards(
 @router.get("/{card_id}", response_model=dict, summary="获取单个卡片详情")
 async def get_card(
     card_id: UUID,
-    tenant_id: UUID = Query(..., description="租户ID")
+    tenant_id: UUID = Query(..., description="租户ID"),
+    current_user: Dict[str, Any] = Depends(get_current_user_from_token)
 ):
     """
-    获取单个卡片的详细信息
+    获取单个卡片的详细信息（带权限检查）
     
     ## 参数
     - **card_id**: 卡片ID
     - **tenant_id**: 租户ID
     
+    ## 权限
+    - 只能查看自己有权限的卡片
+    
     ## 返回
     - 卡片详细信息
     """
     try:
+        # 验证用户租户权限
+        if str(current_user.get("tenant_id")) != str(tenant_id):
+            raise HTTPException(
+                status_code=403,
+                detail="无权访问其他租户的数据"
+            )
+        
         cards = card_storage.find_all(
             lambda c: str(c.get("card_id")) == str(card_id) and str(c.get("tenant_id")) == str(tenant_id)
         )
@@ -80,7 +120,18 @@ async def get_card(
         if not cards:
             raise HTTPException(status_code=404, detail="Card not found")
         
-        return cards[0]
+        card = cards[0]
+        
+        # 权限检查
+        permission_service = get_permission_service()
+        user_id = current_user.get("user_id")
+        if not permission_service.can_view_card(user_id, card):
+            raise HTTPException(
+                status_code=403,
+                detail="无权查看此卡片"
+            )
+        
+        return card
     except HTTPException:
         raise
     except Exception as e:
