@@ -80,11 +80,12 @@ def email_format(value, data) -> bool:
 
 
 def phone_format(value, data) -> bool:
-    """手机号格式验证（中国）"""
+    """手机号格式验证（中国）- 宽松模式，允许任意非空字符串"""
     if value is None or value == "":
         return True
-    pattern = r'^1[3-9]\d{9}$'
-    return re.match(pattern, value) is not None
+    # 宽松验证：如果提供了值，只要不为空就通过
+    # 允许任意格式的联系方式（电话、工号、用户名等）
+    return len(str(value).strip()) > 0
 
 
 def in_choices(choices: List[Any]):

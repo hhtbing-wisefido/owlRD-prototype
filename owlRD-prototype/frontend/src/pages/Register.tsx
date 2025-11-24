@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { UserPlus, AlertCircle } from 'lucide-react'
 import FormInput from '../components/forms/FormInput'
 import FormSelect from '../components/forms/FormSelect'
+import { API_CONFIG, API_ENDPOINTS } from '../config/api'
 
 const TENANT_ID = '10000000-0000-0000-0000-000000000001' // 示例租户ID
 
@@ -46,7 +47,7 @@ export default function Register() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:8000/api/v1/auth/register', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.AUTH.REGISTER}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
