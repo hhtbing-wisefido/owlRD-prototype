@@ -11,9 +11,12 @@ import {
   User,
   MapPin,
   AlertCircle,
+  Shield,
 } from 'lucide-react'
 import api from '../services/api'
 import { API_CONFIG } from '../config/api'
+import { usePermissions } from '../hooks/usePermissions'
+import PermissionGuard from '../components/PermissionGuard'
 
 interface Card {
   card_id: string
@@ -48,6 +51,16 @@ export default function Cards() {
 
   const queryClient = useQueryClient()
   const TENANT_ID = API_CONFIG.DEFAULT_TENANT_ID
+  
+  // 权限控制
+  const { 
+    canViewAllCards, 
+    canCreateCard, 
+    canEditCard, 
+    canDeleteCard,
+    alertScope,
+    user 
+  } = usePermissions()
 
   // 获取卡片列表
   const { data: cards, isLoading } = useQuery<Card[]>({
@@ -176,15 +189,38 @@ export default function Cards() {
             <CreditCard className="h-8 w-8 text-blue-600" />
             卡片管理
           </h1>
-          <p className="text-gray-600 mt-1">设备绑定与告警路由配置</p>
+          <div className="flex items-center gap-4 mt-2">
+            <p className="text-gray-600">设备绑定与告警路由配置</p>
+            {user && (
+              <div className="flex items-center gap-2 text-sm">
+                <Shield className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-500">
+                  权限范围: <span className="font-medium text-gray-700">
+                    {alertScope === 'ALL' ? '全部数据' : 
+                     alertScope === 'LOCATION' ? '位置数据' : 
+                     alertScope === 'ASSIGNED_ONLY' ? '分配数据' : alertScope}
+                  </span>
+                </span>
+              </div>
+            )}
+          </div>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+        <PermissionGuard 
+          requires="canCreateCard"
+          fallback={
+            <div className="text-sm text-gray-500 italic">
+              您没有创建卡片的权限
+            </div>
+          }
         >
-          <Plus className="h-5 w-5" />
-          创建卡片
-        </button>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+          >
+            <Plus className="h-5 w-5" />
+            创建卡片
+          </button>
+        </PermissionGuard>
       </div>
 
       {/* 统计信息 */}
@@ -342,44 +378,48 @@ export default function Cards() {
                     >
                       <Edit2 className="h-4 w-4" />
                     </button>
-                    {card.is_active ? (
+                    <PermissionGuard requires="canEditCard">
+                      {card.is_active ? (
+                        <button
+                          onClick={() =>
+                            updateCardStatusMutation.mutate({
+                              cardId: card.card_id,
+                              status: 'inactive',
+                            })
+                          }
+                          className="p-2 text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                          title="停用"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            updateCardStatusMutation.mutate({
+                              cardId: card.card_id,
+                              status: 'active',
+                            })
+                          }
+                          className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
+                          title="启用"
+                        >
+                          <Check className="h-4 w-4" />
+                        </button>
+                      )}
+                    </PermissionGuard>
+                    <PermissionGuard requires="canDeleteCard">
                       <button
-                        onClick={() =>
-                          updateCardStatusMutation.mutate({
-                            cardId: card.card_id,
-                            status: 'inactive',
-                          })
-                        }
-                        className="p-2 text-orange-600 hover:bg-orange-50 rounded transition-colors"
-                        title="停用"
+                        onClick={() => {
+                          if (confirm('确定要删除这张卡片吗？')) {
+                            deleteCardMutation.mutate(card.card_id)
+                          }
+                        }}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                        title="删除"
                       >
-                        <X className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
-                    ) : (
-                      <button
-                        onClick={() =>
-                          updateCardStatusMutation.mutate({
-                            cardId: card.card_id,
-                            status: 'active',
-                          })
-                        }
-                        className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
-                        title="启用"
-                      >
-                        <Check className="h-4 w-4" />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        if (confirm('确定要删除这张卡片吗？')) {
-                          deleteCardMutation.mutate(card.card_id)
-                        }
-                      }}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
-                      title="删除"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    </PermissionGuard>
                   </div>
                 </div>
               </div>
