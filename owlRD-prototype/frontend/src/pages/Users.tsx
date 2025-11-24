@@ -4,11 +4,14 @@ import { UserCircle, UserPlus, Edit2, Trash2, Shield } from 'lucide-react'
 import { API_CONFIG, API_ENDPOINTS } from '../config/api'
 import UserModal from '../components/modals/UserModal'
 import { User } from '../types'
+import { usePermissions } from '../hooks/usePermissions'
+import PermissionGuard from '../components/PermissionGuard'
 
 export default function Users() {
   const queryClient = useQueryClient()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | undefined>()
+  const { canManageUsers } = usePermissions()
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['users', API_CONFIG.DEFAULT_TENANT_ID],
@@ -123,13 +126,15 @@ export default function Users() {
           </h1>
           <p className="text-gray-600 mt-2">管理系统用户和权限配置</p>
         </div>
-        <button 
-          onClick={handleCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-        >
-          <UserPlus className="w-5 h-5" />
-          添加用户
-        </button>
+        <PermissionGuard requires="canManageUsers">
+          <button 
+            onClick={handleCreate}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            <UserPlus className="w-5 h-5" />
+            添加用户
+          </button>
+        </PermissionGuard>
       </div>
 
       {/* Stats */}
@@ -242,23 +247,27 @@ export default function Users() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
-                      <button 
-                        onClick={() => handleEdit(user)}
-                        className="text-blue-600 hover:text-blue-900 transition"
-                        title="编辑"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button className="text-purple-600 hover:text-purple-900 transition" title="权限">
-                        <Shield className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(user.user_id)}
-                        className="text-red-600 hover:text-red-900 transition"
-                        title="删除"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <PermissionGuard requires="canManageUsers">
+                        <button 
+                          onClick={() => handleEdit(user)}
+                          className="text-blue-600 hover:text-blue-900 transition"
+                          title="编辑"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button className="text-purple-600 hover:text-purple-900 transition" title="权限">
+                          <Shield className="w-4 h-4" />
+                        </button>
+                      </PermissionGuard>
+                      <PermissionGuard requires={(p) => p.isAdmin}>
+                        <button 
+                          onClick={() => handleDelete(user.user_id)}
+                          className="text-red-600 hover:text-red-900 transition"
+                          title="删除"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </PermissionGuard>
                     </div>
                   </td>
                 </tr>
