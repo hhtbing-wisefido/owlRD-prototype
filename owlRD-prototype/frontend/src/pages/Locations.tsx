@@ -128,10 +128,12 @@ export default function Locations() {
           </h1>
           <p className="text-gray-600 mt-2">管理机构房间和居家护理位置</p>
         </div>
-        <button onClick={handleCreate} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-          <Plus className="w-5 h-5" />
-          添加位置
-        </button>
+        <PermissionGuard requires={(p) => p.isAdmin || p.isDirector}>
+          <button onClick={handleCreate} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+            <Plus className="w-5 h-5" />
+            添加位置
+          </button>
+        </PermissionGuard>
       </div>
 
       {/* Stats */}
@@ -172,12 +174,16 @@ export default function Locations() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => handleEdit(location)} className="p-2 text-gray-400 hover:text-blue-600 transition" title="编辑">
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => handleDelete(location.location_id)} className="p-2 text-gray-400 hover:text-red-600 transition" title="删除">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <PermissionGuard requires={(p) => p.isAdmin || p.isDirector}>
+                    <button onClick={() => handleEdit(location)} className="p-2 text-gray-400 hover:text-blue-600 transition" title="编辑">
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  </PermissionGuard>
+                  <PermissionGuard requires={(p) => p.isAdmin}>
+                    <button onClick={() => handleDelete(location.location_id)} className="p-2 text-gray-400 hover:text-red-600 transition" title="删除">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </PermissionGuard>
                 </div>
               </div>
 
@@ -250,9 +256,11 @@ export default function Locations() {
         <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
           <MapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600 mb-4">暂无位置数据</p>
-          <button onClick={handleCreate} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-            创建第一个位置
-          </button>
+          <PermissionGuard requires={(p) => p.isAdmin || p.isDirector}>
+            <button onClick={handleCreate} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+              创建第一个位置
+            </button>
+          </PermissionGuard>
         </div>
       )}
 
