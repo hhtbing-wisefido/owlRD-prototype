@@ -117,35 +117,28 @@ def auto_start_backend() -> Optional[subprocess.Popen]:
         return None
     
     try:
-        # 启动后端服务
+        # 启动后端服务（允许交互）
+        # 注意：不捕获stdout/stderr，让start_with_check.py的交互式询问能正常工作
         process = subprocess.Popen(
             [sys.executable, 'start_with_check.py'],
-            cwd=str(backend_dir),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1
+            cwd=str(backend_dir)
         )
         
-        # 等待服务就绪（最多30秒）
-        print(f"{Colors.CYAN}等待后端服务就绪...{Colors.END}", end='', flush=True)
-        for i in range(30):
+        # 等待服务就绪（最多60秒，因为可能需要用户交互）
+        print(f"{Colors.CYAN}等待后端服务就绪（如有端口占用提示请回答）...{Colors.END}")
+        for i in range(60):
             time.sleep(1)
-            print('.', end='', flush=True)
             
             if check_server_running():
-                print(f"\n{Colors.GREEN}✓ 后端服务启动成功 ({BASE_URL}){Colors.END}")
+                print(f"{Colors.GREEN}✓ 后端服务启动成功 ({BASE_URL}){Colors.END}")
                 return process
             
             # 检查进程是否异常退出
             if process.poll() is not None:
-                stdout, stderr = process.communicate()
-                print(f"\n{Colors.RED}✗ 后端服务启动失败{Colors.END}")
-                if stderr:
-                    print(f"{Colors.RED}错误信息: {stderr[:500]}{Colors.END}")
+                print(f"\n{Colors.RED}✗ 后端服务启动失败（进程已退出）{Colors.END}")
                 return None
         
-        print(f"\n{Colors.RED}✗ 后端服务启动超时（30秒）{Colors.END}")
+        print(f"\n{Colors.RED}✗ 后端服务启动超时（60秒）{Colors.END}")
         process.terminate()
         return None
         
