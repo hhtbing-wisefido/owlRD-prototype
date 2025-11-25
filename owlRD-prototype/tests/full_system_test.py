@@ -35,6 +35,7 @@ from datetime import datetime
 from typing import Dict, List, Tuple, Optional
 import sys
 import os
+import time
 from pathlib import Path
 
 # 配置
@@ -45,6 +46,7 @@ TEST_RESULTS = []
 TOTAL_TESTS = 0
 PASSED_TESTS = 0
 FAILED_TESTS = 0
+BACKEND_PROCESS = None  # 追踪自动启动的后端进程
 
 class Colors:
     """终端颜色"""
@@ -97,6 +99,91 @@ def check_server_running() -> bool:
         return response.status_code == 200
     except:
         return False
+
+def auto_start_backend() -> Optional[subprocess.Popen]:
+    """自动启动后端服务
+    
+    Returns:
+        subprocess.Popen: 后端进程对象，如果启动失败返回None
+    """
+    print(f"\n{Colors.YELLOW}正在启动后端服务...{Colors.END}")
+    
+    # 确定后端目录路径
+    tests_dir = Path(__file__).parent
+    backend_dir = tests_dir.parent / 'backend'
+    
+    if not backend_dir.exists():
+        print(f"{Colors.RED}✗ 找不到backend目录: {backend_dir}{Colors.END}")
+        return None
+    
+    try:
+        # 启动后端服务
+        process = subprocess.Popen(
+            [sys.executable, 'start_with_check.py'],
+            cwd=str(backend_dir),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1
+        )
+        
+        # 等待服务就绪（最多30秒）
+        print(f"{Colors.CYAN}等待后端服务就绪...{Colors.END}", end='', flush=True)
+        for i in range(30):
+            time.sleep(1)
+            print('.', end='', flush=True)
+            
+            if check_server_running():
+                print(f"\n{Colors.GREEN}✓ 后端服务启动成功 ({BASE_URL}){Colors.END}")
+                return process
+            
+            # 检查进程是否异常退出
+            if process.poll() is not None:
+                stdout, stderr = process.communicate()
+                print(f"\n{Colors.RED}✗ 后端服务启动失败{Colors.END}")
+                if stderr:
+                    print(f"{Colors.RED}错误信息: {stderr[:500]}{Colors.END}")
+                return None
+        
+        print(f"\n{Colors.RED}✗ 后端服务启动超时（30秒）{Colors.END}")
+        process.terminate()
+        return None
+        
+    except Exception as e:
+        print(f"\n{Colors.RED}✗ 启动后端服务时出错: {e}{Colors.END}")
+        return None
+
+def cleanup_backend_service():
+    """清理自动启动的后端服务"""
+    global BACKEND_PROCESS
+    
+    if BACKEND_PROCESS is None:
+        return
+    
+    try:
+        print(f"\n{Colors.YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{Colors.END}")
+        response = input(f"{Colors.YELLOW}测试完成。是否关闭自动启动的后端服务？(Y/n): {Colors.END}").strip()
+        
+        if response.lower() in ['y', 'yes', '']:
+            print(f"{Colors.CYAN}正在关闭后端服务...{Colors.END}")
+            BACKEND_PROCESS.terminate()
+            
+            # 等待进程结束（最多5秒）
+            try:
+                BACKEND_PROCESS.wait(timeout=5)
+                print(f"{Colors.GREEN}✓ 后端服务已关闭{Colors.END}")
+            except subprocess.TimeoutExpired:
+                print(f"{Colors.YELLOW}⚠ 正常关闭超时，强制终止...{Colors.END}")
+                BACKEND_PROCESS.kill()
+                BACKEND_PROCESS.wait()
+                print(f"{Colors.GREEN}✓ 后端服务已强制终止{Colors.END}")
+        else:
+            print(f"{Colors.CYAN}后端服务保持运行中{Colors.END}")
+            
+    except Exception as e:
+        print(f"{Colors.RED}清理后端服务时出错: {e}{Colors.END}")
+    finally:
+        BACKEND_PROCESS = None
 
 def test_api_endpoint(
     method: str,
@@ -1494,12 +1581,26 @@ def run_all_backend_tests():
     print(f"\n{Colors.BOLD}检查服务器状态...{Colors.END}")
     if not check_server_running():
         print(f"{Colors.RED}✗ 后端服务器未运行！{Colors.END}")
-        print(f"\n请先启动后端服务器:")
-        print(f"  cd backend")
-        print(f"  python start_with_check.py")
-        return 1
-    
-    print(f"{Colors.GREEN}✓ 后端服务器正在运行{Colors.END}")
+        
+        # 询问是否自动启动
+        response = input(f"\n{Colors.YELLOW}是否自动启动后端服务？(Y/n): {Colors.END}").strip()
+        
+        if response.lower() in ['y', 'yes', '']:
+            global BACKEND_PROCESS
+            BACKEND_PROCESS = auto_start_backend()
+            
+            if BACKEND_PROCESS is None:
+                print(f"\n{Colors.RED}无法自动启动后端服务，请手动启动：{Colors.END}")
+                print(f"  cd backend")
+                print(f"  python start_with_check.py")
+                return 1
+        else:
+            print(f"\n{Colors.CYAN}请手动启动后端服务器：{Colors.END}")
+            print(f"  cd backend")
+            print(f"  python start_with_check.py")
+            return 1
+    else:
+        print(f"{Colors.GREEN}✓ 后端服务器正在运行{Colors.END}")
     
     # 获取默认租户ID
     print(f"\n{Colors.BOLD}获取默认租户ID...{Colors.END}")
@@ -1527,15 +1628,22 @@ def run_all_backend_tests():
         
     except KeyboardInterrupt:
         print(f"\n\n{Colors.YELLOW}测试被用户中断{Colors.END}")
+        cleanup_backend_service()
         return 1
     except Exception as e:
         print(f"\n\n{Colors.RED}测试过程中发生错误: {e}{Colors.END}")
         import traceback
         traceback.print_exc()
+        cleanup_backend_service()
         return 1
     
     # 生成报告
-    return generate_report()
+    result = generate_report()
+    
+    # 清理自动启动的后端服务
+    cleanup_backend_service()
+    
+    return result
 
 def run_integration_tests():
     """运行所有集成测试"""
