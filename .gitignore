@@ -73,3 +73,7 @@ owlRD-prototype/backend/app/static/swagger-ui/
 # OS
 Thumbs.db
 .DS_Store
+
+# 自动生成的检查报告
+*_check_report.json
+directory_check_report.json

@@ -286,7 +286,10 @@ class DirectoryStandardChecker:
     
     def save_report(self):
         """保存检查报告"""
-        report_file = RECORDS_DIR / "directory_check_report.json"
+        # 保存到tests/test_reports/目录，而不是项目记录根目录
+        report_dir = PROJECT_ROOT / "owlRD-prototype" / "tests" / "test_reports"
+        report_dir.mkdir(parents=True, exist_ok=True)
+        report_file = report_dir / "directory_check_report.json"
         
         report = {
             "check_time": datetime.now().isoformat(),
