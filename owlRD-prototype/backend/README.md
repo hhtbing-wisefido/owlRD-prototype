@@ -67,9 +67,12 @@ backend/
 │   ├── services/            # 业务逻辑服务
 │   ├── api/v1/              # API路由
 │   └── data/                # JSON数据存储
-├── tests/                   # 测试文件
+├── scripts/                 # 后端维护工具
+├── start_with_check.py      # 启动脚本（带端口检查）
 ├── requirements.txt         # Python依赖
 └── .env.example            # 环境变量示例
+
+注意：所有测试文件已迁移至 ../tests/ 目录
 ```
 
 ## 开发进度
@@ -130,16 +133,22 @@ backend/
 
 ## 测试
 
+所有测试已统一迁移至 `../tests/` 目录。
+
 ```bash
-# 运行所有测试
-pytest
+# 运行完整系统测试（推荐）
+cd ../tests
+python full_system_test.py
 
-# 运行特定测试
-pytest tests/unit/test_models.py
+# 运行后端API测试
+python full_system_test.py --backend
 
-# 生成覆盖率报告
-pytest --cov=app --cov-report=html
+# 运行CRUD测试
+python test_crud_all.py
+python test_crud_all_v2.py
 ```
+
+详细测试文档请参考: `../tests/README.md`
 
 ## API端点
 
