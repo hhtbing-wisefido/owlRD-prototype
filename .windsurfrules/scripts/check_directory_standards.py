@@ -11,7 +11,8 @@ from datetime import datetime
 import json
 
 # 项目根目录
-PROJECT_ROOT = Path(__file__).parent.parent
+# 脚本位置: .windsurfrules/scripts/xxx.py
+PROJECT_ROOT = Path(__file__).parent.parent.parent  # .windsurfrules/scripts/ -> .windsurfrules/ -> 项目根/
 RECORDS_DIR = PROJECT_ROOT / "项目记录"
 
 # 规范定义
