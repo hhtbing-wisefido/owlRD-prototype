@@ -1,6 +1,6 @@
----
-title: "Git Workflow"
-description: "Git工作流规范"
+﻿---
+title: "Git工作流规范"
+description: "Git提交和分支管理规范"
 trigger: always
 ---
 
