@@ -1,0 +1,586 @@
+﻿---
+title: "Strict Directory Control"
+description: "严格目录控制"
+trigger: always
+---
+
+# 07 - 严格目录控制规范
+
+**规则类别**: 🔴 **绝对强制** - 违规立即报错  
+**适用范围**: 所有项�? 
+**优先�?*: 🔴 **最�?*  
+**版本**: v1.0  
+**创建日期**: 2025-11-26  
+
+---
+
+## 📋 目录
+
+- [核心原则](#核心原则)
+- [允许的目录清单](#允许的目录清�?
+- [严格禁止的目录](#严格禁止的目�?
+- [AI规则](#ai规则)
+- [自动检查](#自动检�?
+- [违规处理流程](#违规处理流程)
+- [例外情况](#例外情况)
+
+---
+
+## ⚠️ 核心原则
+
+### 🔴 绝对禁止原则
+
+**规则**: 严禁创建架构模板以外的任何目�?
+
+**理由**:
+- �?保持项目结构清晰统一
+- �?防止随意创建目录导致混乱
+- �?确保所有项目符合统一标准
+- �?便于项目间移植和理解
+- �?降低学习成本和维护难�?
+
+**核心理念**:
+```
+架构模板 = 唯一真理�?
+所有目�?= 必须在模板中定义
+未定义的目录 = 绝对禁止
+```
+
+---
+
+## 📋 允许的目录清�?
+
+### 根目录级别（仅限以下�?
+
+```
+项目根目�?
+├── .git/                           �?Git仓库
+├── .vscode/                        �?VS Code配置
+├── .github/                        �?GitHub Actions
+├── .cascade/                       �?Windsurf配置
+├── .venv/                          �?Python虚拟环境（可选）
+├── venv/                           �?Python虚拟环境（可选）
+├── .windsurf/                 �?规则系统
+�?
+├── {项目名}-prototype/             �?代码主目录（必须符合模式�?
+├── {项目名}-backend/               �?后端代码（全栈项目）
+├── {项目名}-frontend/              �?前端代码（全栈项目）
+├── {项目名}-api/                   �?API服务
+├── {项目名}-app/                   �?应用代码
+├── {项目名}-service/               �?服务代码
+├── {项目名}-ml/                    �?机器学习代码
+�?
+├── 项目记录/                       �?8大分类文�?
+├── 知识�?                         �?只读参考资�?
+├── scripts/                        �?项目脚本（可选）
+�?
+├── .gitignore                      �?Git配置
+├── .dockerignore                   �?Docker配置
+├── README.md                       �?项目说明
+├── *.bat                           �?批处理文�?
+└── *.json                          �?配置文件（根目录�?
+```
+
+### 代码目录内部结构（参考架构模板）
+
+根据 `06-directory-architecture-template.md` 定义
+
+**后端/API项目示例**:
+```
+{项目名}-prototype/
+├── app/                    �?应用代码
+├── src/                    �?源代�?
+├── tests/                  �?测试目录
+�?  └── test_reports/       �?测试报告（仅此位置）
+├── scripts/                �?工具脚本
+├── spec/                   �?规格文档
+├── schema/                 �?Schema定义
+├── examples/               �?示例代码
+├── docs/                   �?代码文档（仅代码相关�?
+├── requirements.txt        �?依赖文件
+└── README.md               �?项目说明
+```
+
+### 项目记录/目录结构�?大分类）
+
+**必须且仅有的目录**:
+```
+项目记录/
+├── 1-归档/                 �?历史备份、旧版本
+├── 2-源参考对�?           �?迁移项目的源对照（可选空目录�?
+├── 3-功能说明/             �?功能文档、API文档
+├── 4-部署运维/             �?部署、运维文�?
+├── 5-问题分析/             �?问题分析、排查记�?
+├── 6-开发规�?             �?开发规范、编码标�?
+├── 7-过程记录/             �?开发过程、里程碑
+├── 8-聊天记录/             �?AI对话记录
+├── 项目状�?json           �?项目状态文�?
+└── README.md               �?目录说明
+```
+
+---
+
+## �?严格禁止的目�?
+
+### 根目录级�?
+
+```
+�?测试报告/              # 应在 代码目录/tests/test_reports/
+�?test_reports/          # 应在 代码目录/tests/test_reports/
+�?Test_Reports/          # 应在 代码目录/tests/test_reports/
+�?项目备份/              # 应在 项目记录/1-归档/
+�?backup/                # 应在 项目记录/1-归档/
+�?临时文件/              # 应立即删�?
+�?temp/                  # 应立即删�?
+�?tmp/                   # 应立即删�?
+�?临时/                  # 应立即删�?
+�?auto_backup/           # 应在 项目记录/1-归档/
+�?自动生成文档/          # 应按8大分类放入项目记�?
+�?项目文档/              # 应按8大分类放入项目记�?
+�?归档文件/              # 应在 项目记录/1-归档/
+�?docs/                  # 应按8大分类放入项目记�?（除非在代码目录下）
+�?documentation/         # 应按8大分类放入项目记�?
+�?archive/               # 应在 项目记录/1-归档/
+�?old/                   # 应在 项目记录/1-归档/
+�?任何未在架构模板中定义的目录
+```
+
+### 代码目录内部
+
+```
+�?test_reports/           # 应在 tests/test_reports/
+�?backup/                 # 应在 项目记录/1-归档/
+�?temp/                   # 应立即删�?
+�?old/                    # 应在 项目记录/1-归档/
+�?archive/                # 应在 项目记录/1-归档/
+�?任何未在架构模板中定义的目录
+```
+
+### 项目记录/内部
+
+```
+�?任何�?-8编号的目�?
+�?任何不在8大分类的目录
+�?9-xxx/                  # 只有1-8
+�?项目备份/               # 应在 1-归档/项目备份/
+�?测试报告/               # 应在 代码目录/tests/test_reports/
+�?文档/                   # 应按分类放入1-8
+```
+
+---
+
+## 🤖 AI规则（@rules:all�?
+
+### 规则A: 严禁随意创建目录 🔴
+
+**AI必须遵守**:
+
+```markdown
+�?禁止: 创建任何未在架构模板中定义的目录
+�?允许: 仅创建模板中明确定义的目�?
+```
+
+**示例**:
+
+```bash
+# �?严格禁止
+mkdir 临时文件
+mkdir 测试报告
+mkdir docs          # 除非在代码目录下且模板定�?
+mkdir backup
+mkdir test_data     # 除非在tests/下且模板定义
+mkdir output
+mkdir 项目备份
+mkdir archive
+
+# �?仅允许（按模板）
+mkdir 项目记录/1-归档/项目备份
+mkdir owlRD-prototype/tests/test_reports
+mkdir 知识�?参考文�?
+mkdir 项目记录/3-功能说明/API文档
+```
+
+---
+
+### 规则B: 发现未授权目录立即处�?🔴
+
+**AI发现未授权目录时的处理流�?*:
+
+#### 步骤1: 识别未授权目�?
+
+```python
+# 检查是否在架构模板�?
+if directory not in allowed_directories:
+    # 这是未授权目�?
+    report_violation(directory)
+```
+
+#### 步骤2: 确定目录类型
+
+```python
+# 临时文件/测试目录 �?立即删除
+if directory in ['temp', '临时文件', '临时', 'tmp', 'test', 'output']:
+    delete_immediately(directory)
+
+# 有价值内�?�?迁移后删�?
+elif has_valuable_content(directory):
+    migrate_to_correct_location(directory)
+    delete_original(directory)
+
+# 空目�?无用目录 �?立即删除
+else:
+    delete_immediately(directory)
+```
+
+#### 步骤3: 迁移规则
+
+| 未授权目�?| 正确位置 | 操作 |
+|-----------|---------|------|
+| `测试报告/` | `代码目录/tests/test_reports/` | 移动 |
+| `test_reports/` | `代码目录/tests/test_reports/` | 移动 |
+| `项目备份/` | `项目记录/1-归档/项目备份/` | 移动 |
+| `backup/` | `项目记录/1-归档/backup/` | 移动 |
+| `docs/`（根目录�?| `项目记录/3-功能说明/` | 移动 |
+| `temp/` | - | 删除 |
+| `临时文件/` | - | 删除 |
+| `old/` | `项目记录/1-归档/old/` | 移动 |
+| `archive/` | `项目记录/1-归档/archive/` | 移动 |
+
+---
+
+### 规则C: 创建新目录前的检查清�?🔴
+
+**AI在创建任何新目录前必�?*:
+
+- [ ] 检查架构模板中是否定义�?6-directory-architecture-template.md�?
+- [ ] 确认目录路径完全符合模板
+- [ ] 验证目录名称符合命名规范�?3-naming-convention.md�?
+- [ ] 确认不会与现有目录冲�?
+- [ ] 记录创建原因和依�?
+
+**如果不符合以上任何一条，严禁创建�?*
+
+**必须问自己的问题**:
+```
+1. 这个目录在架构模板中有定义吗�?
+2. 如果没有，能放在现有8大分类的某一类吗�?
+3. 如果不能，真的需要创建新目录吗？
+4. 用户明确要求创建了吗�?
+```
+
+---
+
+## 🔍 自动检�?
+
+### check_project_structure.py 增强
+
+```python
+def check_unauthorized_directories(self):
+    """检查未授权的目�?""
+    print("📋 检�?: 未授权目�?)
+    
+    # 根目录允许的项目
+    allowed_root = {
+        '.git', '.vscode', '.github', '.cascade', 
+        '.venv', 'venv', '.windsurf', 
+        '项目记录', '知识�?, 'scripts',
+        '.gitignore', '.dockerignore', 'README.md'
+    }
+    
+    # 允许的代码目录模�?
+    code_patterns = [
+        "*-prototype", "*-backend", "*-frontend", 
+        "*-api", "*-app", "*-service", "*-ml"
+    ]
+    
+    # 允许的文件模式（根目录）
+    allowed_file_patterns = ['*.bat', '*.json', '*.md', '*.gitignore']
+    
+    # 检查根目录
+    for item in self.project_root.iterdir():
+        # 跳过允许的项�?
+        if item.name in allowed_root:
+            continue
+        
+        # 跳过点文�?目录
+        if item.name.startswith('.'):
+            continue
+        
+        # 如果是文件，检查扩展名
+        if item.is_file():
+            file_allowed = False
+            for pattern in allowed_file_patterns:
+                if self._match_pattern(item.name, pattern):
+                    file_allowed = True
+                    break
+            if not file_allowed:
+                self.warnings.append(f"⚠️ 根目录发现未预期文件: {item.name}")
+            continue
+        
+        # 如果是目录，检查是否匹配代码目录模�?
+        is_allowed = False
+        for pattern in code_patterns:
+            if self._match_pattern(item.name, pattern):
+                is_allowed = True
+                self.info.append(f"ℹ️ 检测到代码目录: {item.name}")
+                break
+        
+        if not is_allowed:
+            # 提供迁移建议
+            suggestion = self._get_migration_suggestion(item.name)
+            self.errors.append(
+                f"�?未授权目�? {item.name}\n"
+                f"   {suggestion}"
+            )
+    
+    print("�?未授权目录检查完成\n")
+
+def _get_migration_suggestion(self, dir_name: str) -> str:
+    """获取目录迁移建议"""
+    name_lower = dir_name.lower()
+    
+    if 'test' in name_lower and 'report' in name_lower:
+        return "建议: 移动�?<代码目录>/tests/test_reports/"
+    elif 'backup' in name_lower or '备份' in dir_name:
+        return "建议: 移动�?项目记录/1-归档/"
+    elif 'temp' in name_lower or '临时' in dir_name or 'tmp' in name_lower:
+        return "建议: 立即删除（临时目录）"
+    elif 'doc' in name_lower or '文档' in dir_name:
+        return "建议: �?大分类移动到项目记录/对应分类/"
+    elif 'old' in name_lower or 'archive' in name_lower or '归档' in dir_name:
+        return "建议: 移动�?项目记录/1-归档/"
+    else:
+        return "建议: 删除或移动到正确位置（参考架构模板）"
+```
+
+---
+
+## 📝 违规处理流程
+
+### 发现违规目录�?
+
+```
+┌─────────────────────────────────────�?
+�?1. 发现未授权目�?                 �?
+└─────────────────────────────────────�?
+              �?
+        是否为临时目�?
+          (temp/临时/)
+        �?         �?
+      �?             �?
+       �?             �?
+  立即删除      是否有价值内�?
+       �?         �?         �?
+       �?       �?             �?
+       �?        �?             �?
+       �?   确定正确位置    立即删除
+       �?        �?
+       �?   迁移内容
+       �?        �?
+       �?   删除原目�?
+       �?        �?
+  记录操作    记录操作
+       �?        �?
+       └────┬────�?
+            �?
+       验证结果
+            �?
+    运行检查脚�?
+```
+
+### 处理示例
+
+**场景1: 发现 `测试报告/` 在根目录**
+
+```bash
+# 1. 识别
+�?未授权目�? 测试报告/
+
+# 2. 确定正确位置
+�?正确位置: owlRD-prototype/tests/test_reports/
+
+# 3. 迁移
+Move-Item "测试报告" "owlRD-prototype/tests/test_reports"
+
+# 4. 验证
+python .windsurf/scripts/check_project_structure.py
+```
+
+**场景2: 发现 `temp/` 临时目录**
+
+```bash
+# 1. 识别
+�?临时目录: temp/
+
+# 2. 确认可删除（无价值内容或已过期）
+�?可安全删�?
+
+# 3. 删除
+Remove-Item "temp" -Recurse -Force
+
+# 4. 验证
+python .windsurf/scripts/check_project_structure.py
+```
+
+**场景3: 发现 `项目备份/` 在根目录**
+
+```bash
+# 1. 识别
+�?未授权目�? 项目备份/
+
+# 2. 确定正确位置
+�?正确位置: 项目记录/1-归档/项目备份/
+
+# 3. 迁移
+Move-Item "项目备份" "项目记录/1-归档/项目备份"
+
+# 4. 验证
+python .windsurf/scripts/check_project_structure.py
+```
+
+---
+
+## ⚖️ 例外情况
+
+### 唯一的例外：工具生成的临时目�?
+
+**工具生成的临时目�?*（必须在.gitignore中）:
+
+```gitignore
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+
+# Node.js
+node_modules/
+.next/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+
+# 虚拟环境
+.venv/
+venv/
+env/
+```
+
+**这些目录**:
+- �?由工具自动生�?
+- �?必须�?gitignore�?
+- �?不提交到Git
+- �?可以存在但不受架构约�?
+- �?开发者不应手动创�?
+
+**其他所有目录必须严格符合架构模板！**
+
+---
+
+## 🚨 违规等级
+
+### 🔴 严重违规（立即报错，阻止运行�?
+
+- 根目录出�?`测试报告/`、`项目备份/`、`临时文件/`、`docs/`
+- 代码目录下出�?`test_reports/`（应在tests/下）
+- 项目记录/出现�?大分类的目录（如9-xxx/�?
+
+**处理**: 立即报错，阻止Git提交，必须修�?
+
+### ⚠️ 警告违规（给出警告）
+
+- 出现 `temp`、`tmp`、`临时` 等临时目�?
+- 空目录超�?天未使用
+- 出现不常见的文件类型在根目录
+
+**处理**: 警告提示，建议清�?
+
+### ℹ️ 信息提示
+
+- 发现.gitignore中的目录存在
+- 发现工具生成的目�?
+
+**处理**: 仅记录，无需处理
+
+---
+
+## 📚 相关规则
+
+- **06-directory-architecture-template.md** - 架构模板（权威定义）
+- **02-directory-management.md** - 目录管理规范
+- **05-test-organization.md** - 测试组织规范
+- **03-naming-convention.md** - 命名规范
+
+---
+
+## �?执行检查清�?
+
+项目目录结构检查清单：
+
+- [ ] 根目录仅包含模板定义的项�?
+- [ ] �?`测试报告/`、`项目备份/`、`temp/` 等违规目�?
+- [ ] 代码目录结构符合模板
+- [ ] test_reports在tests/下（不是与tests/并列�?
+- [ ] 项目记录/仅有8大分类（1-8�?
+- [ ] 无临时目录（temp, 临时文件, tmp等）
+- [ ] 所有目录都能在架构模板中找到定�?
+- [ ] 工具生成的目录都�?gitignore�?
+
+---
+
+## 🎯 核心规则重申
+
+### AI必须严格遵守（@rules:all�?
+
+1. **严禁随意创建目录** - 所有目录必须在架构模板中定�?
+2. **发现违规立即处理** - 删除或迁移到正确位置
+3. **创建前必须检�?* - 确认模板中有明确定义
+4. **疑问时查阅模�?* - 不确定就不要创建
+5. **不要猜测** - 必须基于明确的模板定�?
+
+### 强制执行
+
+> **用户要求**: "把没有的目录删掉, 如果需要是必须按照规则建立相应的目�? 严格执行"
+
+**AI必须**:
+- �?删除所有未授权目录
+- �?仅创建模板中定义的目�?
+- �?严格执行，不容妥�?
+- �?发现违规立即报告并修�?
+- �?不要"好心"创建额外目录
+
+---
+
+## 📊 检查报告格�?
+
+```
+📋 未授权目录检查报�?
+
+�?发现 X 个违规目�?
+  1. �?测试报告/ (根目�?
+     �?应移�? owlRD-prototype/tests/test_reports/
+  
+  2. �?temp/ (根目�?
+     �?建议: 立即删除（临时目录）
+  
+  3. �?docs/ (根目�?
+     �?应移�? 项目记录/3-功能说明/
+
+⚠️ 请立即修正违规目录！
+```
+
+---
+
+**规则版本**: v1.0  
+**创建日期**: 2025-11-26  
+**最后更�?*: 2025-11-26  
+**规则状�?*: �?生效  
+**强制级别**: 🔴 **绝对强制**  
+**适用范围**: 所有项�?
+
+🔴 **警告**: 这是最高级别的规则，AI必须100%遵守，不得有任何例外�?
+
+🎯 **AI注意**: 这是 @rules:all 的核心规则，违规将导致项目检查失败！
