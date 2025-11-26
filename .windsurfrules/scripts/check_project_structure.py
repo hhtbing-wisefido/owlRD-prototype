@@ -6,11 +6,18 @@
 """
 
 import os
+import sys
 import re
 from pathlib import Path
 from typing import List, Tuple
 import json
 from datetime import datetime
+
+# 设置Windows控制台UTF-8编码
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 
 class ProjectStructureChecker:
@@ -42,7 +49,11 @@ class ProjectStructureChecker:
         allowed_items = {
             '.git', '.vscode', '.windsurfrules', 'owlRD-prototype',
             'scripts', '知识库', '项目记录',
-            '.gitignore', 'README.md'
+            '.gitignore', 'README.md',
+            # 工具脚本和配置文件
+            'test_git_hook.bat', 'vscode-tasks-example.json',
+            '启动文件监控.bat', '检查项目结构.bat',
+            '.cascade'  # Windsurf IDE配置
         }
         
         # 遍历根目录
@@ -55,11 +66,13 @@ class ProjectStructureChecker:
             if item.name != "README.md":
                 self.errors.append(f"❌ 根目录不允许文档文件: {item.name}")
         
-        # 检查临时文件
-        temp_patterns = ["*.tmp", "*.temp", "*.log", "*临时*", "*test*"]
+        # 检查临时文件（排除已知的工具文件）
+        known_files = {'test_git_hook.bat', 'vscode-tasks-example.json'}
+        temp_patterns = ["*.tmp", "*.temp", "*.log", "*临时*"]
         for pattern in temp_patterns:
             for item in self.project_root.glob(pattern):
-                self.warnings.append(f"⚠️ 根目录发现临时文件: {item.name}")
+                if item.name not in known_files:
+                    self.warnings.append(f"⚠️ 根目录发现临时文件: {item.name}")
         
         print("✅ 根目录检查完成\n")
         
@@ -72,10 +85,10 @@ class ProjectStructureChecker:
             self.errors.append("❌ 项目记录目录不存在")
             return
         
-        # 必需的8个编号目录
+        # 必需的7个编号目录（5-问题分析已删除，文档已归档到1-归档）
         required_dirs = {
             "1-归档", "2-源参考对照", "3-功能说明", "4-部署运维",
-            "5-问题分析", "6-开发规范", "7-过程记录", "8-聊天记录"
+            "6-开发规范", "7-过程记录", "8-聊天记录"
         }
         
         # 允许的文件
@@ -159,8 +172,8 @@ class ProjectStructureChecker:
         for dirpath, dirnames, filenames in os.walk(self.project_root):
             path = Path(dirpath)
             
-            # 跳过 .git 和 node_modules
-            if '.git' in path.parts or 'node_modules' in path.parts:
+            # 跳过 .git, node_modules, venv 和 __pycache__（第三方库/缓存目录）
+            if '.git' in path.parts or 'node_modules' in path.parts or 'venv' in path.parts or '__pycache__' in path.parts:
                 continue
             
             depth = get_depth(path)

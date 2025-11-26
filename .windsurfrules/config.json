@@ -1,0 +1,82 @@
+{
+  "version": "1.4.0",
+  "name": "owlRD项目AI规则系统",
+  "description": "AI开发规范和强制规则",
+  "enabled": true,
+  "rules": [
+    {
+      "id": "00-core-principles",
+      "file": "00-core-principles.md",
+      "name": "核心工作原则",
+      "description": "先分析再决定、验证优先、透明沟通、安全第一",
+      "priority": "highest",
+      "enabled": true,
+      "tags": ["core", "mandatory", "workflow"]
+    },
+    {
+      "id": "01-file-operations",
+      "file": "01-file-operations.md",
+      "name": "文件操作规则",
+      "description": "5步强制检查流程",
+      "priority": "high",
+      "enabled": true,
+      "tags": ["file", "creation", "mandatory"]
+    },
+    {
+      "id": "02-directory-management",
+      "file": "02-directory-management.md",
+      "name": "目录管理规范",
+      "description": "根目录清洁、层级控制",
+      "priority": "high",
+      "enabled": true,
+      "tags": ["directory", "structure", "mandatory"]
+    },
+    {
+      "id": "03-naming-convention",
+      "file": "03-naming-convention.md",
+      "name": "命名规范",
+      "description": "5种文档类型命名规则",
+      "priority": "medium",
+      "enabled": true,
+      "tags": ["naming", "convention"]
+    },
+    {
+      "id": "04-git-workflow",
+      "file": "04-git-workflow.md",
+      "name": "Git工作流规范",
+      "description": "Conventional Commits、分支管理",
+      "priority": "medium",
+      "enabled": true,
+      "tags": ["git", "workflow", "commits"]
+    },
+    {
+      "id": "05-change-synchronization",
+      "file": "05-change-synchronization.md",
+      "name": "变更同步规则",
+      "description": "修改后必须同步文档和索引",
+      "priority": "high",
+      "enabled": true,
+      "tags": ["sync", "documentation", "mandatory"]
+    },
+    {
+      "id": "project-config",
+      "file": "project-config.md",
+      "name": "项目配置",
+      "description": "项目特定规则和目录结构",
+      "priority": "high",
+      "enabled": true,
+      "tags": ["config", "project-specific"]
+    }
+  ],
+  "autoLoad": true,
+  "strictMode": true,
+  "loadOrder": [
+    "00-core-principles.md",
+    "01-file-operations.md",
+    "02-directory-management.md",
+    "03-naming-convention.md",
+    "04-git-workflow.md",
+    "05-change-synchronization.md",
+    "project-config.md"
+  ]
+}
