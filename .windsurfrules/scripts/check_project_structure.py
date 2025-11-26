@@ -156,7 +156,7 @@ class ProjectStructureChecker:
         self.info.append("ℹ️ 知识库目录存在（只读参考）")
         print("✅ 知识库检查完成\n")
         
-    def check_directory_depth(self, max_depth: int = 4):
+    def check_directory_depth(self, max_depth: int = 5):
         """检查目录层级深度"""
         print(f"📋 检查4: 目录层级深度（限制 {max_depth} 层）")
         
