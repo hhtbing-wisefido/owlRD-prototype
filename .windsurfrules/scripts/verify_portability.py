@@ -134,14 +134,25 @@ class PortabilityChecker:
                 'os', 'sys', 'json', 'pathlib', 'datetime', 're', 
                 'shutil', 'time', 'io', 'typing', 'traceback', 'subprocess'
             }
-            # 允许的外部库
+            # 允许的外部库（规则系统使用的）
             allowed_external = {
-                'watchdog',  # 文件监控（可选功能）
+                'watchdog',     # 文件监控（可选功能）
+                'jsonschema',   # JSON验证
+                'pytest',       # 测试框架
             }
-            # 内部模块
+            # 内部模块（规则系统脚本）
             internal_modules = {
                 'check_project_structure', 'check_directory_standards',
-                'update_project_status', 'verify_portability'
+                'update_project_status', 'verify_portability', 'watch_and_check',
+                'install_git_hooks', 'init_project_from_template',
+                '_config',      # 脚本配置模块
+            }
+            # 项目代码模块（init脚本生成的示例代码）
+            project_code_modules = {
+                'app',          # FastAPI应用
+                'uvicorn',      # ASGI服务器
+                'fastapi',      # FastAPI框架
+                'pydantic',     # 数据验证
             }
             
             for py_file in scripts_dir.glob("*.py"):
@@ -152,7 +163,10 @@ class PortabilityChecker:
                 
                 all_imports = set(import_matches + from_matches)
                 for imp in all_imports:
-                    if imp not in standard_libs and imp not in allowed_external and imp not in internal_modules:
+                    if (imp not in standard_libs and 
+                        imp not in allowed_external and 
+                        imp not in internal_modules and
+                        imp not in project_code_modules):
                         external_imports.add(imp)
             
             if external_imports:

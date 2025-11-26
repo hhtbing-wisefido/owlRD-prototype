@@ -28,6 +28,16 @@ class ProjectStructureChecker:
         self.errors = []
         self.warnings = []
         self.info = []
+    
+    def _match_pattern(self, name: str, pattern: str) -> bool:
+        """
+        简单的通配符匹配
+        pattern: 支持 * 通配符，如 '*-prototype'
+        """
+        # 将通配符模式转换为正则表达式
+        regex_pattern = pattern.replace('*', '.*')
+        regex_pattern = f'^{regex_pattern}$'
+        return re.match(regex_pattern, name) is not None
         
     def check_all(self):
         """执行所有检查"""
@@ -45,9 +55,9 @@ class ProjectStructureChecker:
         """检查根目录清洁度"""
         print("📋 检查1: 根目录清洁度")
         
-        # 允许的文件和目录
+        # 基础通用文件和目录（所有项目都有的）
         allowed_items = {
-            '.git', '.vscode', '.windsurfrules', 'owlRD-prototype',
+            '.git', '.vscode', '.windsurfrules',
             'scripts', '知识库', '项目记录',
             '.gitignore', 'README.md',
             # 工具脚本和配置文件
@@ -56,9 +66,34 @@ class ProjectStructureChecker:
             '.cascade'  # Windsurf IDE配置
         }
         
+        # 允许的代码目录命名模式（通配符）
+        allowed_code_patterns = [
+            '*-prototype',   # 原型项目: YourProject-prototype
+            '*-api',         # API项目: YourAPI-api
+            '*-app',         # 应用项目: YourApp-app
+            '*-service',     # 服务项目: YourService-service
+            '*-backend',     # 后端项目: YourBackend-backend
+            '*-frontend',    # 前端项目: YourFrontend-frontend
+            '*-ml',          # 机器学习: YourML-ml
+        ]
+        
         # 遍历根目录
         for item in self.project_root.iterdir():
-            if item.name not in allowed_items:
+            # 检查是否在基础允许列表
+            if item.name in allowed_items:
+                continue
+            
+            # 检查是否匹配允许的代码目录模式
+            is_allowed_code_dir = False
+            if item.is_dir():
+                for pattern in allowed_code_patterns:
+                    if self._match_pattern(item.name, pattern):
+                        is_allowed_code_dir = True
+                        self.info.append(f"ℹ️ 检测到代码目录: {item.name}")
+                        break
+            
+            # 如果都不满足，则报错
+            if not is_allowed_code_dir:
                 self.errors.append(f"❌ 根目录发现不允许的项: {item.name}")
         
         # 检查是否有文档文件堆积

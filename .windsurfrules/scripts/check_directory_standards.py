@@ -287,9 +287,9 @@ class DirectoryStandardChecker:
     
     def save_report(self):
         """保存检查报告"""
-        # 保存到tests/test_reports/目录，而不是项目记录根目录
-        report_dir = PROJECT_ROOT / "owlRD-prototype" / "tests" / "test_reports"
-        report_dir.mkdir(parents=True, exist_ok=True)
+        # 保存到.windsurfrules/scripts/目录，更通用
+        # 这样不依赖项目特定的目录结构
+        report_dir = Path(__file__).parent
         report_file = report_dir / "directory_check_report.json"
         
         report = {

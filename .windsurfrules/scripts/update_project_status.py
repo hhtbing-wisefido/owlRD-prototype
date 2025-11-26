@@ -102,13 +102,41 @@ def count_files(directory: Path, pattern: str) -> int:
     return len(list(directory.rglob(pattern)))
 
 
+def find_code_directory(project_root: Path) -> Path:
+    """
+    自动查找代码主目录
+    查找包含backend/或frontend/的目录
+    """
+    # 排除的目录
+    exclude_dirs = {'.git', '.vscode', '.windsurfrules', '知识库', '项目记录', 'scripts'}
+    
+    for item in project_root.iterdir():
+        if item.is_dir() and item.name not in exclude_dirs:
+            # 检查是否包含backend或frontend
+            if (item / 'backend').exists() or (item / 'frontend').exists():
+                print(f"ℹ️ 检测到代码目录: {item.name}")
+                return item
+    
+    # 如果没找到，返回None
+    print("⚠️ 未找到代码目录（包含backend/或frontend/的目录）")
+    return None
+
+
 def update_project_status():
     """更新项目状态文件"""
     
     # 项目根目录 (脚本在.windsurfrules/scripts/目录下)
     project_root = Path(__file__).parent.parent.parent  # .windsurfrules/scripts/ -> .windsurfrules/ -> 项目根/
-    backend_dir = project_root / "owlRD-prototype" / "backend"
-    frontend_dir = project_root / "owlRD-prototype" / "frontend"
+    
+    # 自动检测代码目录
+    code_dir = find_code_directory(project_root)
+    if not code_dir:
+        print("❌ 无法找到代码目录，请确保项目包含 backend/ 或 frontend/ 目录")
+        print("💡 提示: 代码目录应该是包含 backend/ 或 frontend/ 的目录")
+        return
+    
+    backend_dir = code_dir / "backend"
+    frontend_dir = code_dir / "frontend"
     docs_dir = project_root / "项目记录"
     
     print("🔍 扫描项目文件...")
