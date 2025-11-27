@@ -11,7 +11,7 @@
 1. [认证接口](#认证接口)
 2. [核心业务接口](#核心业务接口)
 3. [权限说明](#权限说明)
-4. [错误码](#错误码)
+4. [错误码](#错误�?
 
 ---
 
@@ -63,16 +63,14 @@ Content-Type: application/json
 ### 卡片管理 (Cards)
 
 #### GET /api/v1/cards
-获取卡片列表（带权限过滤）
-
+获取卡片列表（带权限过滤�?
 **权限**: 所有已认证用户  
 **过滤**: 根据用户alert_scope自动过滤
 
 **参数**:
 - `tenant_id` (required): 租户ID
 - `limit` (optional, default=100): 返回数量
-- `is_active` (optional): 是否激活
-- `is_public_space` (optional): 是否公共空间
+- `is_active` (optional): 是否激�?- `is_public_space` (optional): 是否公共空间
 
 **响应**: 200 OK
 ```json
@@ -91,8 +89,7 @@ Content-Type: application/json
 #### GET /api/v1/cards/{card_id}
 获取单个卡片详情（带权限检查）
 
-**权限**: 必须有权查看该卡片
-
+**权限**: 必须有权查看该卡�?
 #### POST /api/v1/cards
 创建卡片
 
@@ -116,8 +113,7 @@ Content-Type: application/json
 #### PUT /api/v1/users/{user_id}
 更新用户
 
-**权限**: Admin/Director或自己
-
+**权限**: Admin/Director或自�?
 #### DELETE /api/v1/users/{user_id}
 删除用户
 
@@ -139,8 +135,7 @@ Content-Type: application/json
 **权限**: Admin/Director/NurseManager
 
 #### PUT /api/v1/devices/{device_id}/status
-更新设备状态
-
+更新设备状�?
 **权限**: Admin/Director/NurseManager
 
 ---
@@ -242,8 +237,7 @@ Content-Type: application/json
 **权限**: 仅Admin
 
 #### POST /api/v1/alert-policies/initialize/{tenant_id}
-初始化租户告警策略
-
+初始化租户告警策�?
 **权限**: Admin
 
 ---
@@ -254,22 +248,21 @@ Content-Type: application/json
 
 | 角色 | 查看 | 创建 | 编辑 | 删除 | 权限配置 |
 |------|------|------|------|------|----------|
-| Admin | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Director | ✅ | ✅ | ✅ | ❌ | ✅ |
-| NurseManager | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Nurse | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Caregiver | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Admin | �?| �?| �?| �?| �?|
+| Director | �?| �?| �?| �?| �?|
+| NurseManager | �?| �?| �?| �?| �?|
+| Nurse | �?| �?| �?| �?| �?|
+| Caregiver | �?| �?| �?| �?| �?|
 
 ### Alert Scope数据范围
 
 | Scope | 描述 | 适用角色 |
 |-------|------|----------|
-| ALL | 租户下所有数据 | Admin, Director |
-| LOCATION | 匹配location_tag的数据 | NurseManager |
-| ASSIGNED_ONLY | 仅分配给自己的住户 | Nurse, Caregiver |
+| ALL | 租户下所有数�?| Admin, Director |
+| LOCATION | 匹配location_tag的数�?| NurseManager |
+| ASSIGNED_ONLY | 仅分配给自己的住�?| Nurse, Caregiver |
 
-### 认证头格式
-
+### 认证头格�?
 所有需要认证的API请求必须包含:
 ```http
 Authorization: Bearer <access_token>
@@ -277,8 +270,7 @@ Authorization: Bearer <access_token>
 
 ---
 
-## 错误码
-
+## 错误�?
 ### HTTP状态码
 
 | 状态码 | 说明 |
@@ -286,10 +278,10 @@ Authorization: Bearer <access_token>
 | 200 | 成功 |
 | 201 | 创建成功 |
 | 400 | 请求参数错误 |
-| 401 | 未认证 |
+| 401 | 未认�?|
 | 403 | 权限不足 |
-| 404 | 资源不存在 |
-| 500 | 服务器错误 |
+| 404 | 资源不存�?|
+| 500 | 服务器错�?|
 
 ### 错误响应格式
 
@@ -306,7 +298,7 @@ Authorization: Bearer <access_token>
 **401 Unauthorized**:
 ```json
 {
-  "detail": "未提供认证令牌",
+  "detail": "未提供认证令�?,
   "status_code": 401
 }
 ```
@@ -314,7 +306,7 @@ Authorization: Bearer <access_token>
 **403 Forbidden**:
 ```json
 {
-  "detail": "无权访问其他租户的数据",
+  "detail": "无权访问其他租户的数�?,
   "status_code": 403
 }
 ```
@@ -468,5 +460,5 @@ const getCards = async (token) => {
 ---
 
 **文档版本**: v1.0  
-**最后更新**: 2024-11-24  
-**维护团队**: owlRD开发团队
+**最后更�?*: 2024-11-24  
+**维护团队**: owlRD开发团�?
