@@ -36,15 +36,22 @@ build/
 *.tmp
 .env.local
 
-# 项目特定 - 临时文件
+# 椤圭洰鐗瑰畾 - 涓存椂鏂囦欢
 add_frontmatter.py
 simplify_remaining.py
 *_temp.py
 *_test.py
 
-# 旧目录（防止误提交）
+# 鏃х洰褰曪紙闃叉璇彁浜わ級
 .windsurfrules/
-项目记录/
+椤圭洰璁板綍/
 
-# 自动生成的报告
-项目文档/完成度报告_*.md
+# 鑷姩鐢熸垚鐨勬姤鍛?椤圭洰鏂囨。/瀹屾垚搴︽姤鍛奯*.md
+# 备份文件（编辑器自动生成）
+*.backup
+*.backup[0-9]
+*.backup[0-9][0-9]
+*.bak
+*~
+*.swp
+*.swo
