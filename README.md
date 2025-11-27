@@ -149,7 +149,7 @@ owlRD是一�?*专业级智慧养老IoT监测系统**，为老年护理机构�
 
 ```
 owlRD-原型项目/                        �?主项目目�?= Git仓库根目�?├── owdRD_github_clone_源参考文�?     # GitHub源代码（参考）
-├── 项目聊天记录/                      # 开发过程记�?├── owlRD-prototype/                  # 代码子目�?�?  ├── backend/                      # Python后端
+├── 项目聊天记录/                      # 开发过程记�?├── project-code/                  # 代码子目�?�?  ├── backend/                      # Python后端
 �?  �?  ├── app/
 �?  �?  �?  ├── main.py              # FastAPI入口
 �?  �?  �?  ├── models/              # Pydantic数据模型
@@ -231,7 +231,7 @@ owlRD-原型项目/                        �?主项目目�?= Git仓库根目
 ### 安装与运�?
 #### 1. 后端启动
 ```bash
-cd owlRD-prototype/backend
+cd project-code/backend
 
 # 安装依赖
 pip install -r requirements.txt
@@ -247,13 +247,13 @@ python start_with_check.py
 - 局域网: http://192.168.2.6:8000/docs-local
 
 #### 2. 初始化示例数�?```bash
-cd owlRD-prototype/backend
+cd project-code/backend
 python init_sample_data.py
 ```
 
 #### 3. 前端启动
 ```bash
-cd owlRD-prototype/frontend
+cd project-code/frontend
 
 # 安装依赖（首次）
 npm install
@@ -276,7 +276,7 @@ taskkill /PID <进程ID> /F
 **没有数据显示**: 运行 `python init_sample_data.py` 初始化数�?
 **局域网白屏**: 使用本地Swagger `/docs-local` 而不�?`/docs`
 
-**详细配置**: 查看 [局域网访问指南](项目文档/4-部署运维/局域网访问指南.md)
+**详细配置**: 查看 [局域网访问指南](项目文档/3-部署运维/局域网访问指南.md)
 
 ---
 
@@ -287,11 +287,11 @@ taskkill /PID <进程ID> /F
 
 **运行完整系统测试**:
 ```bash
-# 方法1: 使用便捷脚本（Windows�?cd owlRD-prototype/scripts
+# 方法1: 使用便捷脚本（Windows�?cd project-code/scripts
 run_tests.bat
 
 # 方法2: 直接运行（推荐）
-cd owlRD-prototype
+cd project-code
 python tests/full_system_test.py --all
 
 # 方法3: 分类运行
@@ -321,8 +321,8 @@ python tests/full_system_test.py --report
 - 测试统计（总数、通过、失败、通过率）
 - 详细测试结果（每个测试的状态和详情�?- 执行时间�?
 **详细文档**: 
-- 📖 [完整测试指南](owlRD-prototype/tests/README.md)
-- 📝 [测试框架完善报告](项目文档/7-过程记录/2025-11-22_1940_测试框架完善完成报告.md)
+- 📖 [完整测试指南](project-code/tests/README.md)
+- 📝 [测试框架完善报告](项目文档/2-开发记录/2025-11-22_1940_测试框架完善完成报告.md)
 
 ---
 
@@ -464,7 +464,7 @@ MIT License
 ### 🎯 快速开�?
 #### 后端启动
 ```bash
-cd owlRD-prototype/backend
+cd project-code/backend
 
 # 首次运行：下载Swagger UI
 python scripts/download_swagger_ui.py
@@ -479,7 +479,7 @@ python start_with_check.py
 
 #### 前端启动
 ```bash
-cd owlRD-prototype/frontend
+cd project-code/frontend
 
 # 安装依赖（首次）
 npm install
@@ -568,9 +568,9 @@ npm run dev
 - [Phase 1-3 完成报告](项目文档/6-过程记录/) - 后端核心开�?- [后端开发完成报告](项目文档/6-过程记录/2025-11-20_1615_后端开发完成报�?md)
 - [前端开发完成报告](项目文档/6-过程记录/2025-11-20_1827_前端开发完成报�?md)
 
-### 技术文�?- [后端README](owlRD-prototype/backend/README.md)
-- [前端README](owlRD-prototype/frontend/README.md)
-- [前端开发总结](owlRD-prototype/frontend/DEVELOPMENT_SUMMARY.md)
+### 技术文�?- [后端README](project-code/backend/README.md)
+- [前端README](project-code/frontend/README.md)
+- [前端开发总结](project-code/frontend/DEVELOPMENT_SUMMARY.md)
 
 ### 聊天记录
 - [完整对话记录](项目文档/7-聊天记录/2025-11-20_完整对话记录.md)

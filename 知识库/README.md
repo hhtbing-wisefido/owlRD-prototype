@@ -97,11 +97,11 @@
    └─ 分析API设计、数据模型、业务逻辑
 
 3. 在项目代码目录中实现新功能
-   └─ owlRD-prototype/backend/app/api/users.py
+   └─ project-code/backend/app/api/users.py
    └─ 创建新文件，而非修改知识库
 
 4. 记录参考关系和差异
-   └─ 项目文档/2-完成度检查/API对照说明.md
+   └─ 项目文档/4-完成度检查/API对照说明.md
    └─ 说明参考了哪些文件，做了哪些改进
 ```
 
