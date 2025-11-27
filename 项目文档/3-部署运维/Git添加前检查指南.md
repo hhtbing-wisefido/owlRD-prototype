@@ -1,6 +1,7 @@
 # Git添加前检查指南
 
 **创建时间**: 2025-11-27  
+**更新时间**: 2025-11-27 16:30
 **目的**: 避免误提交临时文件、空文件和旧目录  
 
 ---
@@ -26,28 +27,37 @@
 
 ---
 
-## ✅ 推荐流程（3步检查法）
+## ✅ AI自动遵守规则
 
-### 方法1：使用检查脚本（最安全）⭐
+### 🤖 Windsurf规则系统
+
+AI已被配置为自动遵守 **10-Git操作规范.md**，会在每次Git操作时：
+
+- ✅ **自动检查** 工作区状态
+- ✅ **自动识别** 可疑文件
+- ✅ **自动避免** `git add -A`
+- ✅ **自动选择** 正确的文件
+- ✅ **自动提示** 发现的问题
+
+**无需手动运行脚本，AI会自动执行检查！**
+
+---
+
+## 📋 推荐流程
+
+### 方法1：让AI处理（推荐）⭐
 
 ```powershell
-# 步骤1: 运行预检查脚本
-.\.windsurf\scripts\git_add_check.ps1
+# 只需告诉AI要提交什么
+# AI会自动：
+# 1. 检查工作区
+# 2. 识别可疑文件
+# 3. 选择性添加
+# 4. 确认后提交
 
-# 步骤2: 根据提示决定操作
-#   - 如有可疑文件，先处理
-#   - 如无问题，继续下一步
-
-# 步骤3: 选择性添加文件
-git add "项目文档/2-开发记录/2025-11-27_某某.md"
-git add ".windsurf/rules/某规则.md"
-
-# 步骤4: 提交前再次确认
-git status
-git diff --cached --name-only
-
-# 步骤5: 提交
-git commit -m "描述"
+# 示例：
+"请提交开发记录文件"
+# AI会自动检查并只添加正确的文件
 ```
 
 ### 方法2：手动检查流程
@@ -61,86 +71,15 @@ git status
 #   - 修改文件（M）：修改是否正确？
 #   - 删除文件（D）：确认删除？
 
-# 步骤3: 检查文件大小
-Get-ChildItem -Recurse | Where-Object { $_.Length -eq 0 }
-
-# 步骤4: 选择性添加
+# 步骤3: 选择性添加
 git add <文件路径>
 
-# 步骤5: 再次确认
+# 步骤4: 再次确认
 git status
 git diff --cached
 
-# 步骤6: 提交
+# 步骤5: 提交
 git commit -m "描述"
-```
-
-### 方法3：分批添加（最谨慎）
-
-```powershell
-# 按目录分批添加
-
-# 1. 添加文档
-git add "项目文档/**/*.md"
-
-# 2. 添加规则
-git add ".windsurf/rules/**/*.md"
-
-# 3. 添加代码（如需要）
-git add "project-code/**/*.py"
-git add "project-code/**/*.ts"
-
-# 4. 检查暂存区
-git status
-
-# 5. 提交
-git commit -m "描述"
-```
-
----
-
-## 🔍 检查脚本使用说明
-
-### 基本用法
-
-```powershell
-# 运行检查
-.\.windsurf\scripts\git_add_check.ps1
-
-# 预览模式（不交互）
-.\.windsurf\scripts\git_add_check.ps1 -DryRun
-```
-
-### 脚本输出说明
-
-```
-=== Git Add 预检查 ===
-
-📋 工作区状态：
-?? add_frontmatter.py
-M  README.md
-
-🔍 文件分析：
-  📄 新文件: 1个
-  ✏️ 修改文件: 1个
-  🗑️ 删除文件: 0个
-
-⚠️ 发现可疑文件：
-  ❌ add_frontmatter.py  ← 匹配 temp/test 模式
-
-📊 空文件检查：
-  ⚠️ add_frontmatter.py (0字节)
-
-📁 按目录分组：
-  📂 根目录 (2个文件):
-     - add_frontmatter.py
-     - README.md
-
-💡 建议操作：
-  ⚠️ 发现问题文件，建议：
-     1. 检查并删除临时文件/空文件
-     2. 更新 .gitignore
-     3. 使用选择性添加：git add <文件路径>
 ```
 
 ---
@@ -151,11 +90,11 @@ M  README.md
 
 ```powershell
 # 1. 不检查就批量添加
-git add -A  # 危险！
-git add .   # 危险！
+git add -A   # ❌ 危险！AI已被配置禁止使用
+git add .    # ❌ 危险！AI已被配置禁止使用
 
 # 2. 不看git status就提交
-git commit -m "update"  # 不知道提交了什么
+git commit -m "update"  # ❌ 不知道提交了什么
 
 # 3. 忽略警告信息
 # 看到可疑文件警告，但仍然继续提交
@@ -168,10 +107,10 @@ git commit -m "update"  # 不知道提交了什么
 ### ✅ 安全的做法
 
 ```powershell
-# 1. 先检查
-.\.windsurf\scripts\git_add_check.ps1
+# 1. 让AI检查（自动）
+# AI会自动运行 git status 并分析
 
-# 2. 选择性添加（明确指定文件）
+# 2. 选择性添加（AI会自动执行）
 git add "项目文档/2-开发记录/2025-11-27_功能开发.md"
 git add ".windsurf/rules/05-测试组织规范.md"
 
@@ -210,19 +149,6 @@ simplify_remaining.py
 项目文档/完成度报告_*.md
 ```
 
-### 如何添加新的忽略规则
-
-1. 编辑 `.gitignore` 文件
-2. 添加要忽略的文件/目录模式
-3. 提交 `.gitignore` 的更改
-
-```powershell
-# 示例
-echo "new_temp_file.py" >> .gitignore
-git add .gitignore
-git commit -m "chore: 更新.gitignore"
-```
-
 ---
 
 ## 🔧 常见场景
@@ -230,45 +156,24 @@ git commit -m "chore: 更新.gitignore"
 ### 场景1：添加新的开发记录
 
 ```powershell
-# ✅ 正确做法
-git add "项目文档/2-开发记录/2025-11-27/2025-11-27_1430_功能完成.md"
-git commit -m "docs: 添加功能完成记录"
+# ✅ AI会自动处理
+"请提交2025-11-27的开发记录"
+
+# AI会：
+# 1. 检查工作区
+# 2. 找到对应文件
+# 3. 验证文件名格式
+# 4. 选择性添加
+# 5. 提交
 ```
 
 ### 场景2：添加新的规则文件
 
 ```powershell
-# ✅ 正确做法
-git add ".windsurf/rules/10-新规则.md"
-git commit -m "feat: 添加新规则 v1.0"
-```
+# ✅ AI会自动处理
+"请提交新的规则文件"
 
-### 场景3：修改多个文件
-
-```powershell
-# ✅ 正确做法
-# 1. 先检查
-git status
-
-# 2. 逐个添加
-git add "README.md"
-git add "项目文档/README.md"
-
-# 3. 确认
-git status
-
-# 4. 提交
-git commit -m "docs: 更新README"
-```
-
-### 场景4：发现误添加
-
-```powershell
-# 如果不小心添加了错误的文件
-git reset HEAD <文件>  # 从暂存区移除
-
-# 或者重置所有
-git reset HEAD .  # 移除所有暂存的文件
+# AI会自动检查并只添加规则文件
 ```
 
 ---
@@ -277,38 +182,25 @@ git reset HEAD .  # 移除所有暂存的文件
 
 ### 提交前必查项
 
-- [ ] ✅ 运行了 `git_add_check.ps1` 脚本
-- [ ] ✅ 检查了 `git status` 输出
-- [ ] ✅ 确认没有可疑文件（temp, test, old等）
-- [ ] ✅ 确认没有空文件（0字节）
-- [ ] ✅ 确认没有误添加旧目录
-- [ ] ✅ 使用了选择性添加（而非批量添加）
-- [ ] ✅ 提交前查看了 `git diff --cached`
+- [ ] ✅ AI自动检查了工作区状态
+- [ ] ✅ AI自动识别了可疑文件
+- [ ] ✅ AI使用了选择性添加
+- [ ] ✅ 确认没有临时文件
+- [ ] ✅ 确认没有空文件
+- [ ] ✅ 确认没有旧目录
 - [ ] ✅ 提交信息清晰明确
 
 ---
 
-## 🎓 最佳实践总结
+## �� 最佳实践总结
 
 ### 核心原则
 
-1. **🔍 先检查，后添加** - 永远先看 `git status`
+1. **🤖 信任AI** - AI已配置Git操作规范
 2. **✅ 选择性添加** - 明确指定每个文件
 3. **📋 提交前确认** - 查看 `git diff --cached`
 4. **🚫 避免批量操作** - 不用 `git add -A`
 5. **📝 维护 .gitignore** - 及时添加忽略规则
-
-### 养成的习惯
-
-```powershell
-# 每次提交前的标准流程
-.\.windsurf\scripts\git_add_check.ps1  # 1. 检查
-git add <文件>                          # 2. 选择性添加
-git status                              # 3. 确认
-git diff --cached                       # 4. 查看变更
-git commit -m "描述"                    # 5. 提交
-git push origin main                    # 6. 推送
-```
 
 ---
 
@@ -324,33 +216,28 @@ git push origin main
 
 # 方案2: 回退提交（未推送的情况）
 git reset HEAD~1  # 回退一个提交
-
-# 方案3: 修改最后一次提交（未推送）
-git reset HEAD~1
-# 重新添加正确的文件
-git add <正确的文件>
-git commit -m "正确的描述"
 ```
 
 ---
 
-## 📞 获取帮助
+## �� 获取帮助
 
 **遇到问题时**：
 1. 查看本文档
-2. 运行检查脚本查看提示
+2. 查看 `.windsurf/rules/10-Git操作规范.md`
 3. 执行 `git status` 了解状态
-4. 如有疑问，先不要提交！
+4. 信任AI的自动检查
 
 **参考资源**：
-- `.windsurf/scripts/git_add_check.ps1` - 检查脚本
+- `.windsurf/rules/10-Git操作规范.md` - AI遵守的规则
 - `.gitignore` - 忽略规则
 - 项目文档/3-部署运维/ - 其他运维文档
 
 ---
 
-**记住：谨慎比速度更重要！** 🎯
+**记住：AI会自动检查，您只需关注提交内容！** 🎯
 
 **创建日期**: 2025-11-27  
+**更新日期**: 2025-11-27 16:30  
 **维护者**: Benson  
 **状态**: ✅ 活跃维护
