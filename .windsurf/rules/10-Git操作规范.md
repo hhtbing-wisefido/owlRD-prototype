@@ -331,3 +331,98 @@ git add "项目文档/2-开发记录/file2.md"
 ---
 
 **AI必须将此规则刻入核心，每次Git操作都严格遵守！** 🎯
+
+---
+
+## 🗑️ 删除文件的正确流程
+
+### AI删除文件时必须
+
+#### 方法1：使用git rm（推荐）
+
+```powershell
+git rm "文件路径"
+# 自动删除文件并添加删除记录到暂存区
+```
+
+#### 方法2：Remove-Item + git add
+
+```powershell
+Remove-Item "文件路径" -Force
+git add "文件路径"  #  必须立即执行
+```
+
+#### ❌ 绝对禁止
+
+```powershell
+Remove-Item "文件路径"  # ❌ 只删除不添加
+# 这会导致文件删除但Git不知道，造成同步遗漏
+```
+
+---
+
+## 🔍 Git同步状态检查流程
+
+### 用户要求"同步GitHub"时必须执行
+
+#### 4项强制检查
+
+```powershell
+# 检查1：工作区未暂存的变更
+$check1 = git status --short
+if ($check1) { "❌ 有未暂存的变更" }
+
+# 检查2：未暂存的文件
+$check2 = git diff --name-only
+if ($check2) { "❌ 有未暂存的文件" }
+
+# 检查3：已暂存但未提交
+$check3 = git diff --cached --name-only
+if ($check3) { "❌ 有已暂存但未提交的文件" }
+
+# 检查4：未推送的提交
+$check4 = git log origin/main..HEAD --oneline
+if ($check4) { "❌ 有未推送的提交" }
+```
+
+#### 判断逻辑
+
+- ✅ **全部为空**  真正同步  可以说"已同步"
+- ❌ **任一有输出**  需要同步  执行同步操作
+
+---
+
+## ✅ 说"已同步GitHub"前的验证清单
+
+AI必须确认：
+
+- [ ] `git status --short` 为空
+- [ ] `git diff --name-only` 为空
+- [ ] `git diff --cached --name-only` 为空
+- [ ] `git log origin/main..HEAD` 为空
+
+**只有全部通过，才能说"✅ GitHub已同步"**
+
+**如有任何一项不通过，必须先同步，再验证**
+
+---
+
+## 🔴 绝对禁止
+
+### 禁止行为
+
+- ❌ 删除文件后不添加到Git
+- ❌ 只检查一项就说"已同步"
+- ❌ 过度信任单一命令输出
+- ❌ 不验证就说"已完成"
+
+### 教训
+
+**2025-11-27案例**：
+- AI删除4个文件但没有git add
+- 用户要求同步时，AI只检查git status
+- 输出为空就说"已同步"
+- 实际有4个删除未同步
+- 用户发现后质问，AI才发现问题
+
+**结论**：必须多重验证，不能偷懒！
