@@ -853,7 +853,7 @@ test('用户登录流程', async ({ page }) => {
 
 ## 📚 相关文档
 
-- [完成报告](../项目记录/7-过程记录/2025-11-22_1755_Alert系统对齐与测试100%通过完成报告.md)
+- [完成报告](../项目文档/7-过程记录/2025-11-22_1755_Alert系统对齐与测试100%通过完成报告.md)
 - [主README](../README.md)
 - [后端README](../backend/README.md)
 - [前端README](../frontend/README.md)

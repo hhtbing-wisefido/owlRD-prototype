@@ -45,7 +45,7 @@ python scripts/validate_alignment.py
 
 **输出**:
 - 控制台：对齐度百分比
-- 文件：`../../项目记录/AUTO_对齐验证报告.md`
+- 文件：`../../项目文档/AUTO_对齐验证报告.md`
 
 **依赖**:
 - Python 3.8+
@@ -71,8 +71,8 @@ python scripts/sync_checklist.py
 ```
 
 **输出**:
-- `../../项目记录/2-源参考对照/1-数据库Schema对照/检查清单.md` (自动更新)
-- `../../项目记录/AUTO_TODO修复清单.md`
+- `../../项目文档/2-源参考对照/1-数据库Schema对照/检查清单.md` (自动更新)
+- `../../项目文档/AUTO_TODO修复清单.md`
 
 **智能过滤规则**:
 ```python
@@ -104,7 +104,7 @@ python scripts/validate_frontend_types.py
 
 **输出**:
 - 控制台：前端类型对齐度
-- 文件：`../../项目记录/AUTO_前端类型对齐报告.md`
+- 文件：`../../项目文档/AUTO_前端类型对齐报告.md`
 
 **类型映射规则**:
 ```python
@@ -129,8 +129,8 @@ TYPE_MAPPINGS = {
 python scripts/sync_checklist.py
 
 # 3. 查看报告
-cat ../../项目记录/AUTO_对齐验证报告.md
-cat ../../项目记录/AUTO_TODO修复清单.md
+cat ../../项目文档/AUTO_对齐验证报告.md
+cat ../../项目文档/AUTO_TODO修复清单.md
 
 # 4. 如果有问题，修复Model
 
@@ -146,7 +146,7 @@ cat ../../项目记录/AUTO_TODO修复清单.md
 python scripts/validate_frontend_types.py
 
 # 3. 查看报告
-cat ../../项目记录/AUTO_前端类型对齐报告.md
+cat ../../项目文档/AUTO_前端类型对齐报告.md
 
 # 4. 修复类型定义直到对齐
 ```
@@ -158,7 +158,7 @@ cat ../../项目记录/AUTO_前端类型对齐报告.md
 python scripts/sync_checklist.py && python scripts/validate_frontend_types.py
 
 # 查看所有AUTO报告
-ls ../../项目记录/AUTO_*.md
+ls ../../项目文档/AUTO_*.md
 ```
 
 ---
@@ -246,9 +246,9 @@ python scripts/download_swagger_ui.py
 
 ## 🔗 相关文档
 
-- [自动化验证体系说明](../../项目记录/2-源参考对照/3-自动化验证/README.md)
-- [检查清单](../../项目记录/2-源参考对照/1-数据库Schema对照/检查清单.md)
-- [方案B执行总结](../../项目记录/3-功能说明/方案B执行总结.md)
+- [自动化验证体系说明](../../项目文档/2-源参考对照/3-自动化验证/README.md)
+- [检查清单](../../项目文档/2-源参考对照/1-数据库Schema对照/检查清单.md)
+- [方案B执行总结](../../项目文档/3-功能说明/方案B执行总结.md)
 
 ---
 
